@@ -1,0 +1,5 @@
+.DS_Store
+
+# Credenciales — NUNCA van a git (subir a mano al servidor)
+.env
+cotizador/config.php
