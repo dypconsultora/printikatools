@@ -1,36 +1,95 @@
 <?php
 /**
- * Piezas de interfaz compartidas de la plataforma (estilos, sidebar, layout).
+ * Piezas de interfaz compartidas de la plataforma.
+ * Sistema de diseño: dark minimal, tipografía Inter, íconos SVG (Lucide),
+ * espaciado en múltiplos de 4px, una sola acción primaria por pantalla.
  */
+
+/** Íconos SVG (Lucide, 24x24, stroke). Uso: ui_icono('usuarios') */
+function ui_icono($nombre, $tam = 18) {
+    static $trazos = [
+        'inicio'       => '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+        'calculadora'  => '<rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/>',
+        'libreria'     => '<path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',
+        'cursos'       => '<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>',
+        'presupuestos' => '<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>',
+        'clientes'     => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+        'stock'        => '<path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
+        'ventas'       => '<rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01"/><path d="M18 12h.01"/>',
+        'estadisticas' => '<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
+        'configuracion'=> '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+        'whatsapp'     => '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+        'admin'        => '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1 1 0 0 1 1.52 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/>',
+        'salir'        => '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
+        'flecha'       => '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+        'alerta'       => '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+        'check'        => '<path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/>',
+    ];
+    $d = $trazos[$nombre] ?? $trazos['inicio'];
+    return '<svg class="ico" width="' . $tam . '" height="' . $tam . '" viewBox="0 0 24 24" fill="none" '
+         . 'stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+         . $d . '</svg>';
+}
 
 /** Estilos base compartidos por todas las pantallas de la plataforma. */
 function ui_css() { ?>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0b0e16; --panel:#111624; --panel2:#161c2e; --bd:#232b40;
-    --txt:#eef2fa; --txt2:#8b94ab; --accent:#2db7fa; --accent-dim:rgba(45,183,250,.14);
-    --ok:#00e676; --bad:#ff5252; --warn:#ffab40; --navy:#192844;
+    --bg:#0e131c; --surface:#141b28; --surface-2:#1a2334; --raised:#202b40;
+    --bd:#243048; --bd-suave:#1c2638;
+    --txt:#e8edf5; --txt-2:#9aa6bc; --txt-3:#5f6b82;
+    --accent:#2db7fa; --accent-hover:#54c5fb; --accent-tinte:rgba(45,183,250,.10); --accent-ink:#06202f;
+    --ok:#3ecf8e; --ok-tinte:rgba(62,207,142,.10);
+    --bad:#f4747c; --bad-tinte:rgba(244,116,124,.10);
+    --warn:#e8b04b; --warn-tinte:rgba(232,176,75,.10);
+    --radio:8px; --radio-g:12px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,'Inter',sans-serif;
-       background:var(--bg);color:var(--txt);min-height:100vh;line-height:1.55}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+       background:var(--bg);color:var(--txt);min-height:100vh;line-height:1.55;
+       font-size:15px;-webkit-font-smoothing:antialiased}
   a{color:var(--accent);text-decoration:none}
-  .badge{font-size:.62rem;font-weight:700;letter-spacing:.06em;padding:.14rem .45rem;
-         border-radius:99px;background:rgba(255,171,64,.15);color:var(--warn);text-transform:uppercase}
-  .btn{display:inline-block;background:var(--accent);color:#04121d;border:none;border-radius:8px;
-       padding:.7rem 1.1rem;font-weight:700;font-family:inherit;font-size:.88rem;cursor:pointer}
-  .btn:hover{opacity:.88}
-  .btn.sec{background:var(--panel2);color:var(--txt);border:1px solid var(--bd)}
-  .btn.peligro{background:rgba(255,82,82,.13);color:var(--bad);border:1px solid rgba(255,82,82,.35)}
-  input,select{background:var(--panel2);border:1px solid var(--bd);border-radius:8px;
-       padding:.62rem .75rem;color:var(--txt);font-family:inherit;font-size:.9rem;outline:none;width:100%}
-  input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
-  label{display:block;font-size:.7rem;font-weight:600;color:var(--txt2);text-transform:uppercase;
-        letter-spacing:.05em;margin:.85rem 0 .3rem}
-  .msg{font-size:.84rem;padding:.7rem .85rem;border-radius:8px;margin:.9rem 0}
-  .msg.bad{background:rgba(255,82,82,.12);border:1px solid rgba(255,82,82,.3);color:var(--bad)}
-  .msg.ok{background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3);color:var(--ok)}
-  .msg.warn{background:rgba(255,171,64,.12);border:1px solid rgba(255,171,64,.35);color:var(--warn)}
+  a:hover{color:var(--accent-hover)}
+  .ico{flex-shrink:0;vertical-align:-3px}
+
+  .badge{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.07em;
+         padding:2px 7px;border-radius:99px;border:1px solid var(--bd);
+         color:var(--txt-3);text-transform:uppercase;line-height:1.5}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+       background:var(--accent);color:var(--accent-ink);border:1px solid transparent;
+       border-radius:var(--radio);padding:0 16px;height:40px;font-weight:600;
+       font-family:inherit;font-size:14px;cursor:pointer;white-space:nowrap;
+       transition:background-color .15s ease,border-color .15s ease,color .15s ease}
+  .btn:hover{background:var(--accent-hover);color:var(--accent-ink)}
+  .btn.sec{background:transparent;color:var(--txt);border-color:var(--bd)}
+  .btn.sec:hover{background:var(--surface-2);border-color:var(--raised)}
+  .btn.peligro{background:transparent;color:var(--bad);border-color:transparent}
+  .btn.peligro:hover{background:var(--bad-tinte);color:var(--bad)}
+  .btn.chico{height:32px;padding:0 12px;font-size:13px;border-radius:6px}
+
+  input,select{background:var(--surface-2);border:1px solid var(--bd);border-radius:var(--radio);
+       padding:0 12px;height:40px;color:var(--txt);font-family:inherit;font-size:14px;
+       outline:none;width:100%;transition:border-color .15s ease,box-shadow .15s ease}
+  input::placeholder{color:var(--txt-3)}
+  input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tinte)}
+  :is(a,button,input,select):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  label{display:block;font-size:12px;font-weight:500;color:var(--txt-2);margin:16px 0 6px}
+
+  .msg{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.5;
+       padding:12px 14px;border-radius:var(--radio);margin:14px 0;border:1px solid}
+  .msg .ico{margin-top:1px}
+  .msg.bad{background:var(--bad-tinte);border-color:rgba(244,116,124,.25);color:var(--bad)}
+  .msg.ok{background:var(--ok-tinte);border-color:rgba(62,207,142,.25);color:var(--ok)}
+  .msg.warn{background:var(--warn-tinte);border-color:rgba(232,176,75,.25);color:var(--warn)}
+
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{transition-duration:.01ms !important;animation-duration:.01ms !important}
+  }
 </style>
 <?php }
 
@@ -44,54 +103,54 @@ function ui_tarjeta_inicio($titulo) { ?>
 <title><?php echo htmlspecialchars($titulo); ?> · Printika Tools</title>
 <?php ui_css(); ?>
 <style>
-  body{display:flex;align-items:center;justify-content:center;padding:1.5rem;background:var(--navy)}
-  .tarjeta{background:var(--panel);border:1px solid var(--bd);border-radius:14px;
-           padding:2.25rem 2rem;width:100%;max-width:430px;box-shadow:0 4px 40px rgba(0,0,0,.45)}
-  .logo{display:block;margin:0 auto 1.4rem;height:72px;width:auto}
-  h1{font-size:1.15rem;font-weight:800;text-align:center;margin-bottom:.35rem}
-  .sub{font-size:.85rem;color:var(--txt2);text-align:center;margin-bottom:1rem}
-  .pie{font-size:.8rem;color:var(--txt2);text-align:center;margin-top:1.2rem}
-  form .btn{width:100%;margin-top:1.3rem}
+  body{display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg)}
+  .tarjeta{background:var(--surface);border:1px solid var(--bd-suave);border-radius:var(--radio-g);
+           padding:40px 36px;width:100%;max-width:400px}
+  .logo{display:block;margin:0 auto 28px;height:56px;width:auto}
+  h1{font-size:19px;font-weight:700;text-align:center;letter-spacing:-.01em;margin-bottom:6px}
+  .sub{font-size:13.5px;color:var(--txt-2);text-align:center;margin-bottom:8px}
+  .pie{font-size:13px;color:var(--txt-2);text-align:center;margin-top:24px}
+  form .btn{width:100%;margin-top:24px}
+  @media (max-width:480px){ .tarjeta{padding:32px 24px} }
 </style>
 </head>
 <body>
-  <div class="tarjeta">
+  <main class="tarjeta">
     <img class="logo" src="<?php echo ui_base(); ?>/assets/img/printika-tools-dark.svg" alt="Printika Tools">
 <?php }
 
 function ui_tarjeta_fin() { ?>
-  </div>
+  </main>
 </body>
 </html>
 <?php }
 
 /** Ruta base del sitio (raiz donde viven /assets y /comunidad). */
 function ui_base() {
-    // /comunidad/... -> ''  (asume instalacion en la raiz del dominio)
     return '';
 }
 
 /**
  * Secciones del menu lateral. Cada item: [icono, titulo, href, disponible].
- * Las que aun no existen quedan con badge PROX. — ir habilitando a medida que se construyan.
+ * Las que aun no existen quedan con badge Pronto — ir habilitando a medida que se construyan.
  */
 function ui_menu() {
     return [
         'Plataforma' => [
-            ['🧮', 'Calculadora',  'cotizador/', true],
-            ['📦', 'Librería STL', null, false],
-            ['🎓', 'Cursos',       null, false],
+            ['calculadora',  'Calculadora',   'cotizador/', true],
+            ['libreria',     'Librería STL',  null, false],
+            ['cursos',       'Cursos',        null, false],
         ],
         'Mi taller' => [
-            ['📋', 'Presupuestos', null, false],
-            ['👥', 'Clientes',     null, false],
-            ['🧵', 'Stock',        null, false],
-            ['💰', 'Ventas',       null, false],
-            ['📈', 'Estadísticas', null, false],
-            ['⚙️', 'Configuración', null, false],
+            ['presupuestos', 'Presupuestos',  null, false],
+            ['clientes',     'Clientes',      null, false],
+            ['stock',        'Stock',         null, false],
+            ['ventas',       'Ventas',        null, false],
+            ['estadisticas', 'Estadísticas',  null, false],
+            ['configuracion','Configuración', null, false],
         ],
         'Soporte' => [
-            ['💬', 'WhatsApp', COMUNIDAD_WHATSAPP, true],
+            ['whatsapp', 'WhatsApp', COMUNIDAD_WHATSAPP, true],
         ],
     ];
 }
@@ -107,29 +166,43 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
 <?php ui_css(); ?>
 <style>
   .app{display:flex;min-height:100vh}
-  .lateral{width:250px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--bd);
-           display:flex;flex-direction:column;padding:1.2rem .9rem;position:sticky;top:0;height:100vh;overflow-y:auto}
-  .lateral .marca img{height:52px;width:auto;display:block;margin:.2rem auto 1.2rem}
-  .grupo{font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-         color:var(--txt2);margin:1rem .55rem .35rem}
-  .item{display:flex;align-items:center;gap:.6rem;padding:.55rem .65rem;border-radius:9px;
-        color:var(--txt);font-size:.88rem;margin-bottom:.12rem}
-  .item:hover{background:var(--panel2)}
-  .item.activo{background:var(--panel2);border:1px solid var(--bd);font-weight:600}
-  .item.prox{color:var(--txt2);cursor:default}
-  .item.prox:hover{background:none}
+  .lateral{width:240px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--bd-suave);
+           display:flex;flex-direction:column;padding:20px 12px 16px;
+           position:sticky;top:0;height:100vh;overflow-y:auto}
+  .lateral .marca{display:block;padding:0 10px;margin-bottom:24px}
+  .lateral .marca img{height:40px;width:auto;display:block}
+  .grupo{font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+         color:var(--txt-3);margin:18px 10px 6px}
+  .item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radio);
+        color:var(--txt-2);font-size:13.5px;font-weight:500;margin-bottom:1px;cursor:pointer;
+        transition:background-color .15s ease,color .15s ease}
+  .item .ico{color:var(--txt-3);transition:color .15s ease}
+  .item:hover{background:var(--surface-2);color:var(--txt)}
+  .item:hover .ico{color:var(--txt-2)}
+  .item.activo{background:var(--accent-tinte);color:var(--accent)}
+  .item.activo .ico{color:var(--accent)}
+  .item.prox{cursor:default;color:var(--txt-3)}
+  .item.prox:hover{background:none;color:var(--txt-3)}
+  .item.prox:hover .ico{color:var(--txt-3)}
   .item .badge{margin-left:auto}
-  .perfil{margin-top:auto;border-top:1px solid var(--bd);padding-top:.9rem;font-size:.85rem;
-          display:flex;align-items:center;justify-content:space-between;gap:.5rem}
-  .perfil .quien{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .perfil .rol{display:block;font-size:.68rem;color:var(--txt2)}
-  .contenido{flex:1;padding:2.2rem 2.4rem;min-width:0}
-  .contenido h1{font-size:1.7rem;font-weight:800;letter-spacing:-.02em}
-  .contenido .bajada{color:var(--txt2);font-size:.92rem;margin:.3rem 0 1.6rem}
+  .perfil{margin-top:auto;border-top:1px solid var(--bd-suave);padding:14px 10px 0;
+          display:flex;align-items:center;gap:10px}
+  .perfil .avatar{width:32px;height:32px;border-radius:99px;background:var(--surface-2);
+          border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;
+          font-size:13px;font-weight:600;color:var(--accent);flex-shrink:0}
+  .perfil .quien{min-width:0;flex:1}
+  .perfil .nombre{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .perfil .rol{display:block;font-size:11px;color:var(--txt-3)}
+  .perfil .salir{color:var(--txt-3);display:flex;padding:6px;border-radius:6px;
+          transition:color .15s ease,background-color .15s ease}
+  .perfil .salir:hover{color:var(--bad);background:var(--bad-tinte)}
+  .contenido{flex:1;padding:40px 44px;min-width:0;max-width:1120px}
+  .contenido h1{font-size:22px;font-weight:700;letter-spacing:-.015em}
+  .contenido .bajada{color:var(--txt-2);font-size:14px;margin:4px 0 28px}
   @media (max-width: 820px){
     .app{flex-direction:column}
-    .lateral{width:100%;height:auto;position:static;flex-direction:column}
-    .contenido{padding:1.4rem 1.1rem}
+    .lateral{width:100%;height:auto;position:static}
+    .contenido{padding:24px 16px}
   }
 </style>
 </head>
@@ -141,27 +214,30 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
       <div class="grupo"><?php echo htmlspecialchars($grupo); ?></div>
       <?php foreach ($items as [$icono, $nombre, $href, $ok]): ?>
         <?php if ($ok): ?>
-          <a class="item<?php echo $nombre === $activo ? ' activo' : ''; ?>" href="<?php echo str_starts_with((string) $href, 'http') ? htmlspecialchars($href) : $raiz . htmlspecialchars($href); ?>"<?php
-            echo str_starts_with((string) $href, 'http') ? ' target="_blank" rel="noopener"' : ''; ?>>
-            <span><?php echo $icono; ?></span><?php echo htmlspecialchars($nombre); ?>
+          <a class="item<?php echo $nombre === $activo ? ' activo' : ''; ?>"
+             href="<?php echo str_starts_with((string) $href, 'http') ? htmlspecialchars($href) : $raiz . htmlspecialchars($href); ?>"<?php
+             echo str_starts_with((string) $href, 'http') ? ' target="_blank" rel="noopener"' : ''; ?>>
+            <?php echo ui_icono($icono); ?><?php echo htmlspecialchars($nombre); ?>
           </a>
         <?php else: ?>
-          <span class="item prox"><span><?php echo $icono; ?></span><?php echo htmlspecialchars($nombre); ?>
-            <span class="badge">Próx.</span></span>
+          <span class="item prox"><?php echo ui_icono($icono); ?><?php echo htmlspecialchars($nombre); ?>
+            <span class="badge">Pronto</span></span>
         <?php endif; ?>
       <?php endforeach; ?>
     <?php endforeach; ?>
     <?php if ($usuario['rol'] === 'admin'): ?>
       <div class="grupo">Administración</div>
       <a class="item<?php echo $activo === 'Suscripciones' ? ' activo' : ''; ?>" href="<?php echo $raiz; ?>admin/">
-        <span>🛡️</span>Suscripciones
+        <?php echo ui_icono('admin'); ?>Suscripciones
       </a>
     <?php endif; ?>
     <div class="perfil">
-      <span class="quien">👤 <?php echo htmlspecialchars($usuario['nombre']); ?>
+      <span class="avatar"><?php echo mb_strtoupper(mb_substr($usuario['nombre'], 0, 1)); ?></span>
+      <span class="quien">
+        <span class="nombre"><?php echo htmlspecialchars($usuario['nombre']); ?></span>
         <span class="rol"><?php echo $usuario['rol'] === 'admin' ? 'Administrador' : 'Miembro'; ?></span>
       </span>
-      <a href="<?php echo $raiz; ?>logout.php" title="Cerrar sesión">Salir</a>
+      <a class="salir" href="<?php echo $raiz; ?>logout.php" title="Cerrar sesión" aria-label="Cerrar sesión"><?php echo ui_icono('salir', 16); ?></a>
     </div>
   </aside>
   <main class="contenido">

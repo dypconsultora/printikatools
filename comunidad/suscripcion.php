@@ -15,12 +15,12 @@ if (suscripcion_activa()) {
 
 ui_tarjeta_inicio('Suscripción');
 ?>
-    <h1>Hola, <?php echo htmlspecialchars($u['nombre']); ?> 👋</h1>
+    <h1>Hola, <?php echo htmlspecialchars($u['nombre']); ?></h1>
     <p class="sub">Tu cuenta está creada, pero la suscripción todavía no está activa.</p>
-    <div class="msg warn">
-      Para habilitar tu acceso a la comunidad escribinos por WhatsApp y la activamos.
+    <div class="msg warn"><?php echo ui_icono('alerta', 16); ?>
+      <span>Para habilitar tu acceso a la comunidad escribinos por WhatsApp y la activamos.</span>
     </div>
-    <a class="btn" style="display:block;text-align:center" href="<?php echo COMUNIDAD_WHATSAPP; ?>"
-       target="_blank" rel="noopener">💬 Activar por WhatsApp</a>
+    <a class="btn" style="width:100%" href="<?php echo COMUNIDAD_WHATSAPP; ?>"
+       target="_blank" rel="noopener"><?php echo ui_icono('whatsapp', 16); ?> Activar por WhatsApp</a>
     <p class="pie"><a href="logout.php">Cerrar sesión</a></p>
 <?php ui_tarjeta_fin(); ?>
