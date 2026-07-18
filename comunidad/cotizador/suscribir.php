@@ -84,7 +84,7 @@ try {
         . '<h2 style="color:#111;border-bottom:2px solid #00D4FF;padding-bottom:8px;">Nuevo suscriptor del cotizador</h2>'
         . '<p style="color:#222;">Alguien dej&oacute; su email en el popup de novedades del cotizador:</p>'
         . '<p style="padding:12px;background:#f8f8f8;border-left:3px solid #00D4FF;color:#111;font-size:16px;font-weight:bold;">' . $emailHtml . '</p>'
-        . '<p style="color:#999;font-size:12px;margin-top:24px;">Enviado desde printika3d.com/cotizador — ' . $fecha . '</p>'
+        . '<p style="color:#999;font-size:12px;margin-top:24px;">Enviado desde printikatools.com/comunidad/cotizador — ' . $fecha . '</p>'
         . '</div>';
 
     $mail->AltBody = "Nuevo suscriptor a novedades del cotizador:\n$email\n($fecha)";

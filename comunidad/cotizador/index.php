@@ -125,7 +125,7 @@ $proHabilitado = $esPro || $enTrial;
   line-height: 0;
 }
 .header-logo img {
-  height: 128px;
+  height: 103px;
   width: auto;
   display: block;
 }
@@ -136,11 +136,17 @@ $proHabilitado = $esPro || $enTrial;
 
 /* pantallas medianas: un poco mas chico para no pisar el titulo */
 @media (max-width: 1100px) {
-  .header-logo img { height: 82px; }
+  .header-logo img { height: 66px; }
+  /* el logo puede pisar la etiqueta "Proyecto"; el placeholder ya la reemplaza */
+  .project-name-bar label { display: none; }
+}
+/* entre 701px y 1100px el logo convive con el campo de proyecto: correrlo a la derecha */
+@media (min-width: 701px) and (max-width: 1100px) {
+  .project-name-bar { margin-left: max(16.5rem, calc((100% - 480px) / 2)); margin-right: 1rem; }
 }
 @media (max-width: 700px) {
   .header-logo { top: 0.9rem; left: 1.25rem; transform: none; }
-  .header-logo img { height: 56px; }
+  .header-logo img { height: 45px; }
   /* bajar el titulo para que no choque con logo y selector */
   .header h1 { margin-top: 4rem; }
 }
@@ -1155,9 +1161,9 @@ input[type="range"]::-moz-range-thumb {
   <?php if ($esPro): ?>
     <span class="pro-session">Modo <strong>PRO</strong> &middot; <a href="logout.php">Salir</a></span>
   <?php endif; ?>
-  <a class="header-logo" href="https://printika3d.com" title="Printika 3D">
-    <img src="../../assets/img/Innovacion-en-3D.svg" alt="Printika 3D" class="logo-light">
-    <img src="../../assets/img/Innovacion-en-3D-dark.svg" alt="Printika 3D" class="logo-dark">
+  <a class="header-logo" href="https://printikatools.com/" title="Printika Tools">
+    <img src="../../assets/img/printika-tools.svg" alt="Printika Tools" class="logo-light">
+    <img src="../../assets/img/printika-tools-dark.svg" alt="Printika Tools" class="logo-dark">
   </a>
   <div class="theme-switch" role="group" aria-label="Elegir tema">
     <button type="button" class="theme-opt" data-theme-opt="light" aria-label="Modo dia" title="Modo dia">

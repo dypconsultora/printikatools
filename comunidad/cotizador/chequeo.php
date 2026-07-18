@@ -1,7 +1,7 @@
 <?php
 /**
  * Chequeo temporal — BORRAR después de usar.
- * Visitar: https://printika3d.com/cotizador/chequeo.php
+ * Visitar: https://printikatools.com/comunidad/cotizador/chequeo.php
  * No requiere config.php de forma fatal: reporta qué falta.
  */
 error_reporting(E_ALL);

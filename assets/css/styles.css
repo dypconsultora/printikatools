@@ -1,6 +1,7 @@
 :root {
-  --azul-fondo: #0b3d91;
-  --blanco: #ffffff;
+  --azul-fondo: #192844;
+  --celeste: #2db7fa;
+  --blanco: #f2f6fc;
 }
 
 * {
@@ -33,7 +34,7 @@ body {
 }
 
 .hero__logo {
-  width: min(320px, 70vw);
+  width: min(480px, 80vw);
   height: auto;
 }
 
