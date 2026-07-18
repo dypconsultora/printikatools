@@ -122,7 +122,7 @@ ui_panel_inicio('Suscripciones', $yo, 'Suscripciones', '../');
           <?php if ($u['rol'] === 'admin'): ?>
             <span class="rol-admin"><?php echo ui_icono('admin', 14); ?>Admin</span>
           <?php else: ?>
-            <span style="color:var(--txt-2)">Miembro</span>
+            <span style="color:var(--txt-2)">Suscriptor</span>
           <?php endif; ?>
         </td>
         <td>

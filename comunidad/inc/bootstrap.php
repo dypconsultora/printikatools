@@ -44,6 +44,37 @@ function com_db_ok() {
     return com_db() !== null;
 }
 
+/**
+ * Porton de acceso anticipado: mientras el sitio no se lanza, la landing y el
+ * ingreso a la comunidad requieren una clave. Se guarda solo el hash.
+ * Para lanzar el sitio al publico, poner COM_PREVIEW_ACTIVO en false.
+ */
+define('COM_PREVIEW_ACTIVO', true);
+define('COM_PREVIEW_CLAVE_HASH', 'bc803cf09c73d136d64df1625c46ce48ced7c604d8614cad1e72e7e3ca9efb18');
+define('COM_PREVIEW_COOKIE', 'pt_preview');
+
+function com_preview_cookie_valor() {
+    return hash('sha256', COM_PREVIEW_CLAVE_HASH . 'ptools-preview-2026');
+}
+
+function com_preview_ok() {
+    if (!COM_PREVIEW_ACTIVO) return true;
+    return hash_equals(com_preview_cookie_valor(), (string) ($_COOKIE[COM_PREVIEW_COOKIE] ?? ''));
+}
+
+/** Valida la clave ingresada y deja la cookie de acceso por 30 dias. */
+function com_preview_activar($clave) {
+    if (!hash_equals(COM_PREVIEW_CLAVE_HASH, hash('sha256', (string) $clave))) return false;
+    setcookie(COM_PREVIEW_COOKIE, com_preview_cookie_valor(), [
+        'expires'  => time() + 60 * 60 * 24 * 30,
+        'path'     => '/',
+        'secure'   => !empty($_SERVER['HTTPS']),
+        'httponly' => false,
+        'samesite' => 'Lax',
+    ]);
+    return true;
+}
+
 function com_sesion() {
     if (session_status() === PHP_SESSION_NONE) {
         session_name('ptools');

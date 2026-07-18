@@ -6,6 +6,12 @@
 require_once __DIR__ . '/inc/auth.php';
 require_once __DIR__ . '/inc/ui.php';
 
+// Sitio en acceso anticipado: sin la clave, todo lleva al "proximamente".
+if (!com_preview_ok() && usuario_actual() === null) {
+    header('Location: /');
+    exit;
+}
+
 if (usuario_actual() !== null) {
     header('Location: index.php');
     exit;

@@ -271,7 +271,7 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
       <span class="avatar"><?php echo mb_strtoupper(mb_substr($usuario['nombre'], 0, 1)); ?></span>
       <span class="quien">
         <span class="nombre"><?php echo htmlspecialchars($usuario['nombre']); ?></span>
-        <span class="rol"><?php echo $usuario['rol'] === 'admin' ? 'Administrador' : 'Miembro'; ?></span>
+        <span class="rol"><?php echo $usuario['rol'] === 'admin' ? 'Administrador' : 'Suscriptor'; ?></span>
       </span>
       <a class="salir" href="<?php echo $raiz; ?>logout.php" title="Cerrar sesión" aria-label="Cerrar sesión"><?php echo ui_icono('salir', 16); ?></a>
     </div>
