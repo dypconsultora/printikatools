@@ -947,31 +947,126 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* Print styles */
+/* ============================================================
+   EXPORTAR PDF — documento de presupuesto (solo se imprime esto)
+   ============================================================ */
+#printDoc { display: none; }
+
 @media print {
-  body { background: #fff; color: #000; }
-  .header { position: static; background: none; border: none; }
-  .header h1 { -webkit-text-fill-color: #000; background: none; font-size: 1.4rem; }
-  .header p { color: #666; }
-  .container { padding: 0; gap: 0.5rem; }
-  .card { border: 1px solid #ddd; box-shadow: none; page-break-inside: avoid; padding: 1rem; }
-  .card:hover { border-color: #ddd; }
-  .card-title .icon { background: #eee; }
-  .field input, .field select { border-color: #ccc; background: #fff; }
-  .toggle-row, .support-fields, .actions-card, .quotes-card { display: none !important; }
-  .summary-card { border-color: #333; background: #fff; }
-  .summary-line .label { color: #555; }
-  .summary-line .value { color: #000; }
-  .final-price .label { color: #0088aa; -webkit-text-fill-color: #0088aa; }
-  .final-price .price { -webkit-text-fill-color: #000; background: none; font-size: 2rem; }
-  .computed { background: #f0f8ff; border-color: #ccc; color: #0088aa; }
-  .donut-chart { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  .legend-item .legend-dot { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  .metric-box { background: #f5f5f5; }
-  .metric-box .metric-value { color: #0088aa; }
-  .btn { display: none !important; }
-  .currency-bar { display: none !important; }
-  .project-name-bar input { border: none; padding: 0; font-weight: 700; font-size: 1rem; }
-  .project-name-bar label { display: none; }
+  @page { margin: 16mm; }
+  body { background: #fff !important; }
+  /* Ocultar la app completa: solo se imprime el documento */
+  body > *:not(#printDoc) { display: none !important; }
+
+  #printDoc {
+    display: block;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #17202e;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Encabezado del documento: logo + datos del presupuesto */
+  .pd-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 18px;
+    border-bottom: 2px solid #17202e;
+  }
+  .pd-logo { height: 60px; width: auto; }
+  .pd-meta { text-align: right; }
+  .pd-kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: #0b78b5;
+  }
+  .pd-project {
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #101b29;
+    margin-top: 4px;
+  }
+  .pd-date { font-size: 12px; color: #64748c; margin-top: 5px; }
+
+  /* Ficha tecnica de la pieza */
+  .pd-specs { display: flex; gap: 36px; margin: 20px 0 4px; }
+  .pd-spec { font-size: 11px; color: #64748c; text-transform: uppercase; letter-spacing: 0.06em; }
+  .pd-spec strong {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+    color: #101b29;
+    margin-top: 3px;
+    text-transform: none;
+    letter-spacing: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Detalle de costos: filas con lineas divisorias */
+  .pd-rows { margin-top: 22px; }
+  .pd-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 2px;
+    border-bottom: 1px solid #e5eaf1;
+    font-size: 13.5px;
+  }
+  .pd-row .l { color: #44536b; }
+  .pd-row .v { font-weight: 600; color: #101b29; font-variant-numeric: tabular-nums; }
+  .pd-row.sub { border-top: 2px solid #17202e; border-bottom: none; padding-top: 13px; margin-top: 2px; }
+  .pd-row.sub .l, .pd-row.sub .v { font-weight: 700; color: #101b29; }
+
+  /* Precio final destacado */
+  .pd-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    padding: 15px 20px;
+    background: #eaf4fb;
+    border: 1px solid #bdd9ec;
+    border-radius: 10px;
+  }
+  .pd-total .l {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #0b6ca8;
+  }
+  .pd-total .v {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #0b6ca8;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Bloque Mercado Libre (solo si esta activo) */
+  .pd-meli { margin-top: 22px; }
+  .pd-meli .pd-h {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #64748c;
+    padding-bottom: 6px;
+  }
+
+  /* Pie del documento */
+  .pd-foot {
+    margin-top: 34px;
+    padding-top: 12px;
+    border-top: 1px solid #e5eaf1;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #7c8aa0;
+  }
 }
 
 /* Responsive */
@@ -1658,6 +1753,9 @@ input[type="range"]::-moz-range-thumb {
   </form>
 </div>
 
+<!-- Documento de presupuesto para Exportar PDF (oculto en pantalla) -->
+<div id="printDoc" aria-hidden="true"></div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -2048,8 +2146,75 @@ input[type="range"]::-moz-range-thumb {
   }
 
   // Export PDF
+  // Exportar PDF: arma un documento de presupuesto limpio (solo los
+  // costos realmente usados; los que estan en 0 no se incluyen) y lo
+  // manda a imprimir. En pantalla nunca se ve: vive en @media print.
+  function buildPrintDoc() {
+    const doc = $('printDoc');
+    if (!doc) return;
+    const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const txt = (id) => { const el = $(id); return el ? el.textContent.trim() : ''; };
+    const nonZero = (t) => parseInt(String(t).replace(/[^\d]/g, '') || '0', 10) > 0;
+    const visible = (id) => { const el = $(id); return !!el && el.style.display !== 'none'; };
+
+    const nombre = $('projectName').value.trim() || 'Impresion 3D';
+    const fecha = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const material = $('materialType').value;
+    const peso = $('materialWeight').value || '0';
+    const horas = $('printHours').value || '0';
+    const minutos = $('printMinutes').value || '0';
+
+    const filas = [];
+    filas.push(['Material', txt('sumMaterial')]);
+    if (visible('sumSupportRow') && nonZero(txt('sumSupport'))) filas.push(['Material de soporte', txt('sumSupport')]);
+    if (nonZero(txt('sumElectric'))) filas.push(['Electricidad', txt('sumElectric')]);
+    if (nonZero(txt('sumLabor'))) filas.push(['Mano de obra', txt('sumLabor')]);
+    if (nonZero(txt('sumDep'))) filas.push(['Depreciacion de maquina', txt('sumDep')]);
+    if (nonZero(txt('sumAdditional'))) filas.push(['Costos adicionales', txt('sumAdditional')]);
+
+    let html =
+      '<div class="pd-top">' +
+        '<img class="pd-logo" src="../../assets/img/printika-tools.svg" alt="Printika Tools">' +
+        '<div class="pd-meta">' +
+          '<div class="pd-kicker">Presupuesto</div>' +
+          '<div class="pd-project">' + esc(nombre) + '</div>' +
+          '<div class="pd-date">' + esc(fecha) + ' &middot; ' + esc(currency.code) + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="pd-specs">' +
+        '<div class="pd-spec">Material<strong>' + esc(material) + '</strong></div>' +
+        '<div class="pd-spec">Peso de la pieza<strong>' + esc(peso) + ' g</strong></div>' +
+        '<div class="pd-spec">Tiempo de impresion<strong>' + esc(horas) + ' h ' + esc(minutos) + ' m</strong></div>' +
+        '<div class="pd-spec">Costo por gramo<strong>' + esc(txt('metricPerGram')) + '</strong></div>' +
+      '</div>' +
+      '<div class="pd-rows">' +
+        filas.map((f) => '<div class="pd-row"><span class="l">' + esc(f[0]) + '</span><span class="v">' + esc(f[1]) + '</span></div>').join('') +
+        '<div class="pd-row sub"><span class="l">Subtotal (costo)</span><span class="v">' + esc(txt('sumSubtotal')) + '</span></div>' +
+        '<div class="pd-row"><span class="l">Margen de ganancia</span><span class="v">' + esc(txt('sumMargin')) + '</span></div>' +
+      '</div>' +
+      '<div class="pd-total"><span class="l">Precio final</span><span class="v">' + esc(txt('finalPrice')) + '</span></div>';
+
+    if (visible('meliSummaryBlock')) {
+      html +=
+        '<div class="pd-meli">' +
+          '<div class="pd-h">Mercado Libre</div>' +
+          '<div class="pd-row"><span class="l">Comision (' + esc(txt('sumMeliPct')) + ')</span><span class="v">' + esc(txt('sumMeliTotal')) + '</span></div>' +
+          '<div class="pd-row sub"><span class="l">Publicar en Mercado Libre a</span><span class="v">' + esc(txt('meliMLPrice')) + '</span></div>' +
+        '</div>';
+    }
+
+    html +=
+      '<div class="pd-foot">' +
+        '<span>Printika Tools &middot; printikatools.com</span>' +
+        '<span>consultas@printika3d.com &middot; WhatsApp +54 9 11 3137-3425</span>' +
+      '</div>';
+
+    doc.innerHTML = html;
+  }
+
   window.exportPDF = function() {
-    window.print();
+    buildPrintDoc();
+    setTimeout(() => window.print(), 60);
   };
 
   // Share
