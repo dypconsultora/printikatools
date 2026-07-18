@@ -67,20 +67,42 @@ if (!com_preview_ok()): ?>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Printika Tools — Herramientas y comunidad de impresión 3D</title>
   <meta name="description" content="Calculadora de costos, presupuestos, clientes y stock. La comunidad con las herramientas que tu taller de impresión 3D necesita, en español.">
+  <script>(function(){if(localStorage.getItem('ptools_tema')==='light'){document.documentElement.setAttribute('data-theme','light');}})();
+  function ptTema(t){document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');localStorage.setItem('ptools_tema',t);}</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root{
+      color-scheme:dark;
       --fondo:#07090f; --bg:#0b0e16; --surface:#10141f; --surface-2:#161b29; --raised:#1d2434;
       --bd:#222a3d; --bd-suave:#181f2e;
       --txt:#eef2fa; --txt-2:#98a3b8; --txt-3:#5e6a82;
       --accent:#2db7fa; --accent-2:#7fd4ff; --accent-hover:#54c5fb;
       --accent-tinte:rgba(45,183,250,.10); --accent-ink:#06202f;
       --violeta:#6f7cf5; --ok:#3ecf8e;
+      --nav-bg:rgba(7,9,15,.72); --nav-bd:rgba(255,255,255,.05);
+      --grilla:rgba(255,255,255,.025); --vidrio:rgba(255,255,255,.02);
+      --sombra-img:0 30px 90px -30px rgba(0,0,0,.85);
       --radio:10px; --radio-g:16px;
       --titulos:'Space Grotesk','Inter',sans-serif;
     }
+    :root[data-theme="light"]{
+      color-scheme:light;
+      --fondo:#f2f4f9; --bg:#f7f8fc; --surface:#ffffff; --surface-2:#eef1f6; --raised:#e2e7f0;
+      --bd:#d5dce8; --bd-suave:#e5eaf2;
+      --txt:#16203a; --txt-2:#57627a; --txt-3:#939cb0;
+      --accent:#1194d6; --accent-2:#2db7fa; --accent-hover:#0d81bd;
+      --accent-tinte:rgba(17,148,214,.10); --accent-ink:#ffffff;
+      --violeta:#6f7cf5; --ok:#14915f;
+      --nav-bg:rgba(247,248,252,.8); --nav-bd:rgba(22,32,58,.08);
+      --grilla:rgba(22,32,58,.05); --vidrio:rgba(22,32,58,.02);
+      --sombra-img:0 30px 80px -32px rgba(22,32,58,.35);
+    }
+    .logo-claro{display:none !important}
+    :root[data-theme="light"] .logo-claro{display:block !important}
+    :root[data-theme="light"] .logo-oscuro{display:none !important}
+
     *{box-sizing:border-box;margin:0;padding:0}
     html{scroll-behavior:smooth}
     body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
@@ -97,12 +119,12 @@ if (!com_preview_ok()): ?>
     .btn:hover{background:var(--accent-hover);color:var(--accent-ink);
          box-shadow:0 0 32px -8px rgba(45,183,250,.55)}
     .btn:active{transform:scale(.97)}
-    .btn.sec{background:rgba(255,255,255,.03);color:var(--txt);border-color:var(--bd)}
+    .btn.sec{background:var(--vidrio);color:var(--txt);border-color:var(--bd)}
     .btn.sec:hover{background:var(--surface-2);box-shadow:none}
     .chip{display:inline-flex;align-items:center;font-size:10px;font-weight:600;letter-spacing:.08em;
           padding:3px 9px;border-radius:99px;border:1px solid var(--bd);color:var(--txt-3);
           text-transform:uppercase;line-height:1.5}
-    .chip.activo{border-color:rgba(62,207,142,.4);color:var(--ok);background:rgba(62,207,142,.07)}
+    .chip.activo{border-color:rgba(62,207,142,.45);color:var(--ok);background:rgba(62,207,142,.07)}
     section{padding:88px 0;position:relative}
     .cabeza{margin-bottom:48px;max-width:560px}
     .cabeza.centrada{text-align:center;margin-left:auto;margin-right:auto}
@@ -114,84 +136,69 @@ if (!com_preview_ok()): ?>
     .cabeza p{color:var(--txt-2);font-size:15.5px;margin-top:12px}
 
     /* ---- Navegacion (vidrio) ---- */
-    .nav{position:sticky;top:0;z-index:10;background:rgba(7,9,15,.72);backdrop-filter:blur(14px);
-         -webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.05)}
-    .nav .cont{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
-    .nav img{height:42px;width:auto;display:block}
-    .nav nav{display:flex;align-items:center;gap:24px}
+    .nav{position:sticky;top:0;z-index:10;background:var(--nav-bg);backdrop-filter:blur(14px);
+         -webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--nav-bd)}
+    .nav .cont{display:flex;align-items:center;justify-content:space-between;height:68px;gap:14px}
+    .nav .marca img{height:42px;width:auto;display:block}
+    .nav nav{display:flex;align-items:center;gap:20px}
     .nav nav a{color:var(--txt-2);font-size:14px;font-weight:500;white-space:nowrap;transition:color .15s ease}
     .nav nav a:hover{color:var(--txt)}
     .nav .btn{height:38px;padding:0 16px;font-size:13.5px}
     .nav nav a.btn{color:var(--accent-ink)}
     .nav nav a.btn:hover{color:var(--accent-ink)}
     .nav nav a.entrar{color:var(--txt)}
+    .tema{display:inline-flex;gap:3px;background:var(--surface-2);border:1px solid var(--bd-suave);
+          border-radius:99px;padding:3px}
+    .tema-btn{display:flex;align-items:center;justify-content:center;width:32px;height:28px;
+          background:none;border:none;border-radius:99px;color:var(--txt-3);cursor:pointer;
+          transition:background-color .15s ease,color .15s ease}
+    .tema-btn:hover{color:var(--txt-2)}
+    :root:not([data-theme="light"]) .tema-btn[data-tema="dark"],
+    :root[data-theme="light"] .tema-btn[data-tema="light"]{
+          background:var(--surface);color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.25)}
 
     /* ---- Hero ---- */
-    .hero{position:relative;padding:96px 0 72px;overflow:hidden}
+    .hero{position:relative;padding:88px 0 72px;overflow:hidden}
     .hero::before{content:'';position:absolute;inset:0;pointer-events:none;
         background:
-          radial-gradient(52% 42% at 18% 8%, rgba(45,183,250,.13), transparent 60%),
-          radial-gradient(40% 36% at 88% 30%, rgba(111,124,245,.10), transparent 65%);}
+          radial-gradient(52% 42% at 16% 8%, rgba(45,183,250,.13), transparent 60%),
+          radial-gradient(40% 36% at 90% 34%, rgba(111,124,245,.10), transparent 65%);}
     .hero::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:.5;
-        background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
-                         linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+        background-image:linear-gradient(var(--grilla) 1px,transparent 1px),
+                         linear-gradient(90deg,var(--grilla) 1px,transparent 1px);
         background-size:56px 56px;
         -webkit-mask-image:radial-gradient(60% 55% at 50% 30%,#000 30%,transparent 100%);
                 mask-image:radial-gradient(60% 55% at 50% 30%,#000 30%,transparent 100%)}
-    .hero .cont{position:relative;display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
-    .insignia{display:inline-flex;align-items:center;gap:8px;background:rgba(45,183,250,.08);
-        border:1px solid rgba(45,183,250,.25);color:var(--accent-2);font-size:12.5px;font-weight:500;
+    .hero .cont{position:relative;display:grid;grid-template-columns:1.02fr .98fr;gap:52px;align-items:center}
+    .insignia{display:inline-flex;align-items:center;gap:8px;background:var(--accent-tinte);
+        border:1px solid rgba(45,183,250,.3);color:var(--accent);font-size:12.5px;font-weight:500;
         border-radius:99px;padding:6px 14px;margin-bottom:22px}
     .insignia .punto{width:7px;height:7px;border-radius:99px;background:var(--ok);
         box-shadow:0 0 8px rgba(62,207,142,.8)}
-    .hero h1{font-size:clamp(32px,4.6vw,54px);font-weight:700;letter-spacing:-.025em;line-height:1.08;
+    .hero h1{font-size:clamp(32px,4.4vw,52px);font-weight:700;letter-spacing:-.025em;line-height:1.08;
         margin-bottom:20px}
     .hero h1 em{font-style:normal;background:linear-gradient(92deg,var(--accent),var(--accent-2));
         -webkit-background-clip:text;background-clip:text;color:transparent}
     .hero .sub{font-size:clamp(15px,1.6vw,17.5px);color:var(--txt-2);max-width:480px;margin-bottom:32px}
-    .hero .ctas{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:48px}
-    .stats{display:flex;flex-wrap:wrap;border-top:1px solid var(--bd-suave);padding-top:24px;gap:0}
+    .hero .ctas{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:44px}
+    .stats{display:flex;flex-wrap:wrap;border-top:1px solid var(--bd-suave);padding-top:24px}
     .stat{padding:0 28px;border-left:1px solid var(--bd-suave)}
     .stat:first-child{padding-left:0;border-left:none}
     .stat b{display:block;font-family:var(--titulos);font-size:24px;font-weight:700;
         letter-spacing:-.02em;color:var(--txt)}
     .stat span{font-size:12px;color:var(--txt-3)}
-
-    /* ---- Mockup del producto (CSS puro) ---- */
-    .mock{position:relative}
-    .mock::before{content:'';position:absolute;inset:-8%;pointer-events:none;
-        background:radial-gradient(50% 50% at 50% 50%, rgba(45,183,250,.16), transparent 70%)}
-    .ventana{position:relative;background:var(--surface);border:1px solid var(--raised);
-        border-radius:14px;overflow:hidden;box-shadow:0 24px 80px -24px rgba(0,0,0,.8);
-        transform:rotate(-1deg)}
-    .ventana .barra{display:flex;align-items:center;gap:6px;padding:11px 14px;
-        border-bottom:1px solid var(--bd-suave);background:var(--surface-2)}
-    .ventana .barra i{width:10px;height:10px;border-radius:99px;background:var(--raised);display:block}
-    .ventana .barra i:first-child{background:#e0655f}
-    .ventana .barra i:nth-child(2){background:#e0a34f}
-    .ventana .barra i:nth-child(3){background:#59b96b}
-    .ventana .cuerpo{display:grid;grid-template-columns:132px 1fr;min-height:320px}
-    .m-lado{border-right:1px solid var(--bd-suave);padding:14px 10px;display:flex;
-        flex-direction:column;gap:4px;background:var(--surface)}
-    .m-item{display:flex;align-items:center;gap:7px;font-size:10.5px;color:var(--txt-3);
-        padding:6px 8px;border-radius:6px}
-    .m-item .ico{width:12px;height:12px}
-    .m-item.on{background:var(--accent-tinte);color:var(--accent)}
-    .m-main{padding:18px;background:var(--bg)}
-    .m-titulo{font-family:var(--titulos);font-size:13px;font-weight:700;margin-bottom:12px}
-    .m-campos{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
-    .m-campo{background:var(--surface-2);border:1px solid var(--bd);border-radius:7px;padding:7px 9px}
-    .m-campo small{display:block;font-size:8px;letter-spacing:.06em;text-transform:uppercase;
-        color:var(--txt-3);margin-bottom:2px}
-    .m-campo span{font-size:11px;font-weight:600;color:var(--txt-2)}
-    .m-total{background:linear-gradient(135deg,rgba(45,183,250,.14),rgba(111,124,245,.10));
-        border:1px solid rgba(45,183,250,.35);border-radius:9px;padding:12px 14px;
-        display:flex;align-items:center;justify-content:space-between}
-    .m-total small{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-2)}
-    .m-total b{font-family:var(--titulos);font-size:19px;letter-spacing:-.01em;color:var(--txt)}
-    .m-barras{display:flex;gap:6px;margin-top:14px;align-items:flex-end;height:44px}
-    .m-barras i{flex:1;background:var(--raised);border-radius:3px 3px 0 0;display:block}
-    .m-barras i.az{background:linear-gradient(180deg,var(--accent),rgba(45,183,250,.35))}
+    .hero-visual{position:relative}
+    .hero-visual::before{content:'';position:absolute;inset:-10%;pointer-events:none;
+        background:radial-gradient(50% 50% at 50% 50%, rgba(45,183,250,.18), transparent 70%)}
+    .hero-visual img{position:relative;width:100%;height:auto;display:block;border-radius:18px;
+        border:1px solid var(--raised);box-shadow:var(--sombra-img)}
+    .hero-visual .flotante{position:absolute;left:-18px;bottom:26px;display:flex;align-items:center;
+        gap:10px;background:var(--surface);border:1px solid var(--bd);border-radius:12px;
+        padding:12px 16px;box-shadow:0 12px 40px -12px rgba(0,0,0,.6)}
+    .hero-visual .flotante .ico{color:var(--accent)}
+    .hero-visual .flotante small{display:block;font-size:9.5px;letter-spacing:.07em;
+        text-transform:uppercase;color:var(--txt-3)}
+    .hero-visual .flotante b{font-family:var(--titulos);font-size:16px;letter-spacing:-.01em}
 
     /* ---- Bento herramientas ---- */
     .bento{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
@@ -212,20 +219,30 @@ if (!com_preview_ok()): ?>
     .mini-fila{display:flex;align-items:center;justify-content:space-between;background:var(--surface-2);
         border:1px solid var(--bd-suave);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--txt-2)}
     .mini-fila b{color:var(--txt);font-weight:600;font-variant-numeric:tabular-nums}
-    .mini-fila.total{border-color:rgba(45,183,250,.35);background:rgba(45,183,250,.07)}
-    .mini-fila.total b{color:var(--accent-2)}
+    .mini-fila.total{border-color:rgba(45,183,250,.4);background:var(--accent-tinte)}
+    .mini-fila.total b{color:var(--accent)}
 
-    /* ---- Comunidad ---- */
+    /* ---- Comunidad (foto + beneficios) ---- */
     .comunidad{background:linear-gradient(180deg,var(--bg),var(--fondo));
         border-top:1px solid var(--bd-suave);border-bottom:1px solid var(--bd-suave)}
-    .beneficios{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-    .beneficio{display:flex;gap:14px;align-items:flex-start;background:rgba(255,255,255,.02);
-        border:1px solid var(--bd-suave);border-radius:var(--radio-g);padding:20px;
+    .comunidad .dos{display:grid;grid-template-columns:.95fr 1.05fr;gap:48px;align-items:center}
+    .foto-taller{position:relative}
+    .foto-taller img{width:100%;height:auto;display:block;border-radius:18px;
+        border:1px solid var(--raised);box-shadow:var(--sombra-img)}
+    .foto-taller .flotante{position:absolute;right:-14px;top:26px;display:flex;align-items:center;
+        gap:10px;background:var(--surface);border:1px solid var(--bd);border-radius:12px;
+        padding:11px 15px;box-shadow:0 12px 40px -12px rgba(0,0,0,.6)}
+    .foto-taller .flotante .punto{width:8px;height:8px;border-radius:99px;background:var(--ok);
+        box-shadow:0 0 8px rgba(62,207,142,.8)}
+    .foto-taller .flotante span{font-size:12.5px;font-weight:600}
+    .beneficios{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .beneficio{display:flex;gap:12px;align-items:flex-start;background:var(--vidrio);
+        border:1px solid var(--bd-suave);border-radius:var(--radio-g);padding:16px;
         transition:border-color .15s ease,background-color .15s ease}
     .beneficio:hover{border-color:var(--bd);background:var(--surface)}
     .beneficio .ico{color:var(--accent);margin-top:2px}
-    .beneficio h3{font-size:15px;font-weight:700;letter-spacing:-.01em}
-    .beneficio p{font-size:13px;color:var(--txt-2);margin-top:3px}
+    .beneficio h3{font-size:14px;font-weight:700;letter-spacing:-.01em}
+    .beneficio p{font-size:12.5px;color:var(--txt-2);margin-top:2px}
 
     /* ---- Planes ---- */
     .planes-grilla{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,360px));
@@ -292,23 +309,25 @@ if (!com_preview_ok()): ?>
     :is(a,button,input,summary):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
     @media (max-width:960px){
-      .hero .cont{grid-template-columns:1fr;gap:44px}
-      .mock{max-width:560px}
+      .hero .cont{grid-template-columns:1fr;gap:40px}
+      .hero-visual{max-width:600px}
       .bento{grid-template-columns:1fr 1fr}
       .caja.grande{grid-column:span 2;grid-row:auto}
-      .beneficios{grid-template-columns:1fr 1fr}
+      .comunidad .dos{grid-template-columns:1fr;gap:36px}
+      .nav nav{gap:14px}
     }
     @media (max-width:680px){
       .nav nav a.link-seccion{display:none}
-      .hero{padding:60px 0 48px}
+      .hero{padding:56px 0 44px}
       section{padding:56px 0}
       .bento{grid-template-columns:1fr}
       .caja.grande{grid-column:auto}
       .beneficios{grid-template-columns:1fr}
-      .stats{gap:16px}
+      .stats{gap:14px}
       .stat{padding:0;border-left:none;min-width:44%}
       .footer-grilla{grid-template-columns:1fr;gap:26px}
-      .ventana{transform:none}
+      .hero-visual .flotante{left:10px}
+      .foto-taller .flotante{right:10px}
     }
     @media (prefers-reduced-motion: reduce){
       html{scroll-behavior:auto}
@@ -319,13 +338,22 @@ if (!com_preview_ok()): ?>
 <body>
   <header class="nav">
     <div class="cont">
-      <a href="/"><img src="assets/img/printika-tools-dark.svg" alt="Printika Tools"></a>
+      <a class="marca" href="/">
+        <img class="logo-oscuro" src="assets/img/printika-tools-dark.svg" alt="Printika Tools">
+        <img class="logo-claro" src="assets/img/printika-tools.svg" alt="Printika Tools">
+      </a>
       <nav>
         <a class="link-seccion" href="#herramientas">Herramientas</a>
         <a class="link-seccion" href="#comunidad">Comunidad</a>
         <a class="link-seccion" href="#planes">Precios</a>
         <a class="link-seccion" href="#faq">FAQ</a>
         <a class="link-seccion" href="comunidad/cotizador/">Calculadora</a>
+        <span class="tema" role="group" aria-label="Tema de la página">
+          <button type="button" class="tema-btn" data-tema="light" onclick="ptTema('light')"
+                  title="Modo día" aria-label="Modo día"><?php echo ui_icono('sol', 15); ?></button>
+          <button type="button" class="tema-btn" data-tema="dark" onclick="ptTema('dark')"
+                  title="Modo noche" aria-label="Modo noche"><?php echo ui_icono('luna', 15); ?></button>
+        </span>
         <a class="entrar" href="comunidad/login.php">Iniciar sesión</a>
         <a class="btn" href="comunidad/registro.php">Registrarse</a>
       </nav>
@@ -350,32 +378,12 @@ if (!com_preview_ok()): ?>
             <div class="stat"><b>+6</b><span>herramientas en camino</span></div>
           </div>
         </div>
-        <div class="mock" aria-hidden="true">
-          <div class="ventana">
-            <div class="barra"><i></i><i></i><i></i></div>
-            <div class="cuerpo">
-              <div class="m-lado">
-                <div class="m-item on"><?php echo ui_icono('calculadora', 12); ?>Calculadora</div>
-                <div class="m-item"><?php echo ui_icono('presupuestos', 12); ?>Presupuestos</div>
-                <div class="m-item"><?php echo ui_icono('clientes', 12); ?>Clientes</div>
-                <div class="m-item"><?php echo ui_icono('stock', 12); ?>Stock</div>
-                <div class="m-item"><?php echo ui_icono('estadisticas', 12); ?>Estadísticas</div>
-              </div>
-              <div class="m-main">
-                <div class="m-titulo">Cotización · Soporte celular</div>
-                <div class="m-campos">
-                  <div class="m-campo"><small>Material</small><span>PLA · 86 g</span></div>
-                  <div class="m-campo"><small>Impresión</small><span>5 h 20 m</span></div>
-                  <div class="m-campo"><small>Desgaste</small><span>$ 410</span></div>
-                  <div class="m-campo"><small>Ganancia</small><span>35 %</span></div>
-                </div>
-                <div class="m-total"><small>Precio sugerido</small><b>$ 12.450</b></div>
-                <div class="m-barras">
-                  <i style="height:34%"></i><i class="az" style="height:58%"></i><i style="height:42%"></i>
-                  <i class="az" style="height:74%"></i><i style="height:52%"></i><i class="az" style="height:100%"></i>
-                </div>
-              </div>
-            </div>
+        <div class="hero-visual">
+          <img src="assets/img/landing/hero-impresora.webp" alt="Impresora 3D imprimiendo una pieza"
+               width="1376" height="768" fetchpriority="high">
+          <div class="flotante" aria-hidden="true">
+            <?php echo ui_icono('calculadora', 20); ?>
+            <div><small>Precio sugerido</small><b>$ 12.450</b></div>
           </div>
         </div>
       </div>
@@ -442,24 +450,31 @@ if (!com_preview_ok()): ?>
           <h2>Todo lo que necesitás, en un mismo lugar</h2>
           <p>Ser parte es más que usar herramientas.</p>
         </div>
-        <div class="beneficios">
-          <div class="beneficio"><?php echo ui_icono('soporte', 20); ?>
-            <div><h3>Soporte directo</h3><p>Te ayudamos por WhatsApp cuando lo necesitás.</p></div>
+        <div class="dos">
+          <div class="foto-taller">
+            <img src="assets/img/landing/taller-maker.webp" alt="Taller de impresión 3D con piezas impresas y rollos de filamento"
+                 width="1376" height="768" loading="lazy">
+            <div class="flotante" aria-hidden="true"><span class="punto"></span><span>Comunidad activa</span></div>
           </div>
-          <div class="beneficio"><?php echo ui_icono('clientes', 20); ?>
-            <div><h3>Comunidad de makers</h3><p>Emprendedores 3D que comparten precios, consejos y experiencia.</p></div>
-          </div>
-          <div class="beneficio"><?php echo ui_icono('nube', 20); ?>
-            <div><h3>Tus datos en tu cuenta</h3><p>Presupuestos, clientes y stock accesibles desde cualquier lado.</p></div>
-          </div>
-          <div class="beneficio"><?php echo ui_icono('rayo', 20); ?>
-            <div><h3>Mejoras constantes</h3><p>Herramientas nuevas y actualizaciones todos los meses.</p></div>
-          </div>
-          <div class="beneficio"><?php echo ui_icono('libreria', 20); ?>
-            <div><h3>Contenido exclusivo</h3><p>Archivos y recursos seleccionados, solo para suscriptores.</p></div>
-          </div>
-          <div class="beneficio"><?php echo ui_icono('admin', 20); ?>
-            <div><h3>Sin permanencia</h3><p>Entrás y salís cuando quieras, sin compromiso.</p></div>
+          <div class="beneficios">
+            <div class="beneficio"><?php echo ui_icono('soporte', 18); ?>
+              <div><h3>Soporte directo</h3><p>Te ayudamos por WhatsApp cuando lo necesitás.</p></div>
+            </div>
+            <div class="beneficio"><?php echo ui_icono('clientes', 18); ?>
+              <div><h3>Comunidad de makers</h3><p>Precios, consejos y experiencia compartida.</p></div>
+            </div>
+            <div class="beneficio"><?php echo ui_icono('nube', 18); ?>
+              <div><h3>Tus datos en tu cuenta</h3><p>Accesibles desde cualquier dispositivo.</p></div>
+            </div>
+            <div class="beneficio"><?php echo ui_icono('rayo', 18); ?>
+              <div><h3>Mejoras constantes</h3><p>Herramientas nuevas todos los meses.</p></div>
+            </div>
+            <div class="beneficio"><?php echo ui_icono('libreria', 18); ?>
+              <div><h3>Contenido exclusivo</h3><p>Archivos y recursos para suscriptores.</p></div>
+            </div>
+            <div class="beneficio"><?php echo ui_icono('admin', 18); ?>
+              <div><h3>Sin permanencia</h3><p>Entrás y salís cuando quieras.</p></div>
+            </div>
           </div>
         </div>
       </div>
@@ -562,7 +577,8 @@ if (!com_preview_ok()): ?>
     <div class="cont">
       <div class="footer-grilla">
         <div>
-          <img src="assets/img/printika-tools-dark.svg" alt="Printika Tools">
+          <img class="logo-oscuro" src="assets/img/printika-tools-dark.svg" alt="Printika Tools">
+          <img class="logo-claro" src="assets/img/printika-tools.svg" alt="Printika Tools">
           <p class="desc">Las herramientas y la comunidad para manejar tu taller de impresión 3D como un negocio.</p>
         </div>
         <div>
