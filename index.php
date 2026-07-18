@@ -181,8 +181,8 @@ if (!com_preview_ok()): ?>
         -webkit-background-clip:text;background-clip:text;color:transparent}
     .hero .sub{font-size:clamp(15px,1.6vw,17.5px);color:var(--txt-2);max-width:480px;margin-bottom:32px}
     .hero .ctas{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:44px}
-    .stats{display:flex;flex-wrap:wrap;border-top:1px solid var(--bd-suave);padding-top:24px}
-    .stat{padding:0 28px;border-left:1px solid var(--bd-suave)}
+    .stats{display:flex;flex-wrap:nowrap;border-top:1px solid var(--bd-suave);padding-top:24px}
+    .stat{padding:0 24px;border-left:1px solid var(--bd-suave);min-width:0}
     .stat:first-child{padding-left:0;border-left:none}
     .stat b{display:block;font-family:var(--titulos);font-size:24px;font-weight:700;
         letter-spacing:-.02em;color:var(--txt)}
@@ -326,8 +326,9 @@ if (!com_preview_ok()): ?>
       .bento{grid-template-columns:1fr}
       .caja.grande{grid-column:auto}
       .beneficios{grid-template-columns:1fr}
-      .stats{gap:14px}
-      .stat{padding:0;border-left:none;min-width:44%}
+      .stat{padding:0 12px}
+      .stat b{font-size:19px}
+      .stat span{font-size:11px}
       .footer-grilla{grid-template-columns:1fr;gap:26px}
       .hero-visual .flotante{left:10px}
       .foto-taller .flotante{right:10px}
