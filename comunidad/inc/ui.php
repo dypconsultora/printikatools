@@ -124,7 +124,7 @@ function ui_tarjeta_inicio($titulo) { ?>
   body{display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg)}
   .tarjeta{background:var(--surface);border:1px solid var(--bd-suave);border-radius:var(--radio-g);
            padding:40px 36px;width:100%;max-width:400px}
-  .logo{display:block;margin:0 auto 28px;height:56px;width:auto}
+  .logo{display:block;margin:0 auto 28px;height:112px;width:auto}
   h1{font-size:19px;font-weight:700;text-align:center;letter-spacing:-.01em;margin-bottom:6px}
   .sub{font-size:13.5px;color:var(--txt-2);text-align:center;margin-bottom:8px}
   .pie{font-size:13px;color:var(--txt-2);text-align:center;margin-top:24px}
@@ -188,7 +188,7 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
            display:flex;flex-direction:column;padding:20px 12px 16px;
            position:sticky;top:0;height:100vh;overflow-y:auto}
   .lateral .marca{display:block;padding:0 10px;margin-bottom:24px}
-  .lateral .marca img{height:40px;width:auto;display:block}
+  .lateral .marca img{width:100%;max-width:214px;height:auto;display:block}
   .grupo{font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
          color:var(--txt-3);margin:18px 10px 6px}
   .item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radio);
