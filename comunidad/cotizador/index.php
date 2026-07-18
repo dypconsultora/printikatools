@@ -953,13 +953,16 @@ input[type="range"]::-moz-range-thumb {
 #printDoc { display: none; }
 
 @media print {
-  @page { margin: 16mm; }
+  /* Margen de pagina en 0: elimina la fecha/titulo/URL que el navegador
+     imprime en los margenes. El margen visual vive dentro del documento. */
+  @page { margin: 0; }
   body { background: #fff !important; }
   /* Ocultar la app completa: solo se imprime el documento */
   body > *:not(#printDoc) { display: none !important; }
 
   #printDoc {
     display: block;
+    padding: 16mm 15mm;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     color: #17202e;
     -webkit-print-color-adjust: exact;
@@ -1057,16 +1060,6 @@ input[type="range"]::-moz-range-thumb {
     padding-bottom: 6px;
   }
 
-  /* Pie del documento */
-  .pd-foot {
-    margin-top: 34px;
-    padding-top: 12px;
-    border-top: 1px solid #e5eaf1;
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    color: #7c8aa0;
-  }
 }
 
 /* Responsive */
@@ -2202,12 +2195,6 @@ input[type="range"]::-moz-range-thumb {
           '<div class="pd-row sub"><span class="l">Publicar en Mercado Libre a</span><span class="v">' + esc(txt('meliMLPrice')) + '</span></div>' +
         '</div>';
     }
-
-    html +=
-      '<div class="pd-foot">' +
-        '<span>Printika Tools &middot; printikatools.com</span>' +
-        '<span>consultas@printika3d.com &middot; WhatsApp +54 9 11 3137-3425</span>' +
-      '</div>';
 
     doc.innerHTML = html;
   }
