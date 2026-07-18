@@ -192,13 +192,6 @@ if (!com_preview_ok()): ?>
         background:radial-gradient(50% 50% at 50% 50%, rgba(45,183,250,.18), transparent 70%)}
     .hero-visual img{position:relative;width:100%;height:auto;display:block;border-radius:18px;
         border:1px solid var(--raised);box-shadow:var(--sombra-img)}
-    .hero-visual .flotante{position:absolute;left:-18px;bottom:26px;display:flex;align-items:center;
-        gap:10px;background:var(--surface);border:1px solid var(--bd);border-radius:12px;
-        padding:12px 16px;box-shadow:0 12px 40px -12px rgba(0,0,0,.6)}
-    .hero-visual .flotante .ico{color:var(--accent)}
-    .hero-visual .flotante small{display:block;font-size:9.5px;letter-spacing:.07em;
-        text-transform:uppercase;color:var(--txt-3)}
-    .hero-visual .flotante b{font-family:var(--titulos);font-size:16px;letter-spacing:-.01em}
 
     /* ---- Bento herramientas ---- */
     .bento{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
@@ -284,16 +277,16 @@ if (!com_preview_ok()): ?>
     .faq details[open] summary::after{transform:rotate(45deg)}
     .faq .resp{padding:0 0 20px;font-size:14px;color:var(--txt-2)}
 
-    /* ---- Cierre ---- */
-    .cierre{text-align:center}
-    .cierre .caja-cta{position:relative;overflow:hidden;background:var(--surface);
-        border:1px solid var(--bd);border-radius:20px;padding:64px 24px}
-    .cierre .caja-cta::before{content:'';position:absolute;inset:0;pointer-events:none;
-        background:radial-gradient(55% 80% at 50% 0%, rgba(45,183,250,.14), transparent 70%)}
-    .cierre h2{position:relative;font-size:clamp(24px,3.2vw,34px);font-weight:700;
+    /* ---- Cierre (ancho completo) ---- */
+    .cierre{text-align:center;position:relative;overflow:hidden;background:var(--surface);
+        border-top:1px solid var(--bd-suave);border-bottom:1px solid var(--bd-suave);
+        padding:104px 0}
+    .cierre::before{content:'';position:absolute;inset:0;pointer-events:none;
+        background:radial-gradient(55% 90% at 50% 0%, rgba(45,183,250,.14), transparent 70%)}
+    .cierre .cont{position:relative}
+    .cierre h2{font-size:clamp(24px,3.2vw,34px);font-weight:700;
         letter-spacing:-.02em;margin-bottom:12px}
-    .cierre p{position:relative;color:var(--txt-2);font-size:15.5px;max-width:520px;margin:0 auto 30px}
-    .cierre .btn{position:relative}
+    .cierre p{color:var(--txt-2);font-size:15.5px;max-width:520px;margin:0 auto 30px}
 
     /* ---- Footer ---- */
     footer{border-top:1px solid var(--bd-suave);padding:52px 0 32px;background:var(--fondo)}
@@ -330,7 +323,6 @@ if (!com_preview_ok()): ?>
       .stat b{font-size:19px}
       .stat span{font-size:11px}
       .footer-grilla{grid-template-columns:1fr;gap:26px}
-      .hero-visual .flotante{left:10px}
       .foto-taller .flotante{right:10px}
     }
     @media (prefers-reduced-motion: reduce){
@@ -385,10 +377,6 @@ if (!com_preview_ok()): ?>
         <div class="hero-visual">
           <img src="assets/img/landing/hero-impresora.webp" alt="Impresora 3D imprimiendo una pieza"
                width="1376" height="768" fetchpriority="high">
-          <div class="flotante" aria-hidden="true">
-            <?php echo ui_icono('calculadora', 20); ?>
-            <div><small>Precio sugerido</small><b>$ 12.450</b></div>
-          </div>
         </div>
       </div>
     </div>
@@ -507,7 +495,7 @@ if (!com_preview_ok()): ?>
           </div>
           <div class="plan">
             <h3>Comunidad Mensual</h3>
-            <p class="precio">$17.000 <small>/mes</small></p>
+            <p class="precio">$18.000 <small>/mes</small></p>
             <p class="nota">Renovación mes a mes, sin permanencia</p>
             <ul>
               <li><?php echo ui_icono('check', 15); ?>Calculadora completa (versión PRO)</li>
@@ -520,14 +508,14 @@ if (!com_preview_ok()): ?>
             <a class="btn sec" href="<?php echo COMUNIDAD_WHATSAPP; ?>" target="_blank" rel="noopener">Suscribirme</a>
           </div>
           <div class="plan destacado">
-            <span class="etiqueta">2 meses gratis</span>
+            <span class="etiqueta">Más de 2 meses gratis</span>
             <h3>Comunidad Anual</h3>
             <p class="precio">$170.000 <small>/año</small></p>
-            <span class="ahorro">12 meses pagando 10 · sale $14.167 por mes</span>
+            <span class="ahorro">Equivale a $14.167 por mes · ahorrás $46.000</span>
             <p class="nota" style="margin-top:12px">Un solo pago y te olvidás todo el año</p>
             <ul>
               <li><?php echo ui_icono('check', 15); ?>Todo lo del plan mensual</li>
-              <li><?php echo ui_icono('check', 15); ?>2 meses sin cargo ($34.000 de ahorro)</li>
+              <li><?php echo ui_icono('check', 15); ?>Más de 2 meses sin cargo ($46.000 de ahorro)</li>
               <li><?php echo ui_icono('check', 15); ?>Precio congelado por 12 meses</li>
               <li><?php echo ui_icono('check', 15); ?>Acceso anticipado a herramientas nuevas</li>
             </ul>
@@ -551,8 +539,8 @@ if (!com_preview_ok()): ?>
           </details>
           <details>
             <summary>¿El pago es mensual o anual?</summary>
-            <p class="resp">Como prefieras: el plan mensual cuesta $17.000 y se renueva mes a mes sin permanencia,
-            y el plan anual cuesta $170.000 — pagás 10 meses y usás 12, con el precio congelado todo el año.</p>
+            <p class="resp">Como prefieras: el plan mensual cuesta $18.000 y se renueva mes a mes sin permanencia,
+            y el plan anual cuesta $170.000 — ahorrás $46.000 (más de 2 meses gratis) y el precio queda congelado todo el año.</p>
           </details>
           <details>
             <summary>¿Puedo cancelar cuando quiera?</summary>
@@ -580,12 +568,10 @@ if (!com_preview_ok()): ?>
 
     <section class="cierre">
       <div class="cont">
-        <div class="caja-cta">
-          <h2>Empezá hoy — es gratis</h2>
-          <p>Creá tu cuenta, probá la calculadora y descubrí por qué cada vez más makers
-             manejan su taller con Printika Tools.</p>
-          <a class="btn" href="comunidad/registro.php">Crear mi cuenta</a>
-        </div>
+        <h2>Empezá hoy — es gratis</h2>
+        <p>Creá tu cuenta, probá la calculadora y descubrí por qué cada vez más makers
+           manejan su taller con Printika Tools.</p>
+        <a class="btn" href="comunidad/registro.php">Crear mi cuenta</a>
       </div>
     </section>
   </main>
