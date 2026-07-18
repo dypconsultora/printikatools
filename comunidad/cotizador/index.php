@@ -140,10 +140,6 @@ $proHabilitado = $esPro || $enTrial;
   /* el logo puede pisar la etiqueta "Proyecto"; el placeholder ya la reemplaza */
   .project-name-bar label { display: none; }
 }
-/* entre 701px y 1100px el logo convive con el campo de proyecto: correrlo a la derecha */
-@media (min-width: 701px) and (max-width: 1100px) {
-  .project-name-bar { margin-left: max(16.5rem, calc((100% - 480px) / 2)); margin-right: 1rem; }
-}
 @media (max-width: 700px) {
   .header-logo { top: 0.9rem; left: 1.25rem; transform: none; }
   .header-logo img { height: 45px; }
@@ -274,6 +270,11 @@ body {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+/* entre 701px y 1100px el logo convive con el campo de proyecto: correrlo a la derecha */
+@media (min-width: 701px) and (max-width: 1100px) {
+  .project-name-bar { margin-left: max(16.5rem, calc((100% - 480px) / 2)); margin-right: 1rem; }
 }
 
 /* Layout */
