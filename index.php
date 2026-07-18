@@ -245,8 +245,11 @@ if (!com_preview_ok()): ?>
     .beneficio p{font-size:12.5px;color:var(--txt-2);margin-top:2px}
 
     /* ---- Planes ---- */
-    .planes-grilla{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,360px));
+    .planes-grilla{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,340px));
         gap:18px;justify-content:center;align-items:stretch}
+    .plan .ahorro{display:inline-block;font-size:11.5px;font-weight:600;color:var(--ok);
+        background:rgba(62,207,142,.09);border:1px solid rgba(62,207,142,.3);
+        border-radius:99px;padding:3px 10px;margin-top:6px}
     .plan{background:var(--surface);border:1px solid var(--bd);border-radius:var(--radio-g);
         padding:30px;display:flex;flex-direction:column}
     .plan.destacado{position:relative;border:1px solid transparent;
@@ -501,11 +504,10 @@ if (!com_preview_ok()): ?>
             </ul>
             <a class="btn sec" href="comunidad/registro.php">Empezar gratis</a>
           </div>
-          <div class="plan destacado">
-            <span class="etiqueta">Recomendado</span>
-            <h3>Comunidad</h3>
-            <p class="precio">Mensual <small>· precio de lanzamiento</small></p>
-            <p class="nota">Consultanos por WhatsApp y activamos tu cuenta</p>
+          <div class="plan">
+            <h3>Comunidad Mensual</h3>
+            <p class="precio">$17.000 <small>/mes</small></p>
+            <p class="nota">Renovación mes a mes, sin permanencia</p>
             <ul>
               <li><?php echo ui_icono('check', 15); ?>Calculadora completa (versión PRO)</li>
               <li><?php echo ui_icono('check', 15); ?>Mi Taller: presupuestos, clientes y stock</li>
@@ -513,6 +515,20 @@ if (!com_preview_ok()): ?>
               <li><?php echo ui_icono('check', 15); ?>Tus datos guardados en tu cuenta</li>
               <li><?php echo ui_icono('check', 15); ?>Soporte técnico prioritario</li>
               <li><?php echo ui_icono('check', 15); ?>Herramientas nuevas cada mes</li>
+            </ul>
+            <a class="btn sec" href="<?php echo COMUNIDAD_WHATSAPP; ?>" target="_blank" rel="noopener">Suscribirme</a>
+          </div>
+          <div class="plan destacado">
+            <span class="etiqueta">2 meses gratis</span>
+            <h3>Comunidad Anual</h3>
+            <p class="precio">$170.000 <small>/año</small></p>
+            <span class="ahorro">12 meses pagando 10 · sale $14.167 por mes</span>
+            <p class="nota" style="margin-top:12px">Un solo pago y te olvidás todo el año</p>
+            <ul>
+              <li><?php echo ui_icono('check', 15); ?>Todo lo del plan mensual</li>
+              <li><?php echo ui_icono('check', 15); ?>2 meses sin cargo ($34.000 de ahorro)</li>
+              <li><?php echo ui_icono('check', 15); ?>Precio congelado por 12 meses</li>
+              <li><?php echo ui_icono('check', 15); ?>Acceso anticipado a herramientas nuevas</li>
             </ul>
             <a class="btn" href="<?php echo COMUNIDAD_WHATSAPP; ?>" target="_blank" rel="noopener">Suscribirme</a>
           </div>
@@ -533,9 +549,9 @@ if (!com_preview_ok()): ?>
             escribiéndonos por WhatsApp. En minutos tenés acceso a todas las herramientas.</p>
           </details>
           <details>
-            <summary>¿El pago es mensual?</summary>
-            <p class="resp">Sí, la suscripción es mensual y se renueva mes a mes. No hay permanencia mínima
-            ni letra chica.</p>
+            <summary>¿El pago es mensual o anual?</summary>
+            <p class="resp">Como prefieras: el plan mensual cuesta $17.000 y se renueva mes a mes sin permanencia,
+            y el plan anual cuesta $170.000 — pagás 10 meses y usás 12, con el precio congelado todo el año.</p>
           </details>
           <details>
             <summary>¿Puedo cancelar cuando quiera?</summary>
