@@ -3,3 +3,4 @@
 # Credenciales — NUNCA van a git (subir a mano al servidor)
 .env
 comunidad/cotizador/config.php
+comunidad/config.php
