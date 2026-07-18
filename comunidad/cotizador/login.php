@@ -103,8 +103,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$sin_instalar && !$bloqueado) {
 <body>
   <form class="login-card" method="post" autocomplete="off">
     <a href="https://printika3d.com">
-      <img src="../assets/img/Innovacion-en-3D.svg" alt="Printika 3D" class="login-logo logo-light">
-      <img src="../assets/img/Innovacion-en-3D-dark.svg" alt="Printika 3D" class="login-logo logo-dark">
+      <img src="../../assets/img/Innovacion-en-3D.svg" alt="Printika 3D" class="login-logo logo-light">
+      <img src="../../assets/img/Innovacion-en-3D-dark.svg" alt="Printika 3D" class="login-logo logo-dark">
     </a>
     <h1>Acceso versi&oacute;n PRO <span class="badge">PRO</span></h1>
     <p>Ingres&aacute; tu usuario y contrase&ntilde;a de suscriptor</p>

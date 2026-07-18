@@ -1156,8 +1156,8 @@ input[type="range"]::-moz-range-thumb {
     <span class="pro-session">Modo <strong>PRO</strong> &middot; <a href="logout.php">Salir</a></span>
   <?php endif; ?>
   <a class="header-logo" href="https://printika3d.com" title="Printika 3D">
-    <img src="../assets/img/Innovacion-en-3D.svg" alt="Printika 3D" class="logo-light">
-    <img src="../assets/img/Innovacion-en-3D-dark.svg" alt="Printika 3D" class="logo-dark">
+    <img src="../../assets/img/Innovacion-en-3D.svg" alt="Printika 3D" class="logo-light">
+    <img src="../../assets/img/Innovacion-en-3D-dark.svg" alt="Printika 3D" class="logo-dark">
   </a>
   <div class="theme-switch" role="group" aria-label="Elegir tema">
     <button type="button" class="theme-opt" data-theme-opt="light" aria-label="Modo dia" title="Modo dia">

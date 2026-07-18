@@ -53,10 +53,10 @@ if ($_SESSION['news_envios'] > 3) {
 }
 
 // SMTP de la web (config de la raíz, lee el .env)
-$config = require dirname(__DIR__) . '/config.php';
-require dirname(__DIR__) . '/lib/PHPMailer/Exception.php';
-require dirname(__DIR__) . '/lib/PHPMailer/PHPMailer.php';
-require dirname(__DIR__) . '/lib/PHPMailer/SMTP.php';
+$config = require dirname(__DIR__, 2) . '/config.php';
+require dirname(__DIR__, 2) . '/lib/PHPMailer/Exception.php';
+require dirname(__DIR__, 2) . '/lib/PHPMailer/PHPMailer.php';
+require dirname(__DIR__, 2) . '/lib/PHPMailer/SMTP.php';
 
 $mail = new PHPMailer\PHPMailer\PHPMailer(true);
 
