@@ -22,6 +22,8 @@ function ui_icono($nombre, $tam = 18) {
         'admin'        => '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1 1 0 0 1 1.52 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/>',
         'salir'        => '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
         'flecha'       => '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+        'sol'          => '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+        'luna'         => '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
         'alerta'       => '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
         'check'        => '<path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/>',
     ];
@@ -33,11 +35,14 @@ function ui_icono($nombre, $tam = 18) {
 
 /** Estilos base compartidos por todas las pantallas de la plataforma. */
 function ui_css() { ?>
+<script>(function(){if(localStorage.getItem('ptools_tema')==='light'){document.documentElement.setAttribute('data-theme','light');}})();
+function ptTema(t){document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');localStorage.setItem('ptools_tema',t);}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
+    color-scheme:dark;
     --bg:#0e131c; --surface:#141b28; --surface-2:#1a2334; --raised:#202b40;
     --bd:#243048; --bd-suave:#1c2638;
     --txt:#e8edf5; --txt-2:#9aa6bc; --txt-3:#5f6b82;
@@ -47,6 +52,19 @@ function ui_css() { ?>
     --warn:#e8b04b; --warn-tinte:rgba(232,176,75,.10);
     --radio:8px; --radio-g:12px;
   }
+  :root[data-theme="light"]{
+    color-scheme:light;
+    --bg:#f3f5f9; --surface:#ffffff; --surface-2:#eef1f6; --raised:#e2e7f0;
+    --bd:#d5dce8; --bd-suave:#e5eaf2;
+    --txt:#182136; --txt-2:#5b6579; --txt-3:#959eb1;
+    --accent:#1194d6; --accent-hover:#0d81bd; --accent-tinte:rgba(17,148,214,.10); --accent-ink:#ffffff;
+    --ok:#14915f; --ok-tinte:rgba(20,145,95,.10);
+    --bad:#d63848; --bad-tinte:rgba(214,56,72,.09);
+    --warn:#a26a08; --warn-tinte:rgba(226,168,60,.14);
+  }
+  .logo-claro{display:none !important}
+  :root[data-theme="light"] .logo-claro{display:block !important}
+  :root[data-theme="light"] .logo-oscuro{display:none !important}
   *{box-sizing:border-box;margin:0;padding:0}
   html{-webkit-text-size-adjust:100%}
   body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
@@ -116,7 +134,8 @@ function ui_tarjeta_inicio($titulo) { ?>
 </head>
 <body>
   <main class="tarjeta">
-    <img class="logo" src="<?php echo ui_base(); ?>/assets/img/printika-tools-dark.svg" alt="Printika Tools">
+    <img class="logo logo-oscuro" src="<?php echo ui_base(); ?>/assets/img/printika-tools-dark.svg" alt="Printika Tools">
+    <img class="logo logo-claro" src="<?php echo ui_base(); ?>/assets/img/printika-tools.svg" alt="Printika Tools">
 <?php }
 
 function ui_tarjeta_fin() { ?>
@@ -139,7 +158,6 @@ function ui_menu() {
         'Plataforma' => [
             ['calculadora',  'Calculadora',   'cotizador/', true],
             ['libreria',     'Librería STL',  null, false],
-            ['cursos',       'Cursos',        null, false],
         ],
         'Mi taller' => [
             ['presupuestos', 'Presupuestos',  null, false],
@@ -185,7 +203,18 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
   .item.prox:hover{background:none;color:var(--txt-3)}
   .item.prox:hover .ico{color:var(--txt-3)}
   .item .badge{margin-left:auto}
-  .perfil{margin-top:auto;border-top:1px solid var(--bd-suave);padding:14px 10px 0;
+  .tema{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:4px;
+        background:var(--surface-2);border:1px solid var(--bd-suave);border-radius:var(--radio);
+        padding:4px;margin-bottom:12px}
+  .tema-btn{display:flex;align-items:center;justify-content:center;gap:7px;height:32px;
+        background:none;border:none;border-radius:6px;color:var(--txt-3);font-family:inherit;
+        font-size:12.5px;font-weight:500;cursor:pointer;
+        transition:background-color .15s ease,color .15s ease}
+  .tema-btn:hover{color:var(--txt-2)}
+  :root:not([data-theme="light"]) .tema-btn[data-tema="dark"],
+  :root[data-theme="light"] .tema-btn[data-tema="light"]{
+        background:var(--surface);color:var(--txt);box-shadow:0 1px 2px rgba(0,0,0,.18)}
+  .perfil{border-top:1px solid var(--bd-suave);padding:14px 10px 0;
           display:flex;align-items:center;gap:10px}
   .perfil .avatar{width:32px;height:32px;border-radius:99px;background:var(--surface-2);
           border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;
@@ -209,7 +238,10 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
 <body>
 <div class="app">
   <aside class="lateral">
-    <a class="marca" href="<?php echo $raiz; ?>index.php"><img src="<?php echo ui_base(); ?>/assets/img/printika-tools-dark.svg" alt="Printika Tools"></a>
+    <a class="marca" href="<?php echo $raiz; ?>index.php">
+      <img class="logo-oscuro" src="<?php echo ui_base(); ?>/assets/img/printika-tools-dark.svg" alt="Printika Tools">
+      <img class="logo-claro" src="<?php echo ui_base(); ?>/assets/img/printika-tools.svg" alt="Printika Tools">
+    </a>
     <?php foreach (ui_menu() as $grupo => $items): ?>
       <div class="grupo"><?php echo htmlspecialchars($grupo); ?></div>
       <?php foreach ($items as [$icono, $nombre, $href, $ok]): ?>
@@ -231,6 +263,10 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
         <?php echo ui_icono('admin'); ?>Suscripciones
       </a>
     <?php endif; ?>
+    <div class="tema" role="group" aria-label="Tema de la interfaz">
+      <button type="button" class="tema-btn" data-tema="light" onclick="ptTema('light')"><?php echo ui_icono('sol', 15); ?>Día</button>
+      <button type="button" class="tema-btn" data-tema="dark" onclick="ptTema('dark')"><?php echo ui_icono('luna', 15); ?>Noche</button>
+    </div>
     <div class="perfil">
       <span class="avatar"><?php echo mb_strtoupper(mb_substr($usuario['nombre'], 0, 1)); ?></span>
       <span class="quien">

@@ -98,8 +98,7 @@ ui_panel_inicio('Suscripciones', $yo, 'Suscripciones', '../');
       .rol-admin{display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-weight:500}
       td .acciones{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
       td form{display:inline-flex;gap:6px;align-items:center;margin:0}
-      td input[type=date]{width:auto;height:32px;padding:0 8px;font-size:12.5px;border-radius:6px;
-              color-scheme:dark}
+      td input[type=date]{width:auto;height:32px;padding:0 8px;font-size:12.5px;border-radius:6px}
       .crear{background:var(--surface);border:1px solid var(--bd-suave);border-radius:var(--radio-g);
              padding:20px;margin-top:16px;max-width:720px}
       .crear h2{font-size:15px;font-weight:600;margin-bottom:2px}
