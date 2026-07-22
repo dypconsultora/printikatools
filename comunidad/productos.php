@@ -342,11 +342,14 @@ ui_panel_inicio('Productos', $u, 'Productos');
       });
 
       $('btnCargarProducto').addEventListener('click', function(){
-        $('p-costo').value = ultimo.costo;
-        if (!parseFloat($('p-precio').value)) $('p-precio').value = ultimo.sugerido;
-        $('p-costo').style.transition = 'box-shadow .15s ease';
-        $('p-costo').style.boxShadow = '0 0 0 3px var(--accent-tinte)';
-        setTimeout(function(){ $('p-costo').style.boxShadow = ''; }, 900);
+        // Siempre actualiza ambos campos con lo recién calculado
+        ['p-costo', 'p-precio'].forEach(function(id, i){
+          var campo = $(id);
+          campo.value = i === 0 ? ultimo.costo : ultimo.sugerido;
+          campo.style.transition = 'box-shadow .15s ease';
+          campo.style.boxShadow = '0 0 0 3px var(--accent-tinte)';
+          setTimeout(function(){ campo.style.boxShadow = ''; }, 900);
+        });
         if (!$('p-nombre').value) $('p-nombre').focus();
       });
     })();
