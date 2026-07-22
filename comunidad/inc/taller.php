@@ -137,6 +137,7 @@ function taller_popup_moneda($forzar = false) {
     <style>
       .velo-moneda{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);display:flex;
           align-items:center;justify-content:center;padding:20px}
+      .velo-moneda[hidden]{display:none !important}
       .caja-moneda{background:var(--surface);border:1px solid var(--bd);border-radius:var(--radio-g);
           padding:28px;max-width:460px;width:100%}
       .caja-moneda h2{font-size:17px;font-weight:700;margin-bottom:6px}
