@@ -64,6 +64,7 @@ if (isset($_GET['editar'])) {
 
 ui_panel_inicio('Productos', $u, 'Productos');
 ?>
+    <style>.contenido{max-width:none}</style>
     <h1>Productos</h1>
     <p class="bajada">Tu catálogo de piezas: cargalas acá o guardalas desde la calculadora de un presupuesto.</p>
 
@@ -86,7 +87,7 @@ ui_panel_inicio('Productos', $u, 'Productos');
       td form{margin:0}
       .vacio{padding:44px 20px;text-align:center;color:var(--txt-2);font-size:14px}
       .form-prod{background:var(--surface);border:1px solid var(--bd-suave);border-radius:var(--radio-g);
-                 padding:20px;margin-bottom:20px;max-width:820px}
+                 padding:20px;margin-bottom:20px}
       .form-prod h2{font-size:15px;font-weight:600;margin-bottom:4px}
       .form-prod .fila{display:grid;grid-template-columns:1.4fr 2fr .8fr .8fr auto;gap:10px;align-items:end}
       .margen-chip{font-size:12px;color:var(--ok);font-weight:500;white-space:nowrap}
