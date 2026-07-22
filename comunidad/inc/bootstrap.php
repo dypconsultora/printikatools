@@ -18,6 +18,8 @@ if (is_readable($__cfg_propio)) {
 if (!defined('COMUNIDAD_NOMBRE')) {
     define('COMUNIDAD_NOMBRE', 'Printika Tools · Comunidad');
 }
+define('COMUNIDAD_PRECIO_MENSUAL', 18000);
+define('COMUNIDAD_PRECIO_ANUAL', 170000);
 define('COMUNIDAD_WHATSAPP', 'https://wa.me/5491131373425?text=' . rawurlencode('Hola! Quiero activar mi suscripción de Printika Tools.'));
 
 /** Conexion PDO compartida. Devuelve null si no hay config o no conecta. */
@@ -37,6 +39,26 @@ function com_db() {
         $pdo = null;
     }
     return $pdo;
+}
+
+/** Lee un valor de la tabla config (null si no existe). */
+function cfg_get($clave) {
+    if (!com_db_ok()) return null;
+    try {
+        $stmt = com_db()->prepare('SELECT valor FROM config WHERE clave = ? LIMIT 1');
+        $stmt->execute([$clave]);
+        $row = $stmt->fetch();
+        return $row ? $row['valor'] : null;
+    } catch (Throwable $e) {
+        return null;
+    }
+}
+
+/** Guarda un valor en la tabla config. */
+function cfg_set($clave, $valor) {
+    com_db()->prepare('INSERT INTO config (clave, valor) VALUES (?, ?)
+                       ON DUPLICATE KEY UPDATE valor = VALUES(valor)')
+        ->execute([$clave, $valor]);
 }
 
 /** true si la plataforma puede operar (hay config y la base responde). */

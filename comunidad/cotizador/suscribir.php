@@ -75,6 +75,21 @@ try {
     $mail->addReplyTo($email);
 
     $mail->isHTML(true);
+// Guardar tambien en la base (lista de marketing visible en el admin)
+try {
+    db()->exec("CREATE TABLE IF NOT EXISTS novedades_emails (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        email VARCHAR(190) NOT NULL,
+        creado_en DATETIME NOT NULL,
+        PRIMARY KEY (id),
+        UNIQUE KEY uq_email (email)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    db()->prepare('INSERT IGNORE INTO novedades_emails (email, creado_en) VALUES (?, NOW())')
+        ->execute([$email]);
+} catch (Throwable $e) {
+    // sin base no frenamos el aviso por mail
+}
+
     $mail->Subject = 'Nuevo suscriptor a novedades — Cotizador 3D';
 
     $emailHtml = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');

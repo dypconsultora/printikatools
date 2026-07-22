@@ -38,6 +38,8 @@ function ui_icono($nombre, $tam = 18) {
         'basura'       => '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',
         'mas'          => '<path d="M5 12h14"/><path d="M12 5v14"/>',
         'cerrar'       => '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+        'candado'      => '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+        'chevron'      => '<path d="m6 9 6 6 6-6"/>',
     ];
     $d = $trazos[$nombre] ?? $trazos['inicio'];
     return '<svg class="ico" width="' . $tam . '" height="' . $tam . '" viewBox="0 0 24 24" fill="none" '
@@ -169,21 +171,32 @@ function ui_base() {
 function ui_menu() {
     return [
         'Plataforma' => [
-            ['calculadora',  'Calculadora',   'calculadora.php', true],
-            ['libreria',     'Librería STL',  null, false],
+            ['calculadora',  'Calculadora',   'calculadora.php', true, false],
+            ['libreria',     'Librería STL',  'libreria.php', true, false],
         ],
         'Mi taller' => [
-            ['presupuestos', 'Presupuestos',  'presupuestos.php', true],
-            ['etiqueta',     'Productos',     'productos.php', true],
-            ['clientes',     'Clientes',      'clientes.php', true],
-            ['stock',        'Stock Materiales', 'stock.php', true],
-            ['ventas',       'Ventas',        'ventas.php', true],
-            ['estadisticas', 'Estadísticas',  'estadisticas.php', true],
-            ['configuracion','Configuración', 'configuracion.php', true],
+            ['presupuestos', 'Presupuestos',  'presupuestos.php', true, true],
+            ['etiqueta',     'Productos',     'productos.php', true, true],
+            ['clientes',     'Clientes',      'clientes.php', true, true],
+            ['stock',        'Stock Materiales', 'stock.php', true, true],
+            ['ventas',       'Ventas',        'ventas.php', true, true],
+            ['estadisticas', 'Estadísticas',  'estadisticas.php', true, true],
+            ['configuracion','Configuración', 'configuracion.php', true, true],
         ],
         'Soporte' => [
-            ['telegram', 'Telegram', 'https://t.me/+N5f7IcWPXihhMWQx', true],
+            ['telegram', 'Telegram', 'https://t.me/+N5f7IcWPXihhMWQx', true, false],
         ],
+    ];
+}
+
+/** Menu de administracion (solo admins). */
+function ui_menu_admin() {
+    return [
+        ['inicio',       'Panel',        'admin/', true, false],
+        ['admin',        'Suscripciones','admin/suscripciones.php', true, false],
+        ['nube',         'Cargar STL',   'admin/stl.php', true, false],
+        ['ventas',       'Mercado Pago', 'admin/mercadopago.php', true, false],
+        ['descargar',    'Backups',      'admin/backups.php', true, false],
     ];
 }
 
@@ -203,8 +216,18 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
            position:sticky;top:0;height:100vh;overflow-y:auto}
   .lateral .marca{display:block;padding:0 10px;margin-bottom:24px}
   .lateral .marca img{width:100%;max-width:214px;height:auto;display:block}
-  .grupo{font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
-         color:var(--txt-3);margin:18px 10px 6px}
+  .grupo{display:flex;align-items:center;justify-content:space-between;width:calc(100% - 20px);
+         font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+         color:var(--txt-3);margin:18px 10px 6px;background:none;border:none;font-family:inherit;
+         cursor:pointer;padding:0}
+  .grupo .chev{transition:transform .18s ease}
+  .grupo.plegado .chev{transform:rotate(-90deg)}
+  .grupo-items{overflow:hidden}
+  .grupo-items[hidden]{display:none !important}
+  .item.bloq{color:var(--txt-3)}
+  .item.bloq .ico{color:var(--txt-3)}
+  .item.bloq .candado{margin-left:auto;color:var(--txt-3)}
+  .item.bloq:hover{background:var(--surface-2);color:var(--txt-2)}
   .item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radio);
         color:var(--txt-2);font-size:13.5px;font-weight:500;margin-bottom:1px;cursor:pointer;
         white-space:nowrap;transition:background-color .15s ease,color .15s ease}
@@ -256,10 +279,26 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
       <img class="logo-oscuro" src="<?php echo ui_base(); ?>/assets/img/printika-tools-dark.svg" alt="Printika Tools">
       <img class="logo-claro" src="<?php echo ui_base(); ?>/assets/img/printika-tools.svg" alt="Printika Tools">
     </a>
-    <?php foreach (ui_menu() as $grupo => $items): ?>
-      <div class="grupo"><?php echo htmlspecialchars($grupo); ?></div>
-      <?php foreach ($items as [$icono, $nombre, $href, $ok]): ?>
-        <?php if ($ok): ?>
+    <?php
+      $esAdmin = $usuario['rol'] === 'admin';
+      $conTodo = acceso_total();
+      $grupos = ui_menu();
+      if ($esAdmin) $grupos['Administración'] = ui_menu_admin();
+      // Plegado inicial: al admin le interesa Administración; al suscriptor, su taller
+      $plegadoInicial = $esAdmin ? ['Mi taller', 'Soporte'] : [];
+      foreach ($grupos as $grupo => $items): ?>
+      <button type="button" class="grupo" data-grupo="<?php echo htmlspecialchars($grupo); ?>"
+              data-plegado-def="<?php echo in_array($grupo, $plegadoInicial, true) ? '1' : '0'; ?>">
+        <?php echo htmlspecialchars($grupo); ?><span class="chev"><?php echo ui_icono('chevron', 13); ?></span>
+      </button>
+      <div class="grupo-items">
+      <?php foreach ($items as [$icono, $nombre, $href, $ok, $pago]): ?>
+        <?php if ($ok && $pago && !$conTodo): ?>
+          <a class="item bloq" href="<?php echo $raiz; ?>suscripcion.php" title="Disponible en el plan completo">
+            <?php echo ui_icono($icono); ?><?php echo htmlspecialchars($nombre); ?>
+            <span class="candado"><?php echo ui_icono('candado', 14); ?></span>
+          </a>
+        <?php elseif ($ok): ?>
           <a class="item<?php echo $nombre === $activo ? ' activo' : ''; ?>"
              href="<?php echo str_starts_with((string) $href, 'http') ? htmlspecialchars($href) : $raiz . htmlspecialchars($href); ?>"<?php
              echo str_starts_with((string) $href, 'http') ? ' target="_blank" rel="noopener"' : ''; ?>>
@@ -270,13 +309,26 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
             <span class="badge">Próximamente</span></span>
         <?php endif; ?>
       <?php endforeach; ?>
+      </div>
     <?php endforeach; ?>
-    <?php if ($usuario['rol'] === 'admin'): ?>
-      <div class="grupo">Administración</div>
-      <a class="item<?php echo $activo === 'Suscripciones' ? ' activo' : ''; ?>" href="<?php echo $raiz; ?>admin/">
-        <?php echo ui_icono('admin'); ?>Suscripciones
-      </a>
-    <?php endif; ?>
+    <script>
+    (function () {
+      let plegados = {};
+      try { plegados = JSON.parse(localStorage.getItem('ptools_menu_plegado') || '{}'); } catch (e) {}
+      document.querySelectorAll('.lateral .grupo').forEach(btn => {
+        const g = btn.dataset.grupo;
+        const caja = btn.nextElementSibling;
+        const plegar = (si) => { btn.classList.toggle('plegado', si); caja.hidden = si; };
+        plegar(g in plegados ? !!plegados[g] : btn.dataset.plegadoDef === '1');
+        btn.addEventListener('click', () => {
+          const si = !caja.hidden;
+          plegar(si);
+          plegados[g] = si;
+          try { localStorage.setItem('ptools_menu_plegado', JSON.stringify(plegados)); } catch (e) {}
+        });
+      });
+    })();
+    </script>
     <div class="tema" role="group" aria-label="Tema de la interfaz">
       <button type="button" class="tema-btn" data-tema="light" onclick="ptTema('light')"><?php echo ui_icono('sol', 15); ?>Día</button>
       <button type="button" class="tema-btn" data-tema="dark" onclick="ptTema('dark')"><?php echo ui_icono('luna', 15); ?>Noche</button>

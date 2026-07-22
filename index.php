@@ -499,7 +499,7 @@ if (!com_preview_ok()): ?>
               <li class="no"><?php echo ui_icono('check', 15); ?>Herramientas del taller</li>
               <li class="no"><?php echo ui_icono('check', 15); ?>Datos guardados en tu cuenta</li>
             </ul>
-            <a class="btn sec" href="comunidad/registro.php">Empezar gratis</a>
+            <a class="btn sec" href="comunidad/registro.php?plan=gratis">Empezar gratis</a>
           </div>
           <div class="plan">
             <h3>Comunidad Mensual</h3>
@@ -513,7 +513,7 @@ if (!com_preview_ok()): ?>
               <li><?php echo ui_icono('check', 15); ?>Soporte técnico prioritario</li>
               <li><?php echo ui_icono('check', 15); ?>Herramientas nuevas cada mes</li>
             </ul>
-            <a class="btn sec" href="<?php echo COMUNIDAD_WHATSAPP; ?>" target="_blank" rel="noopener">Suscribirme</a>
+            <a class="btn sec" href="comunidad/registro.php?plan=mensual">Suscribirme</a>
           </div>
           <div class="plan destacado">
             <span class="etiqueta">Más de 2 meses gratis</span>
@@ -527,7 +527,7 @@ if (!com_preview_ok()): ?>
               <li><?php echo ui_icono('check', 15); ?>Precio congelado por 12 meses</li>
               <li><?php echo ui_icono('check', 15); ?>Acceso anticipado a herramientas nuevas</li>
             </ul>
-            <a class="btn" href="<?php echo COMUNIDAD_WHATSAPP; ?>" target="_blank" rel="noopener">Suscribirme</a>
+            <a class="btn" href="comunidad/registro.php?plan=anual">Suscribirme</a>
           </div>
         </div>
       </div>

@@ -17,18 +17,21 @@ if (!com_db_ok()) {
     exit;
 }
 
-requerir_miembro();
+requerir_usuario();
 $u = usuario_actual();
+$plan = plan_usuario();
 
-$vence = suscripcion_hasta((int) $u['id']);
+$vence = in_array($plan, ['mensual', 'anual'], true) ? suscripcion_hasta((int) $u['id']) : false;
 ui_panel_inicio('Inicio', $u, 'Inicio');
 ?>
     <h1>Hola, <?php echo htmlspecialchars($u['nombre']); ?></h1>
     <p class="bajada">
       <?php if ($u['rol'] === 'admin'): ?>
         Administrás la plataforma.
+      <?php elseif ($plan === 'gratis'): ?>
+        Estás en el plan Gratuito. <a href="suscripcion.php">Pasate al plan completo</a> para desbloquear todo Mi taller.
       <?php elseif ($vence): ?>
-        Tu suscripción está activa hasta el <?php echo date('d/m/Y', strtotime($vence)); ?>.
+        Tu plan <?php echo $plan === 'anual' ? 'Anual' : 'Mensual'; ?> está activo hasta el <?php echo date('d/m/Y', strtotime($vence)); ?>.
       <?php else: ?>
         Tu suscripción está activa.
       <?php endif; ?>
@@ -57,6 +60,12 @@ ui_panel_inicio('Inicio', $u, 'Inicio');
         <span class="ico-caja"><?php echo ui_icono('calculadora', 19); ?></span>
         <h2>Calculadora de costos</h2>
         <p>Calculá el precio justo de tus impresiones 3D.</p>
+      </a>
+      <a class="tarjeta-h" href="libreria.php">
+        <span class="flecha"><?php echo ui_icono('flecha', 16); ?></span>
+        <span class="ico-caja"><?php echo ui_icono('libreria', 19); ?></span>
+        <h2>Librería STL</h2>
+        <p>Modelos listos para imprimir, seleccionados por Printika.</p>
       </a>
       <a class="tarjeta-h" href="presupuestos.php">
         <span class="flecha"><?php echo ui_icono('flecha', 16); ?></span>

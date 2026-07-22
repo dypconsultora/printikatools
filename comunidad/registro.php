@@ -19,6 +19,9 @@ if (usuario_actual() !== null) {
 
 $error = '';
 $creado = false;
+// Plan elegido en la landing: gratis entra directo; mensual/anual va al pago
+$plan = $_POST['plan'] ?? ($_GET['plan'] ?? 'gratis');
+if (!in_array($plan, ['gratis', 'mensual', 'anual'], true)) $plan = 'gratis';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre = trim($_POST['nombre'] ?? '');
     $email  = mb_strtolower(trim($_POST['email'] ?? ''));
@@ -54,14 +57,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if ($creado) {
-    header('Location: suscripcion.php');
+    header('Location: ' . ($plan === 'gratis' ? 'index.php' : 'suscripcion.php?plan=' . $plan));
     exit;
 }
+
+$PLANES_TXT = ['gratis' => 'Gratuito · $0', 'mensual' => 'Mensual · $18.000/mes', 'anual' => 'Anual · $170.000/año'];
 
 ui_tarjeta_inicio('Crear cuenta');
 ?>
     <h1>Crear cuenta</h1>
     <p class="sub">Sumate a la comunidad de impresión 3D</p>
+    <p style="font-size:13px;margin:-6px 0 14px">
+      <span style="display:inline-block;background:var(--accent-tinte,rgba(45,183,250,.12));color:var(--accent,#2db7fa);
+            font-weight:600;padding:4px 12px;border-radius:999px">Plan elegido: <?php echo $PLANES_TXT[$plan]; ?></span>
+      <?php if ($plan !== 'gratis'): ?><a href="registro.php" style="font-size:12px;margin-left:6px">cambiar</a><?php endif; ?>
+    </p>
 
     <?php if (!com_db_ok()): ?>
       <div class="msg warn">La plataforma está en preparación. Muy pronto vas a poder registrarte.</div>
@@ -69,6 +79,7 @@ ui_tarjeta_inicio('Crear cuenta');
       <?php if ($error): ?><div class="msg bad"><?php echo $error; ?></div><?php endif; ?>
       <form method="post" autocomplete="on">
         <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
+        <input type="hidden" name="plan" value="<?php echo htmlspecialchars($plan); ?>">
         <label for="nombre">Nombre</label>
         <input type="text" id="nombre" name="nombre" maxlength="120" required autofocus
                value="<?php echo htmlspecialchars($_POST['nombre'] ?? ''); ?>">

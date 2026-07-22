@@ -8,3 +8,5 @@ comunidad/config.php
 # Logos subidos por los usuarios (viven solo en el servidor)
 comunidad/uploads/logos/*
 !comunidad/uploads/logos/.gitkeep
+comunidad/uploads/stl/*
+comunidad/uploads/mp_log.txt

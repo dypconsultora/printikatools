@@ -191,6 +191,40 @@ function taller_migrar() {
             REFERENCES usuarios(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+    // Planes: columna en suscripciones (legado sin plan = mensual, acceso total)
+    $col = $db->query("SELECT COUNT(*) c FROM information_schema.columns
+                       WHERE table_schema = DATABASE() AND table_name = 'suscripciones' AND column_name = 'plan'")->fetch();
+    if ((int) $col['c'] === 0) {
+        $db->exec("ALTER TABLE suscripciones ADD COLUMN plan VARCHAR(10) NOT NULL DEFAULT 'mensual' AFTER estado");
+    }
+
+    $db->exec("CREATE TABLE IF NOT EXISTS stl_items (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        nombre VARCHAR(150) NOT NULL,
+        categoria VARCHAR(80) NOT NULL DEFAULT '',
+        archivo_ext VARCHAR(10) NOT NULL,
+        imagen_ext VARCHAR(10) NOT NULL DEFAULT '',
+        tam_bytes BIGINT UNSIGNED NOT NULL DEFAULT 0,
+        descargas INT UNSIGNED NOT NULL DEFAULT 0,
+        publicado TINYINT(1) NOT NULL DEFAULT 1,
+        creado_en DATETIME NOT NULL,
+        PRIMARY KEY (id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $db->exec("CREATE TABLE IF NOT EXISTS config (
+        clave VARCHAR(60) NOT NULL,
+        valor TEXT,
+        PRIMARY KEY (clave)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $db->exec("CREATE TABLE IF NOT EXISTS novedades_emails (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        email VARCHAR(190) NOT NULL,
+        creado_en DATETIME NOT NULL,
+        PRIMARY KEY (id),
+        UNIQUE KEY uq_email (email)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
     $listo = true;
 }
 
