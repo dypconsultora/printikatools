@@ -160,7 +160,7 @@ function taller_popup_moneda($forzar = false) {
         <h2>¿En qué moneda trabajás?</h2>
         <p>Todos tus presupuestos, productos y la calculadora del taller van a usar esta moneda.
            Podés cambiarla cuando quieras desde el chip de moneda.</p>
-        <form method="post" class="opciones-moneda">
+        <form method="post" class="opciones-moneda" id="formMoneda">
           <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
           <input type="hidden" name="accion" value="moneda">
           <button type="submit" name="moneda" value="ARS" class="<?php echo $actual === 'ARS' ? 'actual' : ''; ?>">
@@ -170,12 +170,44 @@ function taller_popup_moneda($forzar = false) {
           <button type="submit" name="moneda" value="EUR" class="<?php echo $actual === 'EUR' ? 'actual' : ''; ?>">
             <b>€</b><span>Euro</span></button>
         </form>
+        <p class="estado-guardado" id="monedaEstado" style="margin:12px 0 0;font-size:12.5px;color:var(--txt-3);text-align:center"></p>
         <?php if ($actual !== ''): ?>
           <p style="margin:14px 0 0;text-align:center">
             <button type="button" class="btn sec chico" onclick="document.getElementById('veloMoneda').hidden=true">Cancelar</button></p>
         <?php endif; ?>
       </div>
     </div>
+    <script>
+    (function(){
+      var DATOS = { ARS: { s: '$', d: 0 }, USD: { s: 'US$', d: 2 }, EUR: { s: '€', d: 2 } };
+      var form = document.getElementById('formMoneda');
+      form.addEventListener('submit', function(ev){
+        ev.preventDefault();
+        var boton = ev.submitter || form.querySelector('button[type=submit]');
+        var codigo = boton.value;
+        var cuerpo = new FormData(form);
+        cuerpo.set('moneda', codigo);
+        document.getElementById('monedaEstado').textContent = 'Guardando...';
+        fetch(window.location.href, { method: 'POST', body: cuerpo, credentials: 'same-origin' })
+          .then(function(r){
+            if (!r.ok) throw new Error('estado ' + r.status);
+            // Cerrar y avisar a la pagina (sin recargar, para no perder trabajo)
+            document.getElementById('veloMoneda').hidden = true;
+            document.getElementById('monedaEstado').textContent = '';
+            var chip = document.querySelector('.chip-moneda b');
+            if (chip) chip.textContent = codigo + ' (' + DATOS[codigo].s + ')';
+            document.querySelectorAll('#formMoneda button[type=submit]').forEach(function(b){
+              b.classList.toggle('actual', b.value === codigo);
+            });
+            window.dispatchEvent(new CustomEvent('ptools:moneda', { detail: DATOS[codigo] }));
+          })
+          .catch(function(){
+            // Si fetch falla, guardado clasico con recarga (submit() no re-dispara este handler)
+            form.submit();
+          });
+      });
+    })();
+    </script>
     <?php
 }
 

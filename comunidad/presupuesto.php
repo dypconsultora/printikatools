@@ -591,6 +591,12 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
     window.open('https://wa.me/' + tel + '?text=' + t.replaceAll(' ', '%20'), '_blank');
   });
 
+  window.addEventListener('ptools:moneda', e => {
+    MONEDA.s = e.detail.s; MONEDA.d = e.detail.d;
+    render();
+    calcular();
+  });
+
   render();
   calcular();
 })();

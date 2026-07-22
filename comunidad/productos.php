@@ -318,6 +318,11 @@ ui_panel_inicio('Productos', $u, 'Productos');
       });
       calcular();
 
+      window.addEventListener('ptools:moneda', function(e){
+        MONEDA.s = e.detail.s; MONEDA.d = e.detail.d;
+        calcular();
+      });
+
       $('btnCargarProducto').addEventListener('click', function(){
         $('p-costo').value = ultimo.costo;
         if (!parseFloat($('p-precio').value)) $('p-precio').value = ultimo.sugerido;
