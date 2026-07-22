@@ -364,7 +364,7 @@ ui_panel_inicio('Stock Materiales', $u, 'Stock Materiales');
             <input type="hidden" name="id" value="<?php echo (int) ($abrir_rollo['id'] ?? 0); ?>">
 
             <label for="r-marca">Marca *</label>
-            <input id="r-marca" type="text" name="marca" maxlength="100" required placeholder="Erexit, Elegoo..."
+            <input id="r-marca" type="text" name="marca" maxlength="100" required placeholder="GST, 3NMAX, BAMBULAB..."
                    value="<?php echo htmlspecialchars($abrir_rollo['marca'] ?? ''); ?>">
 
             <label for="r-tipo">Tipo</label>
