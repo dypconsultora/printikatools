@@ -1,0 +1,5 @@
+# Solo archivos estaticos: nunca ejecutar codigo en la carpeta de subidas
+<FilesMatch "\.(php|phtml|php\d|pht|cgi|pl)$">
+  Require all denied
+</FilesMatch>
+RemoveHandler .php .phtml

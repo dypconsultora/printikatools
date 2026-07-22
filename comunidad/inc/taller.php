@@ -111,6 +111,17 @@ function taller_migrar() {
             REFERENCES usuarios(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+    // Datos del taller del usuario (Configuración): nombre, teléfono y logo propio
+    $stmt = $db->prepare("SELECT COUNT(*) c FROM information_schema.COLUMNS
+                           WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'usuarios' AND COLUMN_NAME = 'taller_nombre'");
+    $stmt->execute();
+    if (!(int) $stmt->fetch()['c']) {
+        $db->exec("ALTER TABLE usuarios
+            ADD COLUMN taller_nombre VARCHAR(150) NOT NULL DEFAULT '',
+            ADD COLUMN taller_telefono VARCHAR(50) NOT NULL DEFAULT '',
+            ADD COLUMN logo_ext VARCHAR(5) NOT NULL DEFAULT ''");
+    }
+
     // Fecha en que el presupuesto se marcó vendido (para Ventas/Estadísticas)
     $stmt = $db->prepare("SELECT COUNT(*) c FROM information_schema.COLUMNS
                            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'presupuestos' AND COLUMN_NAME = 'vendido_en'");
@@ -182,6 +193,21 @@ function taller_resumen_mes($usuario_id, $anio, $mes) {
         else { $gas += $m['monto']; $cg++; }
     }
     return [$ing, $gas, $ci, $cg];
+}
+
+/** Carpeta de logos subidos (fuera de git; sobrevive a los deploys). */
+function taller_logo_dir() {
+    return __DIR__ . '/../uploads/logos';
+}
+
+/** Ruta web del logo del usuario, o null si no subió ninguno. */
+function taller_logo_url($usuario, $prefijo = '') {
+    $ext = $usuario['logo_ext'] ?? '';
+    if ($ext === '') return null;
+    $archivo = taller_logo_dir() . '/logo-' . (int) $usuario['id'] . '.' . $ext;
+    if (!is_file($archivo)) return null;
+    // El numero de version evita caches viejos al reemplazar el logo
+    return $prefijo . 'uploads/logos/logo-' . (int) $usuario['id'] . '.' . $ext . '?v=' . filemtime($archivo);
 }
 
 const TALLER_MESES = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',

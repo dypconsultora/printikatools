@@ -132,6 +132,11 @@ $estado_json = json_encode([
 $materiales = ['PLA','ABS','PETG','TPU','Nylon','Resina','ASA','PC','HIPS','PVA','CF-Nylon','Wood-PLA','Flex'];
 $moneda = taller_moneda_usuario() ?: 'ARS';
 [$moneda_simbolo, $moneda_dec] = taller_monedas()[$moneda];
+$logo_pdf = taller_logo_url($u, '../') ?: '../assets/img/printika-tools.svg';
+$taller_pie = trim(($u['taller_nombre'] ?? '') !== '' && ($u['taller_telefono'] ?? '') !== ''
+    ? $u['taller_nombre'] . ' · ' . $u['taller_telefono']
+    : ($u['taller_nombre'] ?? '') . ($u['taller_telefono'] ?? ''));
+$firma = ($u['taller_nombre'] ?? '') !== '' ? $u['taller_nombre'] : 'Printika Tools';
 
 ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, 'Presupuestos');
 ?>
@@ -683,7 +688,7 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
 
     let html =
       '<div class="pd-top">' +
-        '<img class="pd-logo" src="../assets/img/printika-tools.svg" alt="Printika Tools">' +
+        '<img class="pd-logo" src="' + LOGO_URL + '" alt="Logo">' +
         '<div class="pd-meta">' +
           '<div class="pd-kicker">Presupuesto</div>' +
           '<div class="pd-project">' + esc(cliente) + '</div>' +
@@ -712,6 +717,9 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
     if (notas) {
       html += '<div class="pd-notas"><div class="pd-h">Notas</div>' + esc(notas) + '</div>';
     }
+    if (TALLER_PIE) {
+      html += '<div class="pd-notas" style="text-align:center;color:#8a97ab">' + esc(TALLER_PIE) + '</div>';
+    }
 
     printDoc.innerHTML = html;
     setTimeout(() => window.print(), 60);
@@ -730,20 +738,26 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
     });
   }
 
-  let logoPngCache = null;
+  const LOGO_URL = <?php echo json_encode($logo_pdf); ?>;
+  const TALLER_PIE = <?php echo json_encode($taller_pie); ?>;
+  let logoPngCache = null; // { data, ratio (ancho/alto) }
   function cargarLogo(){
     if (logoPngCache) return Promise.resolve(logoPngCache);
     return new Promise((res) => {
       const img = new Image();
       img.onload = () => {
+        // Encaja en 504x280 conservando la proporcion del logo del usuario
+        const ratio = (img.naturalWidth || 504) / (img.naturalHeight || 180);
+        const cw = ratio >= 1.8 ? 504 : Math.round(280 * ratio);
+        const ch = Math.round(cw / ratio);
         const cv = document.createElement('canvas');
-        cv.width = 504; cv.height = 180;
-        cv.getContext('2d').drawImage(img, 0, 0, 504, 180);
-        logoPngCache = cv.toDataURL('image/png');
+        cv.width = cw; cv.height = ch;
+        cv.getContext('2d').drawImage(img, 0, 0, cw, ch);
+        logoPngCache = { data: cv.toDataURL('image/png'), ratio };
         res(logoPngCache);
       };
       img.onerror = () => res(null);
-      img.src = '../assets/img/printika-tools.svg';
+      img.src = LOGO_URL;
     });
   }
 
@@ -753,7 +767,7 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
       t += '- ' + it.nombre + (it.cantidad > 1 ? ' x' + it.cantidad : '') + ': ' + fmt(it.precio * it.cantidad) + '\n';
     });
     if (desc > 0) t += '\nDescuento: -' + fmt(desc) + '\n';
-    t += '\n*Total: ' + fmt(Math.max(0, st - desc)) + '*\n\nPrintika Tools';
+    t += '\n*Total: ' + fmt(Math.max(0, st - desc)) + '*\n\n' + <?php echo json_encode($firma); ?>;
     return t;
   }
 
@@ -772,7 +786,11 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
     const unidades = estado.items.reduce((a, it) => a + it.cantidad, 0);
 
     // Encabezado: logo + PRESUPUESTO / cliente / fecha (mismo diseño que el export del cotizador)
-    if (logo) doc.addImage(logo, 'PNG', MI, 16, 42, 15);
+    if (logo) {
+      let lh = 15, lw = Math.min(70, lh * logo.ratio);
+      if (lw === 70) lh = lw / logo.ratio;
+      doc.addImage(logo.data, 'PNG', MI, 31 - lh, lw, lh);
+    }
     doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(11, 120, 181);
     doc.text('P R E S U P U E S T O', MD, 18, { align: 'right' });
     doc.setFontSize(19); doc.setTextColor(16, 27, 41);
@@ -833,6 +851,10 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
       doc.text('NOTAS', MI, y);
       doc.setFontSize(9.5); doc.setTextColor(68, 83, 107); doc.setFont('helvetica', 'normal');
       doc.text(doc.splitTextToSize(notas, MD - MI), MI, y + 5);
+    }
+    if (TALLER_PIE) {
+      doc.setFontSize(8.5); doc.setTextColor(138, 151, 171); doc.setFont('helvetica', 'normal');
+      doc.text(TALLER_PIE, 105, 288, { align: 'center' });
     }
     return doc;
   }

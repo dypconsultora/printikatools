@@ -172,7 +172,7 @@ function ui_menu() {
             ['stock',        'Stock',         null, false],
             ['ventas',       'Ventas',        'ventas.php', true],
             ['estadisticas', 'Estadísticas',  'estadisticas.php', true],
-            ['configuracion','Configuración', null, false],
+            ['configuracion','Configuración', 'configuracion.php', true],
         ],
         'Soporte' => [
             ['whatsapp', 'WhatsApp', COMUNIDAD_WHATSAPP, true],
