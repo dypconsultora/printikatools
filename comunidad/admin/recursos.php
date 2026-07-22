@@ -56,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id     = (int) ($_POST['id'] ?? 0);
         $titulo = mb_substr(trim($_POST['titulo'] ?? ''), 0, 150);
         $desc   = mb_substr(trim($_POST['descripcion'] ?? ''), 0, 300);
+        $acceso = ($_POST['acceso'] ?? '') === 'pago' ? 'pago' : 'todos';
         $arch   = $_FILES['archivo'] ?? null;
         $hay_arch = !empty($arch['tmp_name']) && is_uploaded_file($arch['tmp_name']);
         $mime   = $hay_arch ? (string) @mime_content_type($arch['tmp_name']) : '';
@@ -86,15 +87,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if ($ext !== '' && $ext !== $img_ext) @unlink("$dir/img-$id.$ext");
                         $ext = $img_ext;
                     }
-                    $db->prepare('UPDATE recursos_pdf SET titulo=?, descripcion=?, imagen_ext=?, tam_bytes=? WHERE id=?')
-                       ->execute([$titulo, $desc, $ext, $tam, $id]);
+                    $db->prepare('UPDATE recursos_pdf SET titulo=?, descripcion=?, imagen_ext=?, tam_bytes=?, acceso=? WHERE id=?')
+                       ->execute([$titulo, $desc, $ext, $tam, $acceso, $id]);
                     $aviso = "«{$titulo}» actualizado.";
                 }
             } elseif ($error === '') {
                 if (!is_dir($dir)) mkdir($dir, 0755, true);
-                $db->prepare('INSERT INTO recursos_pdf (titulo, descripcion, imagen_ext, tam_bytes, creado_en)
-                              VALUES (?, ?, ?, ?, NOW())')
-                   ->execute([$titulo, $desc, $img_ext, (int) $arch['size']]);
+                $db->prepare('INSERT INTO recursos_pdf (titulo, descripcion, imagen_ext, tam_bytes, acceso, creado_en)
+                              VALUES (?, ?, ?, ?, ?, NOW())')
+                   ->execute([$titulo, $desc, $img_ext, (int) $arch['size'], $acceso]);
                 $id = (int) $db->lastInsertId();
                 $ok1 = move_uploaded_file($arch['tmp_name'], "$dir/pdf-$id.pdf");
                 $ok2 = $img_ext === '' || move_uploaded_file($_FILES['imagen']['tmp_name'], "$dir/img-$id.$img_ext");
@@ -113,6 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $titulo = mb_substr(trim($_POST['titulo'] ?? ''), 0, 150);
         $desc   = mb_substr(trim($_POST['descripcion'] ?? ''), 0, 300);
         $ytid   = admin_youtube_id($_POST['youtube'] ?? '');
+        $acceso = ($_POST['acceso'] ?? '') === 'pago' ? 'pago' : 'todos';
         if ($titulo === '') {
             $error = 'Poné el título del video.';
         } elseif ($ytid === '') {
@@ -137,14 +139,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $ext = $img_ext;
                         }
                     }
-                    $db->prepare('UPDATE recursos_videos SET titulo=?, descripcion=?, youtube_id=?, imagen_ext=? WHERE id=?')
-                       ->execute([$titulo, $desc, $ytid, $ext, $id]);
+                    $db->prepare('UPDATE recursos_videos SET titulo=?, descripcion=?, youtube_id=?, imagen_ext=?, acceso=? WHERE id=?')
+                       ->execute([$titulo, $desc, $ytid, $ext, $acceso, $id]);
                     $aviso = "«{$titulo}» actualizado.";
                 }
             } elseif ($error === '') {
-                $db->prepare('INSERT INTO recursos_videos (titulo, descripcion, youtube_id, imagen_ext, creado_en)
-                              VALUES (?, ?, ?, ?, NOW())')
-                   ->execute([$titulo, $desc, $ytid, $img_ext]);
+                $db->prepare('INSERT INTO recursos_videos (titulo, descripcion, youtube_id, imagen_ext, acceso, creado_en)
+                              VALUES (?, ?, ?, ?, ?, NOW())')
+                   ->execute([$titulo, $desc, $ytid, $img_ext, $acceso]);
                 $id = (int) $db->lastInsertId();
                 if ($img_ext !== '') {
                     if (!is_dir($dir)) mkdir($dir, 0755, true);
@@ -221,7 +223,7 @@ ui_panel_inicio('Cargar recursos', $yo, 'Cargar recursos', '../');
       .tabs a .cant{font-size:12px;font-weight:600;color:var(--txt-3);background:var(--surface-2);
               border-radius:999px;padding:1px 8px}
       .alta{background:var(--surface);border:1px solid var(--bd-suave);border-radius:var(--radio-g);
-            padding:20px;margin-bottom:18px;max-width:860px}
+            padding:20px;margin-bottom:18px}
       .alta h2{font-size:15px;font-weight:600;margin-bottom:10px}
       .alta .fila{display:grid;grid-template-columns:1fr 1fr;gap:12px}
       .alta .fila3{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;margin-top:4px}
@@ -265,6 +267,11 @@ ui_panel_inicio('Cargar recursos', $yo, 'Cargar recursos', '../');
                  placeholder="Paso a paso para nivelar la cama en 10 minutos"
                  value="<?php echo htmlspecialchars($editar_pdf['descripcion'] ?? ''); ?>"></span>
       </div>
+      <label for="p-acceso" style="margin-top:10px">¿Quién lo puede ver?</label>
+      <select id="p-acceso" name="acceso" style="max-width:340px">
+        <option value="todos" <?php echo ($editar_pdf['acceso'] ?? 'todos') === 'todos' ? 'selected' : ''; ?>>Todos (incluido el plan gratuito)</option>
+        <option value="pago" <?php echo ($editar_pdf['acceso'] ?? '') === 'pago' ? 'selected' : ''; ?>>Solo suscriptores pagos</option>
+      </select>
       <div class="fila3">
         <span><label for="p-arch">Archivo PDF <?php echo $editar_pdf ? '(solo si querés reemplazarlo)' : '* (máx. 30 MB)'; ?></label>
           <input id="p-arch" type="file" name="archivo" accept="application/pdf" <?php echo $editar_pdf ? '' : 'required'; ?>></span>
@@ -280,7 +287,7 @@ ui_panel_inicio('Cargar recursos', $yo, 'Cargar recursos', '../');
     <?php if ($pdfs): ?>
     <div class="lista">
       <table>
-        <thead><tr><th></th><th>PDF</th><th>Descargas</th><th>Estado</th><th style="text-align:right">Acciones</th></tr></thead>
+        <thead><tr><th></th><th>PDF</th><th>Acceso</th><th>Descargas</th><th>Estado</th><th style="text-align:right">Acciones</th></tr></thead>
         <tbody>
         <?php foreach ($pdfs as $it): ?>
           <tr class="<?php echo $it['publicado'] ? '' : 'apagado'; ?>">
@@ -289,6 +296,7 @@ ui_panel_inicio('Cargar recursos', $yo, 'Cargar recursos', '../');
               <?php else: ?><span class="mini" style="display:flex;align-items:center;justify-content:center;color:var(--txt-3)"><?php echo ui_icono('pdf', 20); ?></span><?php endif; ?></td>
             <td><strong><?php echo htmlspecialchars($it['titulo']); ?></strong>
               <?php if ($it['descripcion']): ?><br><span style="font-size:12px;color:var(--txt-3)"><?php echo htmlspecialchars($it['descripcion']); ?></span><?php endif; ?></td>
+            <td><?php echo $it['acceso'] === 'pago' ? '<span style="color:var(--warn)">Suscriptores</span>' : 'Todos'; ?></td>
             <td><?php echo (int) $it['descargas']; ?></td>
             <td><?php echo $it['publicado'] ? '<span style="color:var(--ok)">Publicado</span>' : '<span style="color:var(--txt-3)">Oculto</span>'; ?></td>
             <td>
@@ -336,6 +344,11 @@ ui_panel_inicio('Cargar recursos', $yo, 'Cargar recursos', '../');
                  placeholder="Tutorial rápido para mejorar la calidad de tus piezas"
                  value="<?php echo htmlspecialchars($editar_video['descripcion'] ?? ''); ?>"></span>
       </div>
+      <label for="v-acceso" style="margin-top:10px">¿Quién lo puede ver?</label>
+      <select id="v-acceso" name="acceso" style="max-width:340px">
+        <option value="todos" <?php echo ($editar_video['acceso'] ?? 'todos') === 'todos' ? 'selected' : ''; ?>>Todos (incluido el plan gratuito)</option>
+        <option value="pago" <?php echo ($editar_video['acceso'] ?? '') === 'pago' ? 'selected' : ''; ?>>Solo suscriptores pagos</option>
+      </select>
       <div class="fila3">
         <span><label for="v-img">Imagen de muestra <?php echo $editar_video ? '(solo si querés reemplazarla)' : '(opcional)'; ?></label>
           <input id="v-img" type="file" name="imagen" accept="image/png,image/jpeg,image/webp">
@@ -357,7 +370,7 @@ ui_panel_inicio('Cargar recursos', $yo, 'Cargar recursos', '../');
     <?php if ($videos): ?>
     <div class="lista">
       <table>
-        <thead><tr><th></th><th>Video</th><th>YouTube</th><th>Estado</th><th style="text-align:right">Acciones</th></tr></thead>
+        <thead><tr><th></th><th>Video</th><th>YouTube</th><th>Acceso</th><th>Estado</th><th style="text-align:right">Acciones</th></tr></thead>
         <tbody>
         <?php foreach ($videos as $it): ?>
           <tr class="<?php echo $it['publicado'] ? '' : 'apagado'; ?>">
@@ -369,6 +382,7 @@ ui_panel_inicio('Cargar recursos', $yo, 'Cargar recursos', '../');
               <?php if ($it['descripcion']): ?><br><span style="font-size:12px;color:var(--txt-3)"><?php echo htmlspecialchars($it['descripcion']); ?></span><?php endif; ?></td>
             <td><a href="https://www.youtube.com/watch?v=<?php echo rawurlencode($it['youtube_id']); ?>"
                    target="_blank" rel="noopener" style="font-size:12.5px"><?php echo htmlspecialchars($it['youtube_id']); ?></a></td>
+            <td><?php echo $it['acceso'] === 'pago' ? '<span style="color:var(--warn)">Suscriptores</span>' : 'Todos'; ?></td>
             <td><?php echo $it['publicado'] ? '<span style="color:var(--ok)">Publicado</span>' : '<span style="color:var(--txt-3)">Oculto</span>'; ?></td>
             <td>
               <div class="acciones">

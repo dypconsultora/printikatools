@@ -248,6 +248,15 @@ function taller_migrar() {
         PRIMARY KEY (id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+    // Quién ve cada recurso: 'todos' (incluye plan gratis) o 'pago'
+    foreach (['recursos_pdf', 'recursos_videos'] as $t) {
+        $col = $db->query("SELECT COUNT(*) c FROM information_schema.columns
+                           WHERE table_schema = DATABASE() AND table_name = '$t' AND column_name = 'acceso'")->fetch();
+        if ((int) $col['c'] === 0) {
+            $db->exec("ALTER TABLE $t ADD COLUMN acceso VARCHAR(10) NOT NULL DEFAULT 'todos' AFTER publicado");
+        }
+    }
+
     $listo = true;
 }
 
