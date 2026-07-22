@@ -225,6 +225,29 @@ function taller_migrar() {
         UNIQUE KEY uq_email (email)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+    $db->exec("CREATE TABLE IF NOT EXISTS recursos_pdf (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        titulo VARCHAR(150) NOT NULL,
+        descripcion VARCHAR(300) NOT NULL DEFAULT '',
+        imagen_ext VARCHAR(10) NOT NULL DEFAULT '',
+        tam_bytes BIGINT UNSIGNED NOT NULL DEFAULT 0,
+        descargas INT UNSIGNED NOT NULL DEFAULT 0,
+        publicado TINYINT(1) NOT NULL DEFAULT 1,
+        creado_en DATETIME NOT NULL,
+        PRIMARY KEY (id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $db->exec("CREATE TABLE IF NOT EXISTS recursos_videos (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        titulo VARCHAR(150) NOT NULL,
+        descripcion VARCHAR(300) NOT NULL DEFAULT '',
+        youtube_id VARCHAR(20) NOT NULL,
+        imagen_ext VARCHAR(10) NOT NULL DEFAULT '',
+        publicado TINYINT(1) NOT NULL DEFAULT 1,
+        creado_en DATETIME NOT NULL,
+        PRIMARY KEY (id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
     $listo = true;
 }
 

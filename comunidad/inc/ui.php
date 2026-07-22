@@ -40,6 +40,9 @@ function ui_icono($nombre, $tam = 18) {
         'cerrar'       => '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
         'candado'      => '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
         'chevron'      => '<path d="m6 9 6 6 6-6"/>',
+        'recursos'     => '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+        'pdf'          => '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
+        'video'        => '<path d="m10 7 5 3-5 3Z"/><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M12 17v4"/><path d="M8 21h8"/>',
     ];
     $d = $trazos[$nombre] ?? $trazos['inicio'];
     return '<svg class="ico" width="' . $tam . '" height="' . $tam . '" viewBox="0 0 24 24" fill="none" '
@@ -173,6 +176,8 @@ function ui_menu() {
         'Plataforma' => [
             ['calculadora',  'Calculadora',   'calculadora.php', true, false],
             ['libreria',     'Librería STL',  'libreria.php', true, false],
+            ['recursos',     'Recursos', [['pdf', 'PDF', 'recursos.php?tab=pdf'],
+                                          ['video', 'Videos', 'recursos.php?tab=videos']], true, false],
         ],
         'Mi taller' => [
             ['presupuestos', 'Presupuestos',  'presupuestos.php', true, true],
@@ -195,6 +200,7 @@ function ui_menu_admin() {
         ['inicio',       'Panel',        'admin/', true, false],
         ['admin',        'Suscripciones','admin/suscripciones.php', true, false],
         ['nube',         'Cargar STL',   'admin/stl.php', true, false],
+        ['recursos',     'Cargar recursos', 'admin/recursos.php', true, false],
         ['ventas',       'Mercado Pago', 'admin/mercadopago.php', true, false],
         ['descargar',    'Backups',      'admin/backups.php', true, false],
     ];
@@ -223,11 +229,18 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
   .grupo .chev{transition:transform .18s ease}
   .grupo.plegado .chev{transform:rotate(-90deg)}
   .grupo-items{overflow:hidden}
+  .lateral > .grupo, .lateral > .grupo-items, .lateral > .marca{flex-shrink:0}
   .grupo-items[hidden]{display:none !important}
   .item.bloq{color:var(--txt-3)}
   .item.bloq .ico{color:var(--txt-3)}
   .item.bloq .candado{margin-left:auto;color:var(--txt-3)}
   .item.bloq:hover{background:var(--surface-2);color:var(--txt-2)}
+  button.item{width:100%;background:none;border:none;font-family:inherit;text-align:left}
+  .item .sub-chev{margin-left:auto;display:inline-flex;transition:transform .18s ease}
+  .item.sub-abierto .sub-chev{transform:rotate(180deg)}
+  .subitems{margin-left:18px;border-left:1px solid var(--bd-suave);padding-left:6px}
+  .subitems[hidden]{display:none !important}
+  .subitems .item{font-size:13px;padding:6.5px 10px}
   .item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radio);
         color:var(--txt-2);font-size:13.5px;font-weight:500;margin-bottom:1px;cursor:pointer;
         white-space:nowrap;transition:background-color .15s ease,color .15s ease}
@@ -293,7 +306,21 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
       </button>
       <div class="grupo-items">
       <?php foreach ($items as [$icono, $nombre, $href, $ok, $pago]): ?>
-        <?php if ($ok && $pago && !$conTodo): ?>
+        <?php if ($ok && is_array($href)):
+            $hijoActivo = false;
+            foreach ($href as $h) { if ($h[1] === $activo) $hijoActivo = true; } ?>
+          <button type="button" class="item sub-btn<?php echo $hijoActivo ? ' activo sub-abierto' : ''; ?>"
+                  data-sub="<?php echo htmlspecialchars($nombre); ?>">
+            <?php echo ui_icono($icono); ?><?php echo htmlspecialchars($nombre); ?>
+            <span class="sub-chev"><?php echo ui_icono('chevron', 13); ?></span>
+          </button>
+          <div class="subitems"<?php echo $hijoActivo ? '' : ' hidden'; ?>>
+            <?php foreach ($href as [$hicono, $hnombre, $hurl]): ?>
+              <a class="item<?php echo $hnombre === $activo ? ' activo' : ''; ?>" href="<?php echo $raiz . htmlspecialchars($hurl); ?>">
+                <?php echo ui_icono($hicono, 15); ?><?php echo htmlspecialchars($hnombre); ?></a>
+            <?php endforeach; ?>
+          </div>
+        <?php elseif ($ok && $pago && !$conTodo): ?>
           <a class="item bloq" href="<?php echo $raiz; ?>suscripcion.php" title="Disponible en el plan completo">
             <?php echo ui_icono($icono); ?><?php echo htmlspecialchars($nombre); ?>
             <span class="candado"><?php echo ui_icono('candado', 14); ?></span>
@@ -315,6 +342,13 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
     (function () {
       let plegados = {};
       try { plegados = JSON.parse(localStorage.getItem('ptools_menu_plegado') || '{}'); } catch (e) {}
+      document.querySelectorAll('.lateral .sub-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const caja = btn.nextElementSibling;
+          caja.hidden = !caja.hidden;
+          btn.classList.toggle('sub-abierto', !caja.hidden);
+        });
+      });
       document.querySelectorAll('.lateral .grupo').forEach(btn => {
         const g = btn.dataset.grupo;
         const caja = btn.nextElementSibling;
