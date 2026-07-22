@@ -22,8 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pid    = (int) ($_POST['presupuesto_id'] ?? 0);
         if ($accion === 'estado' && $pid) {
             $nuevo = ($_POST['estado'] ?? '') === 'vendido' ? 'vendido' : 'pendiente';
-            com_db()->prepare('UPDATE presupuestos SET estado=?, actualizado_en=NOW() WHERE id=? AND usuario_id=?')
-                ->execute([$nuevo, $pid, $uid]);
+            taller_cambiar_estado($uid, $pid, $nuevo);
             $aviso = $nuevo === 'vendido' ? 'Presupuesto marcado como vendido.' : 'Presupuesto vuelto a pendiente.';
         } elseif ($accion === 'eliminar' && $pid) {
             com_db()->prepare('DELETE FROM presupuestos WHERE id=? AND usuario_id=?')->execute([$pid, $uid]);

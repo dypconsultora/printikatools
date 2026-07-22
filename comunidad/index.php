@@ -76,6 +76,18 @@ ui_panel_inicio('Inicio', $u, 'Inicio');
         <h2>Clientes</h2>
         <p>Tu cartera de clientes, vinculada a los presupuestos.</p>
       </a>
+      <a class="tarjeta-h" href="ventas.php">
+        <span class="flecha"><?php echo ui_icono('flecha', 16); ?></span>
+        <span class="ico-caja"><?php echo ui_icono('ventas', 19); ?></span>
+        <h2>Ventas</h2>
+        <p>Ingresos y gastos del taller, mes a mes.</p>
+      </a>
+      <a class="tarjeta-h" href="estadisticas.php">
+        <span class="flecha"><?php echo ui_icono('flecha', 16); ?></span>
+        <span class="ico-caja"><?php echo ui_icono('estadisticas', 19); ?></span>
+        <h2>Estadísticas</h2>
+        <p>Ganancia, ingresos y gastos de los últimos meses.</p>
+      </a>
       <div class="tarjeta-h prox">
         <span class="ico-caja"><?php echo ui_icono('stock', 19); ?></span>
         <h2>Stock de materiales <span class="badge">Próximamente</span></h2>

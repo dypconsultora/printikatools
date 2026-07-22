@@ -97,7 +97,126 @@ function taller_migrar() {
             REFERENCES productos(id) ON DELETE SET NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+    $db->exec("CREATE TABLE IF NOT EXISTS movimientos (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        usuario_id BIGINT UNSIGNED NOT NULL,
+        tipo ENUM('ingreso','gasto') NOT NULL,
+        concepto VARCHAR(200) NOT NULL,
+        monto DECIMAL(12,2) NOT NULL DEFAULT 0,
+        fecha DATE NOT NULL,
+        creado_en DATETIME NOT NULL,
+        PRIMARY KEY (id),
+        KEY idx_usuario_fecha (usuario_id, fecha),
+        CONSTRAINT fk_mov_usuario FOREIGN KEY (usuario_id)
+            REFERENCES usuarios(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    // Fecha en que el presupuesto se marcó vendido (para Ventas/Estadísticas)
+    $stmt = $db->prepare("SELECT COUNT(*) c FROM information_schema.COLUMNS
+                           WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'presupuestos' AND COLUMN_NAME = 'vendido_en'");
+    $stmt->execute();
+    if (!(int) $stmt->fetch()['c']) {
+        $db->exec("ALTER TABLE presupuestos ADD COLUMN vendido_en DATETIME NULL AFTER estado");
+        // Los ya vendidos toman su última actualización como fecha de venta
+        $db->exec("UPDATE presupuestos SET vendido_en = actualizado_en WHERE estado = 'vendido' AND vendido_en IS NULL");
+    }
+
     $listo = true;
+}
+
+/** Registra el cambio de estado manteniendo la fecha de venta. */
+function taller_cambiar_estado($usuario_id, $presupuesto_id, $estado) {
+    if ($estado === 'vendido') {
+        com_db()->prepare("UPDATE presupuestos SET estado='vendido', vendido_en=COALESCE(vendido_en, NOW()),
+                           actualizado_en=NOW() WHERE id=? AND usuario_id=?")
+            ->execute([(int) $presupuesto_id, (int) $usuario_id]);
+    } else {
+        com_db()->prepare("UPDATE presupuestos SET estado='pendiente', vendido_en=NULL,
+                           actualizado_en=NOW() WHERE id=? AND usuario_id=?")
+            ->execute([(int) $presupuesto_id, (int) $usuario_id]);
+    }
+}
+
+/**
+ * Movimientos de un mes: manuales + presupuestos vendidos (ingreso automático).
+ * Devuelve filas ordenadas por fecha desc con: tipo, concepto, monto, fecha,
+ * origen ('manual'|'presupuesto'), id (del movimiento) y presupuesto_id.
+ */
+function taller_movimientos_mes($usuario_id, $anio, $mes) {
+    $desde = sprintf('%04d-%02d-01', $anio, $mes);
+    $hasta = date('Y-m-t', strtotime($desde));
+
+    $stmt = com_db()->prepare(
+        "SELECT id, tipo, concepto, monto, fecha, 'manual' AS origen, NULL AS presupuesto_id
+           FROM movimientos WHERE usuario_id=? AND fecha BETWEEN ? AND ?");
+    $stmt->execute([(int) $usuario_id, $desde, $hasta]);
+    $filas = $stmt->fetchAll();
+
+    $stmt = com_db()->prepare(
+        "SELECT p.id AS presupuesto_id, p.cliente_nombre, DATE(p.vendido_en) AS fecha,
+                COALESCE(SUM(i.precio_unit * i.cantidad),0) AS subtotal,
+                p.descuento_tipo, p.descuento_valor
+           FROM presupuestos p
+      LEFT JOIN presupuesto_items i ON i.presupuesto_id = p.id
+          WHERE p.usuario_id=? AND p.estado='vendido' AND DATE(p.vendido_en) BETWEEN ? AND ?
+       GROUP BY p.id");
+    $stmt->execute([(int) $usuario_id, $desde, $hasta]);
+    foreach ($stmt->fetchAll() as $pfila) {
+        [, , $total] = taller_totales($pfila, [['precio_unit' => $pfila['subtotal'], 'cantidad' => 1]]);
+        $filas[] = [
+            'id' => null, 'tipo' => 'ingreso',
+            'concepto' => 'Presupuesto vendido · ' . ($pfila['cliente_nombre'] ?: 'Sin nombre'),
+            'monto' => $total, 'fecha' => $pfila['fecha'],
+            'origen' => 'presupuesto', 'presupuesto_id' => (int) $pfila['presupuesto_id'],
+        ];
+    }
+    usort($filas, fn($a, $b) => strcmp($b['fecha'], $a['fecha']));
+    return $filas;
+}
+
+/** Totales [ingresos, gastos, cant_ingresos, cant_gastos] de un mes. */
+function taller_resumen_mes($usuario_id, $anio, $mes) {
+    $ing = $gas = $ci = $cg = 0;
+    foreach (taller_movimientos_mes($usuario_id, $anio, $mes) as $m) {
+        if ($m['tipo'] === 'ingreso') { $ing += $m['monto']; $ci++; }
+        else { $gas += $m['monto']; $cg++; }
+    }
+    return [$ing, $gas, $ci, $cg];
+}
+
+const TALLER_MESES = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+/** Barra de navegación de mes (flechas + selector de últimos 24 meses + Exportar CSV). */
+function taller_nav_mes($pagina, $anio, $mes) {
+    $ts = mktime(0, 0, 0, $mes, 1, $anio);
+    $prev = date('Y-m', strtotime('-1 month', $ts));
+    $next = date('Y-m', strtotime('+1 month', $ts));
+    $es_actual = date('Y-m', $ts) >= date('Y-m');
+    ?>
+    <style>
+      .nav-mes{display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+      .nav-mes .flecha{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;
+          background:var(--surface);border:1px solid var(--bd);border-radius:var(--radio);color:var(--txt-2)}
+      .nav-mes .flecha:hover{color:var(--txt);border-color:var(--raised)}
+      .nav-mes .flecha.off{opacity:.35;pointer-events:none}
+      .nav-mes select{width:auto;font-weight:600}
+      .nav-mes .csv{margin-left:auto}
+    </style>
+    <div class="nav-mes">
+      <a class="flecha" href="<?php echo $pagina; ?>?mes=<?php echo $prev; ?>" aria-label="Mes anterior">&lsaquo;</a>
+      <select onchange="location.href='<?php echo $pagina; ?>?mes='+this.value" aria-label="Mes">
+        <?php for ($i = 0; $i < 24; $i++):
+            $t = strtotime("-{$i} month", mktime(0, 0, 0, (int) date('n'), 1, (int) date('Y')));
+            $v = date('Y-m', $t); ?>
+          <option value="<?php echo $v; ?>" <?php echo $v === sprintf('%04d-%02d', $anio, $mes) ? 'selected' : ''; ?>>
+            <?php echo TALLER_MESES[(int) date('n', $t)] . ' ' . date('Y', $t); ?></option>
+        <?php endfor; ?>
+      </select>
+      <a class="flecha<?php echo $es_actual ? ' off' : ''; ?>" href="<?php echo $pagina; ?>?mes=<?php echo $next; ?>" aria-label="Mes siguiente">&rsaquo;</a>
+      <a class="btn sec csv" href="<?php echo $pagina; ?>?mes=<?php echo sprintf('%04d-%02d', $anio, $mes); ?>&csv=1">Exportar CSV</a>
+    </div>
+    <?php
 }
 
 /**

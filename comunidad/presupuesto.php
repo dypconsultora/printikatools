@@ -91,6 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                         $ins->execute([$pid, $producto_id, $nombre, $descripcion, $cantidad, $precio, $costo, $djson]);
                     }
+                    taller_cambiar_estado($uid, $pid, $estado);
                     $db->commit();
                     header('Location: presupuesto.php?id=' . $pid . '&ok=1');
                     exit;

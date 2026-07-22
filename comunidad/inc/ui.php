@@ -168,8 +168,8 @@ function ui_menu() {
             ['etiqueta',     'Productos',     'productos.php', true],
             ['clientes',     'Clientes',      'clientes.php', true],
             ['stock',        'Stock',         null, false],
-            ['ventas',       'Ventas',        null, false],
-            ['estadisticas', 'Estadísticas',  null, false],
+            ['ventas',       'Ventas',        'ventas.php', true],
+            ['estadisticas', 'Estadísticas',  'estadisticas.php', true],
             ['configuracion','Configuración', null, false],
         ],
         'Soporte' => [
