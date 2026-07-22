@@ -77,9 +77,9 @@ function ptTema(t){document.documentElement.setAttribute('data-theme',t==='light
   a:hover{color:var(--accent-hover)}
   .ico{flex-shrink:0;vertical-align:-3px}
 
-  .badge{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.07em;
-         padding:2px 7px;border-radius:99px;border:1px solid var(--bd);
-         color:var(--txt-3);text-transform:uppercase;line-height:1.5}
+  .badge{display:inline-block;font-size:8.5px;font-weight:600;letter-spacing:.04em;
+         padding:2px 6px;border-radius:99px;border:1px solid var(--bd);
+         color:var(--txt-3);text-transform:uppercase;line-height:1.5;white-space:nowrap}
 
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
        background:var(--accent);color:var(--accent-ink);border:1px solid transparent;
@@ -187,7 +187,7 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
 <?php ui_css(); ?>
 <style>
   .app{display:flex;min-height:100vh}
-  .lateral{width:240px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--bd-suave);
+  .lateral{width:258px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--bd-suave);
            display:flex;flex-direction:column;padding:20px 12px 16px;
            position:sticky;top:0;height:100vh;overflow-y:auto}
   .lateral .marca{display:block;padding:0 10px;margin-bottom:24px}
@@ -196,7 +196,7 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
          color:var(--txt-3);margin:18px 10px 6px}
   .item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radio);
         color:var(--txt-2);font-size:13.5px;font-weight:500;margin-bottom:1px;cursor:pointer;
-        transition:background-color .15s ease,color .15s ease}
+        white-space:nowrap;transition:background-color .15s ease,color .15s ease}
   .item .ico{color:var(--txt-3);transition:color .15s ease}
   .item:hover{background:var(--surface-2);color:var(--txt)}
   .item:hover .ico{color:var(--txt-2)}
@@ -256,7 +256,7 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
           </a>
         <?php else: ?>
           <span class="item prox"><?php echo ui_icono($icono); ?><?php echo htmlspecialchars($nombre); ?>
-            <span class="badge">Pronto</span></span>
+            <span class="badge">Próximamente</span></span>
         <?php endif; ?>
       <?php endforeach; ?>
     <?php endforeach; ?>

@@ -60,17 +60,17 @@ ui_panel_inicio('Inicio', $u, 'Inicio');
       </a>
       <div class="tarjeta-h prox">
         <span class="ico-caja"><?php echo ui_icono('presupuestos', 19); ?></span>
-        <h2>Presupuestos <span class="badge">Pronto</span></h2>
+        <h2>Presupuestos <span class="badge">Próximamente</span></h2>
         <p>Generá y guardá presupuestos para tus clientes.</p>
       </div>
       <div class="tarjeta-h prox">
         <span class="ico-caja"><?php echo ui_icono('clientes', 19); ?></span>
-        <h2>Clientes <span class="badge">Pronto</span></h2>
+        <h2>Clientes <span class="badge">Próximamente</span></h2>
         <p>Tu cartera de clientes, siempre a mano.</p>
       </div>
       <div class="tarjeta-h prox">
         <span class="ico-caja"><?php echo ui_icono('stock', 19); ?></span>
-        <h2>Stock de materiales <span class="badge">Pronto</span></h2>
+        <h2>Stock de materiales <span class="badge">Próximamente</span></h2>
         <p>Controlá tus rollos de filamento e insumos.</p>
       </div>
     </div>
