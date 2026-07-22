@@ -215,6 +215,55 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
       .check-linea{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:var(--txt-2)}
       .check-linea input{width:auto;height:auto}
       @media (max-width:1080px){ .dos-col{grid-template-columns:1fr} .calc{position:static} }
+
+      /* ============================================================
+         EXPORTAR PDF — mismo formato que el exportador del cotizador
+         ============================================================ */
+      #printDoc { display: none; }
+      @media print {
+        @page { margin: 0; }
+        body { background: #fff !important; }
+        body > *:not(#printDoc) { display: none !important; }
+        #printDoc {
+          display: block;
+          padding: 16mm 15mm;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+          color: #17202e;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        .pd-top { display: flex; justify-content: space-between; align-items: flex-end;
+          padding-bottom: 18px; border-bottom: 2px solid #17202e; }
+        .pd-logo { height: 60px; width: auto; }
+        .pd-meta { text-align: right; }
+        .pd-kicker { font-size: 11px; font-weight: 700; letter-spacing: 0.24em;
+          text-transform: uppercase; color: #0b78b5; }
+        .pd-project { font-size: 25px; font-weight: 800; letter-spacing: -0.02em;
+          color: #101b29; margin-top: 4px; }
+        .pd-date { font-size: 12px; color: #64748c; margin-top: 5px; }
+        .pd-specs { display: flex; gap: 36px; margin: 20px 0 4px; }
+        .pd-spec { font-size: 11px; color: #64748c; text-transform: uppercase; letter-spacing: 0.06em; }
+        .pd-spec strong { display: block; font-size: 15px; font-weight: 700; color: #101b29;
+          margin-top: 3px; text-transform: none; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+        .pd-rows { margin-top: 22px; }
+        .pd-row { display: flex; justify-content: space-between; padding: 10px 2px;
+          border-bottom: 1px solid #e5eaf1; font-size: 13.5px; }
+        .pd-row .l { color: #44536b; }
+        .pd-row .l small { color: #8a97ab; font-size: 12px; }
+        .pd-row .v { font-weight: 600; color: #101b29; font-variant-numeric: tabular-nums; }
+        .pd-row.sub { border-top: 2px solid #17202e; border-bottom: none; padding-top: 13px; margin-top: 2px; }
+        .pd-row.sub .l, .pd-row.sub .v { font-weight: 700; color: #101b29; }
+        .pd-total { display: flex; justify-content: space-between; align-items: center;
+          margin-top: 16px; padding: 15px 20px; background: #eaf4fb; border: 1px solid #bdd9ec;
+          border-radius: 10px; }
+        .pd-total .l { font-size: 11px; font-weight: 700; letter-spacing: 0.2em;
+          text-transform: uppercase; color: #0b6ca8; }
+        .pd-total .v { font-size: 30px; font-weight: 800; letter-spacing: -0.02em;
+          color: #0b6ca8; font-variant-numeric: tabular-nums; }
+        .pd-notas { margin-top: 22px; font-size: 12.5px; color: #44536b; }
+        .pd-notas .pd-h { font-size: 11px; font-weight: 700; letter-spacing: 0.2em;
+          text-transform: uppercase; color: #64748c; padding-bottom: 6px; }
+      }
     </style>
 
     <div class="dos-col">
@@ -283,6 +332,7 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
 
         <div class="acciones-pie">
           <span class="nota-pie" id="notaPie"></span>
+          <button type="button" class="btn sec" id="btnPdf"><?php echo ui_icono('descargar', 16); ?> Exportar PDF</button>
           <button type="button" class="btn sec" id="btnWpp"><?php echo ui_icono('whatsapp', 16); ?> Compartir</button>
           <button type="button" class="btn sec" id="btnVendido">Guardar y marcar vendido</button>
           <button type="button" class="btn" id="btnGuardar">Guardar</button>
@@ -614,6 +664,59 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
   }
   $('cliente').addEventListener('input', pintarHintCliente);
   pintarHintCliente();
+  // Exportar PDF: mismo documento que el exportador del cotizador,
+  // con las piezas del presupuesto como filas de detalle.
+  const printDoc = document.createElement('div');
+  printDoc.id = 'printDoc';
+  printDoc.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(printDoc);
+
+  $('btnPdf').addEventListener('click', () => {
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const cliente = $('cliente').value.trim() || 'Cliente';
+    const fecha = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const st = estado.items.reduce((a, it) => a + it.precio * it.cantidad, 0);
+    const dv = Math.max(0, parseFloat($('descValor').value || 0));
+    const desc = estado.descuento_tipo === 'porcentaje' ? st * Math.min(100, dv) / 100 : Math.min(st, dv);
+    const total = Math.max(0, st - desc);
+    const unidades = estado.items.reduce((a, it) => a + it.cantidad, 0);
+
+    let html =
+      '<div class="pd-top">' +
+        '<img class="pd-logo" src="../assets/img/printika-tools.svg" alt="Printika Tools">' +
+        '<div class="pd-meta">' +
+          '<div class="pd-kicker">Presupuesto</div>' +
+          '<div class="pd-project">' + esc(cliente) + '</div>' +
+          '<div class="pd-date">' + esc(fecha) + ' &middot; <?php echo $moneda; ?></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="pd-specs">' +
+        '<div class="pd-spec">Piezas<strong>' + estado.items.length + '</strong></div>' +
+        '<div class="pd-spec">Unidades<strong>' + unidades + '</strong></div>' +
+        '<div class="pd-spec">Fecha de emision<strong>' + esc(fecha) + '</strong></div>' +
+      '</div>' +
+      '<div class="pd-rows">' +
+        estado.items.map(it =>
+          '<div class="pd-row"><span class="l">' + esc(it.nombre) +
+          (it.cantidad > 1 ? ' &times; ' + it.cantidad : '') +
+          (it.descripcion ? ' <small>&middot; ' + esc(it.descripcion) + '</small>' : '') +
+          '</span><span class="v">' + esc(fmt(it.precio * it.cantidad)) + '</span></div>').join('') +
+        '<div class="pd-row sub"><span class="l">Subtotal</span><span class="v">' + esc(fmt(st)) + '</span></div>' +
+        (desc > 0 ? '<div class="pd-row"><span class="l">Descuento' +
+          (estado.descuento_tipo === 'porcentaje' ? ' (' + dv + '%)' : '') +
+          '</span><span class="v">&minus; ' + esc(fmt(desc)) + '</span></div>' : '') +
+      '</div>' +
+      '<div class="pd-total"><span class="l">Total</span><span class="v">' + esc(fmt(total)) + '</span></div>';
+
+    const notas = $('notas').value.trim();
+    if (notas) {
+      html += '<div class="pd-notas"><div class="pd-h">Notas</div>' + esc(notas) + '</div>';
+    }
+
+    printDoc.innerHTML = html;
+    setTimeout(() => window.print(), 60);
+  });
+
   $('btnWpp').addEventListener('click', () => {
     const st = estado.items.reduce((a, it) => a + it.precio * it.cantidad, 0);
     const dv = Math.max(0, parseFloat($('descValor').value || 0));
