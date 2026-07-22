@@ -100,6 +100,25 @@ function taller_migrar() {
     $listo = true;
 }
 
+/**
+ * Modelos de impresora con su consumo típico. El "(NNN W)" del nombre es el
+ * que la calculadora detecta para autocompletar el consumo.
+ */
+function taller_impresoras() {
+    return [
+        'Bambu Lab A1 Mini (45 W)', 'Bambu Lab A1 (95 W)', 'Bambu Lab P1P (80 W)',
+        'Bambu Lab P1S (100 W)', 'Bambu Lab P2S (130 W)', 'Bambu Lab X1 Carbon (120 W)',
+        'Bambu Lab H2S (210 W)', 'Bambu Lab H2D (210 W)', 'Bambu Lab H2C (210 W)',
+        'Prusa MK3S+ (80 W)', 'Prusa MK4 (100 W)',
+        'Creality Ender 3 V2 (110 W)', 'Creality Ender 3 S1 (120 W)',
+        'Creality K1 (100 W)', 'Creality K1C (100 W)', 'Creality K1 Max (200 W)',
+        'Anycubic Kobra 2 (75 W)', 'Anycubic Vyper (80 W)',
+        'SnapMaker U1 (130 W)',
+        'Elegoo Saturn 3 (resina) (75 W)', 'Elegoo Saturn 4 (resina) (75 W)',
+        'Voron 2.4 (350mm DIY) (225 W)',
+    ];
+}
+
 /** Monedas disponibles del taller: código => [símbolo, decimales]. */
 function taller_monedas() {
     return ['ARS' => ['$', 0], 'USD' => ['US$', 2], 'EUR' => ['€', 2]];

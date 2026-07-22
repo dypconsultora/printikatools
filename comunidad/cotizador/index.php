@@ -1396,6 +1396,36 @@ input[type="range"]::-moz-range-thumb {
       <span class="icon">&#9889;</span>
       Costos de Electricidad
     </div>
+    <div class="field">
+      <label for="printerModel">Modelo de impresora</label>
+      <select id="printerModel">
+        <option value="">Otro / Personalizado</option>
+          <option value="Bambu Lab A1 Mini (45 W)">Bambu Lab A1 Mini (45 W)</option>
+          <option value="Bambu Lab A1 (95 W)">Bambu Lab A1 (95 W)</option>
+          <option value="Bambu Lab P1P (80 W)">Bambu Lab P1P (80 W)</option>
+          <option value="Bambu Lab P1S (100 W)">Bambu Lab P1S (100 W)</option>
+          <option value="Bambu Lab P2S (130 W)">Bambu Lab P2S (130 W)</option>
+          <option value="Bambu Lab X1 Carbon (120 W)">Bambu Lab X1 Carbon (120 W)</option>
+          <option value="Bambu Lab H2S (210 W)">Bambu Lab H2S (210 W)</option>
+          <option value="Bambu Lab H2D (210 W)">Bambu Lab H2D (210 W)</option>
+          <option value="Bambu Lab H2C (210 W)">Bambu Lab H2C (210 W)</option>
+          <option value="Prusa MK3S+ (80 W)">Prusa MK3S+ (80 W)</option>
+          <option value="Prusa MK4 (100 W)">Prusa MK4 (100 W)</option>
+          <option value="Creality Ender 3 V2 (110 W)">Creality Ender 3 V2 (110 W)</option>
+          <option value="Creality Ender 3 S1 (120 W)">Creality Ender 3 S1 (120 W)</option>
+          <option value="Creality K1 (100 W)">Creality K1 (100 W)</option>
+          <option value="Creality K1C (100 W)">Creality K1C (100 W)</option>
+          <option value="Creality K1 Max (200 W)">Creality K1 Max (200 W)</option>
+          <option value="Anycubic Kobra 2 (75 W)">Anycubic Kobra 2 (75 W)</option>
+          <option value="Anycubic Vyper (80 W)">Anycubic Vyper (80 W)</option>
+          <option value="SnapMaker U1 (130 W)">SnapMaker U1 (130 W)</option>
+          <option value="Elegoo Saturn 3 (resina) (75 W)">Elegoo Saturn 3 (resina) (75 W)</option>
+          <option value="Elegoo Saturn 4 (resina) (75 W)">Elegoo Saturn 4 (resina) (75 W)</option>
+          <option value="Voron 2.4 (350mm DIY) (225 W)">Voron 2.4 (350mm DIY) (225 W)</option>
+      </select>
+      <div style="font-size:.78rem;color:var(--text-secondary,#8888a0);margin-top:.4rem">
+        Elegí tu modelo y autocompletamos el consumo (W). Si no está en la lista, dejá "Otro / Personalizado".</div>
+    </div>
     <div class="field-grid">
       <div class="field">
         <label for="printerWatts">Consumo <span class="unit">(Watts)</span></label>
@@ -1822,6 +1852,28 @@ input[type="range"]::-moz-range-thumb {
   });
 
   // Bind all inputs to recalculate
+  // Modelo de impresora: autocompleta el consumo detectando el "(NNN W)" del nombre
+  function aplicarModeloImpresora() {
+    const sel = $('printerModel');
+    if (!sel) return;
+    const m = (sel.value || '').match(/\((\d+)\s*W\)/i);
+    if (m) { $('printerWatts').value = m[1]; $('printerWatts').disabled = true; }
+    else { $('printerWatts').disabled = false; }
+  }
+  window.aplicarModeloImpresora = aplicarModeloImpresora;
+  if ($('printerModel')) {
+    try {
+      const guardado = localStorage.getItem('calc3d_modelo_impresora');
+      if (guardado !== null) $('printerModel').value = guardado;
+    } catch (e) {}
+    aplicarModeloImpresora();
+    $('printerModel').addEventListener('change', () => {
+      try { localStorage.setItem('calc3d_modelo_impresora', $('printerModel').value); } catch (e) {}
+      aplicarModeloImpresora();
+      calculate();
+    });
+  }
+
   document.querySelectorAll('input[type="number"], input[type="range"], select').forEach(el => {
     el.addEventListener('input', calculate);
     el.addEventListener('change', calculate);
@@ -2039,6 +2091,7 @@ input[type="range"]::-moz-range-thumb {
 
   // Load quote (desde el cache traido del servidor)
   window.loadQuote = function(id) {
+    setTimeout(function(){ if (window.aplicarModeloImpresora) window.aplicarModeloImpresora(); }, 0);
     const q = quotesCache.find(q => String(q.id) === String(id));
     if (!q) return;
 

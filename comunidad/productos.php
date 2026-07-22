@@ -202,6 +202,15 @@ ui_panel_inicio('Productos', $u, 'Productos');
         <details>
           <summary>Impresora y electricidad</summary>
           <div class="inner">
+            <label for="cModelo">Modelo de impresora</label>
+            <select id="cModelo">
+              <option value="">Otro / Personalizado</option>
+              <?php foreach (taller_impresoras() as $imp): ?>
+                <option value="<?php echo htmlspecialchars($imp); ?>"><?php echo htmlspecialchars($imp); ?></option>
+              <?php endforeach; ?>
+            </select>
+            <p style="font-size:12px;color:var(--txt-3);margin-top:6px">Elegí tu modelo y autocompletamos el consumo (W).
+              Si no está en la lista, dejá "Otro / Personalizado".</p>
             <div class="fila-2">
               <span><label for="cWatts">Consumo (W)</label><input id="cWatts" type="number" min="0" step="10" value="150"></span>
               <span><label for="cTarifa">Tarifa ($/kWh)</label><input id="cTarifa" type="number" min="0" step="1" value="140"></span>
@@ -267,7 +276,7 @@ ui_panel_inicio('Productos', $u, 'Productos');
       if (cancelar) cancelar.addEventListener('click', function(){ zona.hidden = true; });
 
       // Calculadora: misma logica y misma config recordada que en presupuestos
-      var CFG = ['cPrecioCarrete','cPesoCarrete','cWatts','cTarifa','cImpresora','cVida','cMant',
+      var CFG = ['cModelo','cPrecioCarrete','cPesoCarrete','cWatts','cTarifa','cImpresora','cVida','cMant',
                  'cPrep','cPost','cTarifaMano','cEmpaque','cEnvio','cOtros','cFallos','cMargen',
                  'cPrecioCarreteSop','cPesoCarreteSop'];
       try {
@@ -313,9 +322,18 @@ ui_panel_inicio('Productos', $u, 'Productos');
         ultimo.costo = Math.round(costoTotal * 100) / 100;
         ultimo.sugerido = Math.round(sugerido);
       }
-      document.querySelectorAll('.calc input').forEach(function(el){
+      document.querySelectorAll('.calc input, .calc select').forEach(function(el){
         el.addEventListener('input', function(){ calcular(); guardarCfg(); });
       });
+
+      // Modelo de impresora: detecta el "(NNN W)" del nombre y bloquea el consumo
+      function aplicarModelo(){
+        var m = ($('cModelo').value || '').match(/\((\d+)\s*W\)/i);
+        if (m) { $('cWatts').value = m[1]; $('cWatts').disabled = true; }
+        else { $('cWatts').disabled = false; }
+      }
+      $('cModelo').addEventListener('change', function(){ aplicarModelo(); calcular(); guardarCfg(); });
+      aplicarModelo();
       calcular();
 
       window.addEventListener('ptools:moneda', function(e){

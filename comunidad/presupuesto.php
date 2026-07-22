@@ -325,6 +325,15 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
         <details>
           <summary>Impresora y electricidad</summary>
           <div class="inner">
+            <label for="cModelo">Modelo de impresora</label>
+            <select id="cModelo">
+              <option value="">Otro / Personalizado</option>
+              <?php foreach (taller_impresoras() as $imp): ?>
+                <option value="<?php echo htmlspecialchars($imp); ?>"><?php echo htmlspecialchars($imp); ?></option>
+              <?php endforeach; ?>
+            </select>
+            <p style="font-size:12px;color:var(--txt-3);margin-top:6px">Elegí tu modelo y autocompletamos el consumo (W).
+              Si no está en la lista, dejá "Otro / Personalizado".</p>
             <div class="fila-2">
               <span><label for="cWatts">Consumo (W)</label><input id="cWatts" type="number" min="0" step="10" value="150"></span>
               <span><label for="cTarifa">Tarifa ($/kWh)</label><input id="cTarifa" type="number" min="0" step="1" value="140"></span>
@@ -476,7 +485,7 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
   }));
 
   // ---------- Calculadora (misma lógica que la Calculadora de costos) ----------
-  const CFG_CAMPOS = ['cPrecioCarrete','cPesoCarrete','cWatts','cTarifa','cImpresora','cVida','cMant',
+  const CFG_CAMPOS = ['cModelo','cPrecioCarrete','cPesoCarrete','cWatts','cTarifa','cImpresora','cVida','cMant',
                       'cPrep','cPost','cTarifaMano','cEmpaque','cEnvio','cOtros','cFallos','cMargen',
                       'cPrecioCarreteSop','cPesoCarreteSop'];
   try {
@@ -540,6 +549,15 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
   }
   document.querySelectorAll('.calc input, .calc select').forEach(el =>
     el.addEventListener('input', () => { if (el.id === 'cPrecioFinal') precioTocado = true; calcular(); guardarCfg(); }));
+
+  // Modelo de impresora: detecta el "(NNN W)" del nombre y bloquea el consumo
+  function aplicarModelo(){
+    const m = ($('cModelo').value || '').match(/\((\d+)\s*W\)/i);
+    if (m) { $('cWatts').value = m[1]; $('cWatts').disabled = true; }
+    else { $('cWatts').disabled = false; }
+  }
+  $('cModelo').addEventListener('change', () => { aplicarModelo(); calcular(); guardarCfg(); });
+  aplicarModelo();
 
   $('btnAgregar').addEventListener('click', () => {
     const nombre = $('cNombre').value.trim();
