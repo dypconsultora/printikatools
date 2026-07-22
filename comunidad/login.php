@@ -42,7 +42,7 @@ ui_tarjeta_inicio('Ingresar');
         <label for="email">Email</label>
         <input type="email" id="email" name="email" required autofocus>
         <label for="password">Contraseña</label>
-        <input type="password" id="password" name="password" required>
+        <?php ui_campo_password('password', 'password', 'required autocomplete="current-password"'); ?>
         <button class="btn" type="submit">Ingresar</button>
       </form>
       <p class="pie">¿No tenés cuenta? <a href="registro.php">Registrate</a></p>

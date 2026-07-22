@@ -43,6 +43,8 @@ function ui_icono($nombre, $tam = 18) {
         'recursos'     => '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
         'pdf'          => '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
         'video'        => '<path d="m10 7 5 3-5 3Z"/><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M12 17v4"/><path d="M8 21h8"/>',
+        'ojo'          => '<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>',
+        'ojo-cerrado'  => '<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
     ];
     $d = $trazos[$nombre] ?? $trazos['inicio'];
     return '<svg class="ico" width="' . $tam . '" height="' . $tam . '" viewBox="0 0 24 24" fill="none" '
@@ -50,10 +52,28 @@ function ui_icono($nombre, $tam = 18) {
          . $d . '</svg>';
 }
 
+/** Campo de contraseña con el botón de mostrar/ocultar (ojito). */
+function ui_campo_password($id, $name, $atributos = '') { ?>
+  <span class="campo-pass">
+    <input type="password" id="<?php echo $id; ?>" name="<?php echo $name; ?>" <?php echo $atributos; ?>>
+    <button type="button" class="ver-pass" data-pass="<?php echo $id; ?>" aria-label="Mostrar contraseña" tabindex="-1">
+      <span class="ojo-on"><?php echo ui_icono('ojo', 17); ?></span>
+      <span class="ojo-off"><?php echo ui_icono('ojo-cerrado', 17); ?></span>
+    </button>
+  </span>
+<?php }
+
 /** Estilos base compartidos por todas las pantallas de la plataforma. */
 function ui_css() { ?>
 <script>(function(){if(localStorage.getItem('ptools_tema')==='light'){document.documentElement.setAttribute('data-theme','light');}})();
-function ptTema(t){document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');localStorage.setItem('ptools_tema',t);}</script>
+function ptTema(t){document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');localStorage.setItem('ptools_tema',t);}
+document.addEventListener('click',function(e){
+  var b=e.target.closest('.ver-pass');if(!b)return;
+  var i=document.getElementById(b.dataset.pass);if(!i)return;
+  var ver=i.type==='password';i.type=ver?'text':'password';
+  b.classList.toggle('visible',ver);
+  b.setAttribute('aria-label',ver?'Ocultar contraseña':'Mostrar contraseña');
+});</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -84,6 +104,15 @@ function ptTema(t){document.documentElement.setAttribute('data-theme',t==='light
   :root[data-theme="light"] .logo-oscuro{display:none !important}
   *{box-sizing:border-box;margin:0;padding:0}
   [hidden]{display:none !important}
+  .campo-pass{position:relative;display:block}
+  .campo-pass input{width:100%;padding-right:44px}
+  .ver-pass{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:none;
+        color:var(--txt-3);cursor:pointer;display:flex;align-items:center;justify-content:center;
+        width:36px;height:36px;border-radius:6px}
+  .ver-pass:hover{color:var(--txt)}
+  .ver-pass .ojo-off{display:none}
+  .ver-pass.visible .ojo-on{display:none}
+  .ver-pass.visible .ojo-off{display:inline}
   html{-webkit-text-size-adjust:100%}
   body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
        background:var(--bg);color:var(--txt);min-height:100vh;line-height:1.55;

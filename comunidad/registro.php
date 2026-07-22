@@ -87,9 +87,9 @@ ui_tarjeta_inicio('Crear cuenta');
         <input type="email" id="email" name="email" required
                value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
         <label for="password">Contraseña (mínimo 8 caracteres)</label>
-        <input type="password" id="password" name="password" minlength="8" required>
+        <?php ui_campo_password('password', 'password', 'minlength="8" required autocomplete="new-password"'); ?>
         <label for="password2">Repetir contraseña</label>
-        <input type="password" id="password2" name="password2" minlength="8" required>
+        <?php ui_campo_password('password2', 'password2', 'minlength="8" required autocomplete="new-password"'); ?>
         <button class="btn" type="submit">Crear cuenta</button>
       </form>
       <p class="pie">¿Ya tenés cuenta? <a href="login.php">Ingresá</a></p>
