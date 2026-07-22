@@ -24,6 +24,18 @@ function taller_migrar() {
             REFERENCES usuarios(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+    // Columnas nuevas de clientes (alta desde la pantalla Clientes)
+    $stmt = $db->prepare("SELECT COUNT(*) c FROM information_schema.COLUMNS
+                           WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'clientes' AND COLUMN_NAME = 'empresa'");
+    $stmt->execute();
+    if (!(int) $stmt->fetch()['c']) {
+        $db->exec("ALTER TABLE clientes
+            ADD COLUMN empresa VARCHAR(150) NOT NULL DEFAULT '' AFTER email,
+            ADD COLUMN direccion VARCHAR(200) NOT NULL DEFAULT '' AFTER empresa,
+            ADD COLUMN ciudad VARCHAR(100) NOT NULL DEFAULT '' AFTER direccion,
+            ADD COLUMN provincia VARCHAR(100) NOT NULL DEFAULT '' AFTER ciudad");
+    }
+
     $db->exec("CREATE TABLE IF NOT EXISTS productos (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         usuario_id BIGINT UNSIGNED NOT NULL,

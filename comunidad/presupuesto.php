@@ -96,16 +96,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Datos para la vista
-$stmt = com_db()->prepare('SELECT nombre FROM clientes WHERE usuario_id=? ORDER BY nombre LIMIT 500');
+$stmt = com_db()->prepare('SELECT nombre, telefono, empresa FROM clientes WHERE usuario_id=? ORDER BY nombre LIMIT 500');
 $stmt->execute([$uid]);
-$clientes = array_column($stmt->fetchAll(), 'nombre');
+$clientes = $stmt->fetchAll();
+$clientes_js = json_encode(array_column($clientes, 'telefono', 'nombre'), JSON_UNESCAPED_UNICODE);
 
 $stmt = com_db()->prepare('SELECT id, nombre, descripcion, costo, precio FROM productos WHERE usuario_id=? ORDER BY nombre LIMIT 500');
 $stmt->execute([$uid]);
 $productos = $stmt->fetchAll();
 
 $estado_json = json_encode([
-    'cliente' => $presupuesto['cliente_nombre'] ?? '',
+    'cliente' => $presupuesto['cliente_nombre'] ?? mb_substr(trim($_GET['cliente'] ?? ''), 0, 150),
     'notas'   => $presupuesto['notas'] ?? '',
     'estado'  => $presupuesto['estado'] ?? 'pendiente',
     'descuento_tipo'  => $presupuesto['descuento_tipo'] ?? 'monto',
@@ -210,8 +211,12 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
           <label for="cliente">Nombre del cliente *</label>
           <input id="cliente" type="text" list="listaClientes" maxlength="150" placeholder="Buscar o escribir un cliente...">
           <datalist id="listaClientes">
-            <?php foreach ($clientes as $c): ?><option value="<?php echo htmlspecialchars($c); ?>"><?php endforeach; ?>
+            <?php foreach ($clientes as $c): ?>
+              <option value="<?php echo htmlspecialchars($c['nombre']); ?>"><?php echo htmlspecialchars($c['empresa']); ?></option>
+            <?php endforeach; ?>
           </datalist>
+          <p style="font-size:12px;color:var(--txt-3);margin-top:6px">Si el cliente no existe, se crea solo al guardar.
+            <a href="clientes.php">Gestionar clientes</a></p>
           <label for="notas">Notas (opcional)</label>
           <input id="notas" type="text" maxlength="2000" placeholder="Seña, plazo de entrega, aclaraciones...">
         </div>
@@ -522,6 +527,7 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
   $('btnGuardar').addEventListener('click', () => enviar(null));
   $('btnVendido').addEventListener('click', () => enviar('vendido'));
 
+  const CLIENTES_TEL = <?php echo $clientes_js; ?>;
   $('btnWpp').addEventListener('click', () => {
     const st = estado.items.reduce((a, it) => a + it.precio * it.cantidad, 0);
     const dv = Math.max(0, parseFloat($('descValor').value || 0));
@@ -532,7 +538,9 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
     });
     if (desc > 0) t += '%0ADescuento: -' + fmt(desc) + '%0A';
     t += '%0A*Total: ' + fmt(Math.max(0, st - desc)) + '*%0A%0APrintika Tools';
-    window.open('https://wa.me/?text=' + t.replaceAll(' ', '%20'), '_blank');
+    // Si el cliente esta en la cartera y tiene telefono, se lo mandamos directo
+    const tel = (CLIENTES_TEL[$('cliente').value.trim()] || '').replace(/[^0-9]/g, '');
+    window.open('https://wa.me/' + tel + '?text=' + t.replaceAll(' ', '%20'), '_blank');
   });
 
   render();

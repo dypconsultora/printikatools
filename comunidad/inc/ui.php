@@ -166,7 +166,7 @@ function ui_menu() {
         'Mi taller' => [
             ['presupuestos', 'Presupuestos',  'presupuestos.php', true],
             ['etiqueta',     'Productos',     'productos.php', true],
-            ['clientes',     'Clientes',      null, false],
+            ['clientes',     'Clientes',      'clientes.php', true],
             ['stock',        'Stock',         null, false],
             ['ventas',       'Ventas',        null, false],
             ['estadisticas', 'Estadísticas',  null, false],

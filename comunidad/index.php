@@ -70,11 +70,12 @@ ui_panel_inicio('Inicio', $u, 'Inicio');
         <h2>Productos</h2>
         <p>Tu catálogo de piezas con costo y precio de venta.</p>
       </a>
-      <div class="tarjeta-h prox">
+      <a class="tarjeta-h" href="clientes.php">
+        <span class="flecha"><?php echo ui_icono('flecha', 16); ?></span>
         <span class="ico-caja"><?php echo ui_icono('clientes', 19); ?></span>
-        <h2>Clientes <span class="badge">Próximamente</span></h2>
-        <p>Tu cartera de clientes, siempre a mano.</p>
-      </div>
+        <h2>Clientes</h2>
+        <p>Tu cartera de clientes, vinculada a los presupuestos.</p>
+      </a>
       <div class="tarjeta-h prox">
         <span class="ico-caja"><?php echo ui_icono('stock', 19); ?></span>
         <h2>Stock de materiales <span class="badge">Próximamente</span></h2>
