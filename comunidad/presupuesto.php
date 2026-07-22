@@ -717,19 +717,154 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
     setTimeout(() => window.print(), 60);
   });
 
-  $('btnWpp').addEventListener('click', () => {
+  // ---------- Compartir por WhatsApp con el PDF adjunto ----------
+  // En celulares usa el menu nativo de compartir (el PDF viaja adjunto);
+  // en computadoras descarga el PDF y abre el chat para adjuntarlo a mano.
+  function cargarJsPDF(){
+    if (window.jspdf) return Promise.resolve();
+    return new Promise((res, rej) => {
+      const sc = document.createElement('script');
+      sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      sc.onload = res; sc.onerror = rej;
+      document.head.appendChild(sc);
+    });
+  }
+
+  let logoPngCache = null;
+  function cargarLogo(){
+    if (logoPngCache) return Promise.resolve(logoPngCache);
+    return new Promise((res) => {
+      const img = new Image();
+      img.onload = () => {
+        const cv = document.createElement('canvas');
+        cv.width = 504; cv.height = 180;
+        cv.getContext('2d').drawImage(img, 0, 0, 504, 180);
+        logoPngCache = cv.toDataURL('image/png');
+        res(logoPngCache);
+      };
+      img.onerror = () => res(null);
+      img.src = '../assets/img/printika-tools.svg';
+    });
+  }
+
+  function textoWpp(st, desc){
+    let t = 'Hola' + ($('cliente').value.trim() ? ' ' + $('cliente').value.trim() : '') + '! Te paso el presupuesto:\n\n';
+    estado.items.forEach(it => {
+      t += '- ' + it.nombre + (it.cantidad > 1 ? ' x' + it.cantidad : '') + ': ' + fmt(it.precio * it.cantidad) + '\n';
+    });
+    if (desc > 0) t += '\nDescuento: -' + fmt(desc) + '\n';
+    t += '\n*Total: ' + fmt(Math.max(0, st - desc)) + '*\n\nPrintika Tools';
+    return t;
+  }
+
+  async function generarPdf(){
+    await cargarJsPDF();
+    const logo = await cargarLogo();
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const MI = 15, MD = 195;               // margenes izquierdo y derecho
+    const cliente = $('cliente').value.trim() || 'Cliente';
+    const fecha = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
     const st = estado.items.reduce((a, it) => a + it.precio * it.cantidad, 0);
     const dv = Math.max(0, parseFloat($('descValor').value || 0));
     const desc = estado.descuento_tipo === 'porcentaje' ? st * Math.min(100, dv) / 100 : Math.min(st, dv);
-    let t = 'Hola' + ($('cliente').value.trim() ? ' ' + $('cliente').value.trim() : '') + '! Te paso el presupuesto:%0A%0A';
+    const total = Math.max(0, st - desc);
+    const unidades = estado.items.reduce((a, it) => a + it.cantidad, 0);
+
+    // Encabezado: logo + PRESUPUESTO / cliente / fecha (mismo diseño que el export del cotizador)
+    if (logo) doc.addImage(logo, 'PNG', MI, 16, 42, 15);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(11, 120, 181);
+    doc.text('P R E S U P U E S T O', MD, 18, { align: 'right' });
+    doc.setFontSize(19); doc.setTextColor(16, 27, 41);
+    doc.text(cliente, MD, 26, { align: 'right' });
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(100, 116, 140);
+    doc.text(fecha + '  ·  <?php echo $moneda; ?>', MD, 31.5, { align: 'right' });
+    doc.setDrawColor(23, 32, 46); doc.setLineWidth(0.7);
+    doc.line(MI, 36, MD, 36);
+
+    // Ficha: piezas / unidades / fecha
+    let y = 43;
+    const spec = (x, k, v) => {
+      doc.setFontSize(7.5); doc.setTextColor(100, 116, 140); doc.setFont('helvetica', 'normal');
+      doc.text(k.toUpperCase(), x, y);
+      doc.setFontSize(11); doc.setTextColor(16, 27, 41); doc.setFont('helvetica', 'bold');
+      doc.text(String(v), x, y + 5.5);
+    };
+    spec(MI, 'Piezas', estado.items.length);
+    spec(MI + 30, 'Unidades', unidades);
+    spec(MI + 60, 'Fecha de emision', fecha);
+    y += 16;
+
+    // Detalle de piezas
+    const fila = (izq, der, sub, gris) => {
+      if (y > 265) { doc.addPage(); y = 20; }
+      if (sub) { doc.setDrawColor(23, 32, 46); doc.setLineWidth(0.7); doc.line(MI, y, MD, y); y += 6.5; }
+      doc.setFontSize(10); doc.setFont('helvetica', sub ? 'bold' : 'normal');
+      doc.setTextColor.apply(doc, sub ? [16, 27, 41] : [68, 83, 107]);
+      doc.text(izq, MI, y);
+      if (gris) { doc.setFontSize(8); doc.setTextColor(138, 151, 171); doc.text(gris, MI + doc.getTextWidth(izq) + 2, y); doc.setFontSize(10); }
+      doc.setFont('helvetica', sub ? 'bold' : 'bold'); doc.setTextColor(16, 27, 41);
+      doc.text(der, MD, y, { align: 'right' });
+      y += 3.5;
+      if (!sub) { doc.setDrawColor(229, 234, 241); doc.setLineWidth(0.25); doc.line(MI, y, MD, y); }
+      y += 6;
+    };
     estado.items.forEach(it => {
-      t += '- ' + it.nombre + (it.cantidad > 1 ? ' x' + it.cantidad : '') + ': ' + fmt(it.precio * it.cantidad) + '%0A';
+      fila(it.nombre + (it.cantidad > 1 ? '  × ' + it.cantidad : ''), fmt(it.precio * it.cantidad),
+           false, it.descripcion ? '· ' + it.descripcion : '');
     });
-    if (desc > 0) t += '%0ADescuento: -' + fmt(desc) + '%0A';
-    t += '%0A*Total: ' + fmt(Math.max(0, st - desc)) + '*%0A%0APrintika Tools';
-    // Si el cliente esta en la cartera y tiene telefono, se lo mandamos directo
+    fila('Subtotal', fmt(st), true, '');
+    if (desc > 0) fila('Descuento' + (estado.descuento_tipo === 'porcentaje' ? ' (' + dv + '%)' : ''), '- ' + fmt(desc), false, '');
+
+    // Caja del total
+    if (y > 250) { doc.addPage(); y = 20; }
+    y += 2;
+    doc.setFillColor(234, 244, 251); doc.setDrawColor(189, 217, 236); doc.setLineWidth(0.3);
+    doc.roundedRect(MI, y, MD - MI, 17, 2.5, 2.5, 'FD');
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(11, 108, 168);
+    doc.text('T O T A L', MI + 6, y + 10.5);
+    doc.setFontSize(19);
+    doc.text(fmt(total), MD - 6, y + 11.5, { align: 'right' });
+    y += 25;
+
+    const notas = $('notas').value.trim();
+    if (notas) {
+      doc.setFontSize(7.5); doc.setTextColor(100, 116, 140);
+      doc.text('NOTAS', MI, y);
+      doc.setFontSize(9.5); doc.setTextColor(68, 83, 107); doc.setFont('helvetica', 'normal');
+      doc.text(doc.splitTextToSize(notas, MD - MI), MI, y + 5);
+    }
+    return doc;
+  }
+
+  $('btnWpp').addEventListener('click', async () => {
+    const st = estado.items.reduce((a, it) => a + it.precio * it.cantidad, 0);
+    const dv = Math.max(0, parseFloat($('descValor').value || 0));
+    const desc = estado.descuento_tipo === 'porcentaje' ? st * Math.min(100, dv) / 100 : Math.min(st, dv);
+    const texto = textoWpp(st, desc);
     const tel = (CLIENTES_TEL[$('cliente').value.trim()] || '').replace(/[^0-9]/g, '');
-    window.open('https://wa.me/' + tel + '?text=' + t.replaceAll(' ', '%20'), '_blank');
+    const nombreArchivo = 'Presupuesto - ' + ($('cliente').value.trim() || 'cliente') + '.pdf';
+
+    $('btnWpp').disabled = true;
+    try {
+      const doc = await generarPdf();
+      const archivo = new File([doc.output('blob')], nombreArchivo, { type: 'application/pdf' });
+      if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
+        // Menu nativo: en el celular elegis WhatsApp y el PDF va adjunto
+        await navigator.share({ files: [archivo], text: texto });
+      } else {
+        // Escritorio: descarga el PDF y abre el chat para adjuntarlo
+        doc.save(nombreArchivo);
+        $('notaPie').textContent = 'PDF descargado: adjuntalo en el chat de WhatsApp que se abrió.';
+        window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(texto), '_blank');
+      }
+    } catch (e) {
+      if (e && e.name === 'AbortError') return; // cancelo el menu de compartir
+      // Sin PDF (ej. fallo el CDN): compartir solo el texto como antes
+      window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(texto), '_blank');
+    } finally {
+      $('btnWpp').disabled = false;
+    }
   });
 
   window.addEventListener('ptools:moneda', e => {
