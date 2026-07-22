@@ -53,21 +53,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } elseif ($accion === 'subir_pdf') {
         $tab = 'pdf';
+        $id     = (int) ($_POST['id'] ?? 0);
         $titulo = mb_substr(trim($_POST['titulo'] ?? ''), 0, 150);
         $desc   = mb_substr(trim($_POST['descripcion'] ?? ''), 0, 300);
         $arch   = $_FILES['archivo'] ?? null;
-        $mime   = !empty($arch['tmp_name']) ? (string) @mime_content_type($arch['tmp_name']) : '';
+        $hay_arch = !empty($arch['tmp_name']) && is_uploaded_file($arch['tmp_name']);
+        $mime   = $hay_arch ? (string) @mime_content_type($arch['tmp_name']) : '';
         if ($titulo === '') {
             $error = 'Poné el título del PDF.';
-        } elseif (empty($arch['tmp_name']) || !is_uploaded_file($arch['tmp_name'])) {
+        } elseif ($id === 0 && !$hay_arch) {
             $error = 'Elegí el archivo PDF.';
-        } elseif ($mime !== 'application/pdf') {
+        } elseif ($hay_arch && $mime !== 'application/pdf') {
             $error = 'El archivo tiene que ser un PDF.';
-        } elseif ($arch['size'] > 30 * 1024 * 1024) {
+        } elseif ($hay_arch && $arch['size'] > 30 * 1024 * 1024) {
             $error = 'El PDF no puede superar los 30 MB.';
         } else {
             $img_ext = admin_img_ext('imagen', $error);
-            if ($error === '') {
+            if ($error === '' && $id > 0) {
+                // Edición: solo pisa lo que se vuelva a cargar
+                $stmt = $db->prepare('SELECT * FROM recursos_pdf WHERE id=?');
+                $stmt->execute([$id]);
+                if (!($it = $stmt->fetch())) {
+                    $error = 'El PDF ya no existe.';
+                } else {
+                    if (!is_dir($dir)) mkdir($dir, 0755, true);
+                    $tam = (int) $it['tam_bytes'];
+                    if ($hay_arch && move_uploaded_file($arch['tmp_name'], "$dir/pdf-$id.pdf")) {
+                        $tam = (int) $arch['size'];
+                    }
+                    $ext = $it['imagen_ext'];
+                    if ($img_ext !== '' && move_uploaded_file($_FILES['imagen']['tmp_name'], "$dir/img-$id.$img_ext")) {
+                        if ($ext !== '' && $ext !== $img_ext) @unlink("$dir/img-$id.$ext");
+                        $ext = $img_ext;
+                    }
+                    $db->prepare('UPDATE recursos_pdf SET titulo=?, descripcion=?, imagen_ext=?, tam_bytes=? WHERE id=?')
+                       ->execute([$titulo, $desc, $ext, $tam, $id]);
+                    $aviso = "«{$titulo}» actualizado.";
+                }
+            } elseif ($error === '') {
                 if (!is_dir($dir)) mkdir($dir, 0755, true);
                 $db->prepare('INSERT INTO recursos_pdf (titulo, descripcion, imagen_ext, tam_bytes, creado_en)
                               VALUES (?, ?, ?, ?, NOW())')
@@ -86,6 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } elseif ($accion === 'subir_video') {
         $tab = 'videos';
+        $id     = (int) ($_POST['id'] ?? 0);
         $titulo = mb_substr(trim($_POST['titulo'] ?? ''), 0, 150);
         $desc   = mb_substr(trim($_POST['descripcion'] ?? ''), 0, 300);
         $ytid   = admin_youtube_id($_POST['youtube'] ?? '');
@@ -95,7 +119,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'El link de YouTube no es válido. Pegalo como aparece en el navegador.';
         } else {
             $img_ext = admin_img_ext('imagen', $error);
-            if ($error === '') {
+            if ($error === '' && $id > 0) {
+                $stmt = $db->prepare('SELECT * FROM recursos_videos WHERE id=?');
+                $stmt->execute([$id]);
+                if (!($it = $stmt->fetch())) {
+                    $error = 'El video ya no existe.';
+                } else {
+                    $ext = $it['imagen_ext'];
+                    if (!empty($_POST['quitar_imagen']) && $ext !== '') {
+                        @unlink("$dir/vid-$id.$ext");
+                        $ext = '';
+                    }
+                    if ($img_ext !== '') {
+                        if (!is_dir($dir)) mkdir($dir, 0755, true);
+                        if (move_uploaded_file($_FILES['imagen']['tmp_name'], "$dir/vid-$id.$img_ext")) {
+                            if ($ext !== '' && $ext !== $img_ext) @unlink("$dir/vid-$id.$ext");
+                            $ext = $img_ext;
+                        }
+                    }
+                    $db->prepare('UPDATE recursos_videos SET titulo=?, descripcion=?, youtube_id=?, imagen_ext=? WHERE id=?')
+                       ->execute([$titulo, $desc, $ytid, $ext, $id]);
+                    $aviso = "«{$titulo}» actualizado.";
+                }
+            } elseif ($error === '') {
                 $db->prepare('INSERT INTO recursos_videos (titulo, descripcion, youtube_id, imagen_ext, creado_en)
                               VALUES (?, ?, ?, ?, NOW())')
                    ->execute([$titulo, $desc, $ytid, $img_ext]);
@@ -137,6 +183,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $db->prepare('DELETE FROM recursos_videos WHERE id=?')->execute([$id]);
             $aviso = 'Video eliminado.';
         }
+    }
+}
+
+// Edición: abrir el formulario con los datos del recurso elegido
+$editar_pdf = null;
+$editar_video = null;
+if (preg_match('/^\d+$/', $_GET['editar'] ?? '')) {
+    if ($tab === 'pdf') {
+        $stmt = $db->prepare('SELECT * FROM recursos_pdf WHERE id=?');
+        $stmt->execute([(int) $_GET['editar']]);
+        $editar_pdf = $stmt->fetch() ?: null;
+    } else {
+        $stmt = $db->prepare('SELECT * FROM recursos_videos WHERE id=?');
+        $stmt->execute([(int) $_GET['editar']]);
+        $editar_video = $stmt->fetch() ?: null;
     }
 }
 
@@ -190,24 +251,30 @@ ui_panel_inicio('Cargar recursos', $yo, 'Cargar recursos', '../');
 
 <?php if ($tab === 'pdf'): ?>
     <form class="alta" method="post" enctype="multipart/form-data">
-      <h2>Nuevo PDF</h2>
+      <h2><?php echo $editar_pdf ? 'Editar PDF' : 'Nuevo PDF'; ?></h2>
       <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
       <input type="hidden" name="accion" value="subir_pdf">
+      <input type="hidden" name="id" value="<?php echo (int) ($editar_pdf['id'] ?? 0); ?>">
       <div class="fila">
         <span><label for="p-titulo">Título *</label>
           <input id="p-titulo" type="text" name="titulo" maxlength="150" required
-                 placeholder="Guía de calibración de la cama"></span>
+                 placeholder="Guía de calibración de la cama"
+                 value="<?php echo htmlspecialchars($editar_pdf['titulo'] ?? ''); ?>"></span>
         <span><label for="p-desc">Descripción corta</label>
           <input id="p-desc" type="text" name="descripcion" maxlength="300"
-                 placeholder="Paso a paso para nivelar la cama en 10 minutos"></span>
+                 placeholder="Paso a paso para nivelar la cama en 10 minutos"
+                 value="<?php echo htmlspecialchars($editar_pdf['descripcion'] ?? ''); ?>"></span>
       </div>
       <div class="fila3">
-        <span><label for="p-arch">Archivo PDF * (máx. 30 MB)</label>
-          <input id="p-arch" type="file" name="archivo" accept="application/pdf" required></span>
-        <span><label for="p-img">Imagen de portada (PNG/JPG/WebP)</label>
+        <span><label for="p-arch">Archivo PDF <?php echo $editar_pdf ? '(solo si querés reemplazarlo)' : '* (máx. 30 MB)'; ?></label>
+          <input id="p-arch" type="file" name="archivo" accept="application/pdf" <?php echo $editar_pdf ? '' : 'required'; ?>></span>
+        <span><label for="p-img">Imagen de portada <?php echo $editar_pdf ? '(solo si querés reemplazarla)' : '(PNG/JPG/WebP)'; ?></label>
           <input id="p-img" type="file" name="imagen" accept="image/png,image/jpeg,image/webp"></span>
-        <button class="btn" type="submit"><?php echo ui_icono('nube', 16); ?> Cargar PDF</button>
+        <button class="btn" type="submit"><?php echo $editar_pdf ? 'Guardar cambios' : ui_icono('nube', 16) . ' Cargar PDF'; ?></button>
       </div>
+      <?php if ($editar_pdf): ?>
+        <p class="ayuda" style="margin-top:10px"><a href="recursos.php?tab=pdf">Cancelar edición</a></p>
+      <?php endif; ?>
     </form>
 
     <?php if ($pdfs): ?>
@@ -226,6 +293,7 @@ ui_panel_inicio('Cargar recursos', $yo, 'Cargar recursos', '../');
             <td><?php echo $it['publicado'] ? '<span style="color:var(--ok)">Publicado</span>' : '<span style="color:var(--txt-3)">Oculto</span>'; ?></td>
             <td>
               <div class="acciones">
+                <a class="btn chico" href="recursos.php?tab=pdf&editar=<?php echo (int) $it['id']; ?>">Editar</a>
                 <form method="post">
                   <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
                   <input type="hidden" name="accion" value="publicar_pdf">
@@ -249,28 +317,41 @@ ui_panel_inicio('Cargar recursos', $yo, 'Cargar recursos', '../');
 
 <?php else: ?>
     <form class="alta" method="post" enctype="multipart/form-data">
-      <h2>Nuevo video de YouTube</h2>
+      <h2><?php echo $editar_video ? 'Editar video' : 'Nuevo video de YouTube'; ?></h2>
       <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
       <input type="hidden" name="accion" value="subir_video">
+      <input type="hidden" name="id" value="<?php echo (int) ($editar_video['id'] ?? 0); ?>">
       <label for="v-link">Link de YouTube *</label>
       <input id="v-link" type="url" name="youtube" required
-             placeholder="https://www.youtube.com/watch?v=...">
+             placeholder="https://www.youtube.com/watch?v=..."
+             value="<?php echo $editar_video ? 'https://www.youtube.com/watch?v=' . htmlspecialchars($editar_video['youtube_id']) : ''; ?>">
       <p class="ayuda">Pegá el link como aparece en el navegador (también sirven youtu.be y Shorts).</p>
       <div class="fila" style="margin-top:8px">
         <span><label for="v-titulo">Título *</label>
           <input id="v-titulo" type="text" name="titulo" maxlength="150" required
-                 placeholder="Cómo calibrar el flujo en 5 minutos"></span>
+                 placeholder="Cómo calibrar el flujo en 5 minutos"
+                 value="<?php echo htmlspecialchars($editar_video['titulo'] ?? ''); ?>"></span>
         <span><label for="v-desc">Descripción corta</label>
           <input id="v-desc" type="text" name="descripcion" maxlength="300"
-                 placeholder="Tutorial rápido para mejorar la calidad de tus piezas"></span>
+                 placeholder="Tutorial rápido para mejorar la calidad de tus piezas"
+                 value="<?php echo htmlspecialchars($editar_video['descripcion'] ?? ''); ?>"></span>
       </div>
       <div class="fila3">
-        <span><label for="v-img">Imagen de muestra (opcional)</label>
+        <span><label for="v-img">Imagen de muestra <?php echo $editar_video ? '(solo si querés reemplazarla)' : '(opcional)'; ?></label>
           <input id="v-img" type="file" name="imagen" accept="image/png,image/jpeg,image/webp">
-          <p class="ayuda">Si no subís ninguna, usamos la miniatura del propio video de YouTube.</p></span>
+          <p class="ayuda">Si no subís ninguna, usamos la miniatura del propio video de YouTube.</p>
+          <?php if ($editar_video && $editar_video['imagen_ext'] !== ''): ?>
+            <label style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px;color:var(--txt-2)">
+              <input type="checkbox" name="quitar_imagen" value="1" style="width:auto;height:auto">
+              Quitar mi imagen y volver a la miniatura de YouTube
+            </label>
+          <?php endif; ?></span>
         <span></span>
-        <button class="btn" type="submit"><?php echo ui_icono('nube', 16); ?> Cargar video</button>
+        <button class="btn" type="submit"><?php echo $editar_video ? 'Guardar cambios' : ui_icono('nube', 16) . ' Cargar video'; ?></button>
       </div>
+      <?php if ($editar_video): ?>
+        <p class="ayuda" style="margin-top:10px"><a href="recursos.php?tab=videos">Cancelar edición</a></p>
+      <?php endif; ?>
     </form>
 
     <?php if ($videos): ?>
@@ -291,6 +372,7 @@ ui_panel_inicio('Cargar recursos', $yo, 'Cargar recursos', '../');
             <td><?php echo $it['publicado'] ? '<span style="color:var(--ok)">Publicado</span>' : '<span style="color:var(--txt-3)">Oculto</span>'; ?></td>
             <td>
               <div class="acciones">
+                <a class="btn chico" href="recursos.php?tab=videos&editar=<?php echo (int) $it['id']; ?>">Editar</a>
                 <form method="post">
                   <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
                   <input type="hidden" name="accion" value="publicar_video">
