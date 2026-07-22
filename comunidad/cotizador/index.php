@@ -6,9 +6,25 @@
 //    habilitado para cualquiera, con contador regresivo. Al vencer, vuelven
 //    los candados automáticamente.
 require_once __DIR__ . '/auth.php';
+
+// Modo panel: la calculadora embebida dentro de /comunidad para usuarios
+// logueados de la plataforma. Desbloquea lo PRO (beneficio de estar
+// registrado, incluso en el plan gratuito) y oculta el encabezado propio.
+$enPanel = false;
+if (isset($_GET['panel'])) {
+    require_once dirname(__DIR__) . '/inc/auth.php';
+    if (usuario_actual() !== null) {
+        $enPanel = true;
+    }
+    // Cerrar la sesion ptools antes de abrir la sesion propia del cotizador
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_write_close();
+    }
+}
+
 iniciar_sesion();
 $csrf  = token_csrf();
-$esPro = esta_logueado();
+$esPro = esta_logueado() || $enPanel;
 $enTrial = !$esPro && trial_pro_activo();
 $proHabilitado = $esPro || $enTrial;
 ?>
@@ -1237,17 +1253,38 @@ input[type="range"]::-moz-range-thumb {
   // Aplicar el tema guardado antes del primer pintado (evita destello)
   (function () {
     try {
+<?php if ($enPanel): ?>
+      // Modo panel: seguir el tema del menu lateral de la plataforma
+      var t = localStorage.getItem('ptools_tema');
+      document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+      window.addEventListener('storage', function (e) {
+        if (e.key === 'ptools_tema') {
+          document.documentElement.setAttribute('data-theme', e.newValue === 'light' ? 'light' : 'dark');
+        }
+      });
+<?php else: ?>
       if (localStorage.getItem('calc3d-theme') === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
       }
+<?php endif; ?>
     } catch (e) {}
   })();
 </script>
+<?php if ($enPanel): ?>
+<style>
+/* === Modo panel: el panel ya pone logo, titulo y selector de tema === */
+body.en-panel .header-logo, body.en-panel .theme-switch,
+body.en-panel .header h1, body.en-panel .header p { display: none !important; }
+body.en-panel .header { padding: 1.4rem 1.5rem 0.5rem; }
+body.en-panel .header .project-name-bar { margin-top: 0; }
+body.en-panel #newsModal { display: none !important; }
+</style>
+<?php endif; ?>
 </head>
-<body>
+<body<?php echo $enPanel ? ' class="en-panel"' : ''; ?>>
 
 <header class="header">
-  <?php if ($esPro): ?>
+  <?php if ($esPro && !$enPanel): ?>
     <span class="pro-session">Modo <strong>PRO</strong> &middot; <a href="logout.php">Salir</a></span>
   <?php endif; ?>
   <a class="header-logo" href="https://printikatools.com/" title="Printika Tools">

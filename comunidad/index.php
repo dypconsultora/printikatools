@@ -52,7 +52,7 @@ ui_panel_inicio('Inicio', $u, 'Inicio');
       .tarjeta-h.prox h2{color:var(--txt-2)}
     </style>
     <div class="tarjetas">
-      <a class="tarjeta-h" href="cotizador/">
+      <a class="tarjeta-h" href="calculadora.php">
         <span class="flecha"><?php echo ui_icono('flecha', 16); ?></span>
         <span class="ico-caja"><?php echo ui_icono('calculadora', 19); ?></span>
         <h2>Calculadora de costos</h2>

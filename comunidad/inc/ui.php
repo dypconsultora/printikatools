@@ -168,7 +168,7 @@ function ui_base() {
 function ui_menu() {
     return [
         'Plataforma' => [
-            ['calculadora',  'Calculadora',   'cotizador/', true],
+            ['calculadora',  'Calculadora',   'calculadora.php', true],
             ['libreria',     'Librería STL',  null, false],
         ],
         'Mi taller' => [
