@@ -222,14 +222,15 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
         <div class="tarjeta-s">
           <h2>Para quién es</h2>
           <label for="cliente">Nombre del cliente *</label>
-          <input id="cliente" type="text" list="listaClientes" maxlength="150" placeholder="Buscar o escribir un cliente...">
+          <input id="cliente" type="text" list="listaClientes" maxlength="150"
+                 placeholder="Escribí el nombre (nuevo o de tu cartera)...">
           <datalist id="listaClientes">
             <?php foreach ($clientes as $c): ?>
               <option value="<?php echo htmlspecialchars($c['nombre']); ?>"><?php echo htmlspecialchars($c['empresa']); ?></option>
             <?php endforeach; ?>
           </datalist>
-          <p style="font-size:12px;color:var(--txt-3);margin-top:6px">Si el cliente no existe, se crea solo al guardar.
-            <a href="clientes.php">Gestionar clientes</a></p>
+          <p style="font-size:12px;color:var(--txt-3);margin-top:6px"><span id="clienteHint">No hace falta que exista:
+            si es nuevo, se crea solo al guardar.</span> <a href="clientes.php">Gestionar clientes</a></p>
           <label for="notas">Notas (opcional)</label>
           <input id="notas" type="text" maxlength="2000" placeholder="Seña, plazo de entrega, aclaraciones...">
         </div>
@@ -595,6 +596,24 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
   $('btnVendido').addEventListener('click', () => enviar('vendido'));
 
   const CLIENTES_TEL = <?php echo $clientes_js; ?>;
+
+  // Indicador en vivo: cliente de la cartera vs. cliente nuevo
+  function pintarHintCliente(){
+    const n = $('cliente').value.trim();
+    const h = $('clienteHint');
+    if (!n) {
+      h.textContent = 'No hace falta que exista: si es nuevo, se crea solo al guardar.';
+      h.style.color = '';
+    } else if (CLIENTES_TEL.hasOwnProperty(n)) {
+      h.textContent = '✓ Cliente de tu cartera.';
+      h.style.color = 'var(--ok)';
+    } else {
+      h.textContent = '✓ Cliente nuevo: al guardar se suma a tu sección Clientes para completarle los datos.';
+      h.style.color = 'var(--accent)';
+    }
+  }
+  $('cliente').addEventListener('input', pintarHintCliente);
+  pintarHintCliente();
   $('btnWpp').addEventListener('click', () => {
     const st = estado.items.reduce((a, it) => a + it.precio * it.cantidad, 0);
     const dv = Math.max(0, parseFloat($('descValor').value || 0));
