@@ -63,7 +63,9 @@ ui_panel_inicio('Recursos', $u, $tab === 'videos' ? 'Videos' : 'PDF');
       .tabs a.activa{color:var(--txt);border-bottom-color:var(--accent)}
       .tabs a .cant{font-size:12px;font-weight:600;color:var(--txt-3);background:var(--surface-2);
               border-radius:999px;padding:1px 8px}
-      .rec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+      .rec-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+      @media (max-width:1100px){ .rec-grid{grid-template-columns:repeat(2,minmax(0,1fr))} }
+      @media (max-width:700px){ .rec-grid{grid-template-columns:1fr} }
       .rec-c{background:var(--surface);border:1px solid var(--bd-suave);border-radius:var(--radio-g);overflow:hidden;
              display:flex;flex-direction:column}
       .rec-img{aspect-ratio:16/9;background:var(--surface-2);display:flex;align-items:center;justify-content:center;
