@@ -762,12 +762,25 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
   }
 
   function textoWpp(st, desc){
-    let t = 'Hola' + ($('cliente').value.trim() ? ' ' + $('cliente').value.trim() : '') + '! Te paso el presupuesto:\n\n';
+    const cliente = $('cliente').value.trim();
+    const fecha = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    let t = '*PRESUPUESTO*\n';
+    t += (cliente ? 'Cliente: ' + cliente + '\n' : '') + 'Fecha: ' + fecha + '\n\n';
+    t += '*Piezas:*\n';
     estado.items.forEach(it => {
-      t += '- ' + it.nombre + (it.cantidad > 1 ? ' x' + it.cantidad : '') + ': ' + fmt(it.precio * it.cantidad) + '\n';
+      t += '• ' + it.nombre + (it.cantidad > 1 ? ' x' + it.cantidad : '')
+         + (it.descripcion ? ' (' + it.descripcion + ')' : '')
+         + ' — ' + fmt(it.precio * it.cantidad) + '\n';
     });
-    if (desc > 0) t += '\nDescuento: -' + fmt(desc) + '\n';
-    t += '\n*Total: ' + fmt(Math.max(0, st - desc)) + '*\n\n' + <?php echo json_encode($firma); ?>;
+    t += '\nSubtotal: ' + fmt(st) + '\n';
+    if (desc > 0) {
+      t += 'Descuento' + (estado.descuento_tipo === 'porcentaje' ? ' (' + Math.max(0, parseFloat($('descValor').value || 0)) + '%)' : '')
+         + ': -' + fmt(desc) + '\n';
+    }
+    t += '*TOTAL: ' + fmt(Math.max(0, st - desc)) + '*\n';
+    const notas = $('notas').value.trim();
+    if (notas) t += '\nNotas: ' + notas + '\n';
+    t += '\n' + <?php echo json_encode($taller_pie !== '' ? $taller_pie : ''); ?> || <?php echo json_encode($firma); ?>;
     return t;
   }
 
@@ -866,23 +879,26 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
     const texto = textoWpp(st, desc);
     const tel = (CLIENTES_TEL[$('cliente').value.trim()] || '').replace(/[^0-9]/g, '');
     const nombreArchivo = 'Presupuesto - ' + ($('cliente').value.trim() || 'cliente') + '.pdf';
+    const esTelefono = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
+    // En computadora: WhatsApp Web con el presupuesto formateado como texto
+    if (!esTelefono) {
+      window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(texto), '_blank');
+      return;
+    }
+
+    // En el telefono: menu nativo de compartir con el PDF adjunto
     $('btnWpp').disabled = true;
     try {
       const doc = await generarPdf();
       const archivo = new File([doc.output('blob')], nombreArchivo, { type: 'application/pdf' });
       if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
-        // Menu nativo: en el celular elegis WhatsApp y el PDF va adjunto
         await navigator.share({ files: [archivo], text: texto });
       } else {
-        // Escritorio: descarga el PDF y abre el chat para adjuntarlo
-        doc.save(nombreArchivo);
-        $('notaPie').textContent = 'PDF descargado: adjuntalo en el chat de WhatsApp que se abrió.';
         window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(texto), '_blank');
       }
     } catch (e) {
       if (e && e.name === 'AbortError') return; // cancelo el menu de compartir
-      // Sin PDF (ej. fallo el CDN): compartir solo el texto como antes
       window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(texto), '_blank');
     } finally {
       $('btnWpp').disabled = false;
