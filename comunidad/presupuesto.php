@@ -722,6 +722,12 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
     }
 
     printDoc.innerHTML = html;
+    // El navegador usa el titulo de la pestaña como nombre sugerido del PDF
+    const tituloOriginal = document.title;
+    document.title = 'Presupuesto - ' + cliente;
+    const restaurar = () => { document.title = tituloOriginal; window.removeEventListener('afterprint', restaurar); };
+    window.addEventListener('afterprint', restaurar);
+    setTimeout(restaurar, 60000);
     setTimeout(() => window.print(), 60);
   });
 
