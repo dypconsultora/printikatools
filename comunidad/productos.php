@@ -15,6 +15,14 @@ $uid = (int) $u['id'];
 $aviso = '';
 $error = '';
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'moneda') {
+    if (com_csrf_ok($_POST['csrf'] ?? '')) {
+        taller_guardar_moneda($uid, $_POST['moneda'] ?? '');
+    }
+    header('Location: productos.php');
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!com_csrf_ok($_POST['csrf'] ?? '')) {
         $error = 'La sesión expiró, probá de nuevo.';
@@ -62,6 +70,9 @@ if (isset($_GET['editar'])) {
     $editando = $stmt->fetch() ?: null;
 }
 
+$moneda = taller_moneda_usuario() ?: 'ARS';
+[$moneda_simbolo, $moneda_dec] = taller_monedas()[$moneda];
+
 ui_panel_inicio('Productos', $u, 'Productos');
 ?>
     <style>.contenido{max-width:none}</style>
@@ -70,8 +81,12 @@ ui_panel_inicio('Productos', $u, 'Productos');
         <h1>Productos</h1>
         <p class="bajada">Tu catálogo de piezas: cargalas acá o guardalas desde la calculadora de un presupuesto.</p>
       </div>
-      <button type="button" class="btn" id="btnNuevoProducto">+ Nuevo producto</button>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <?php taller_chip_moneda(); ?>
+        <button type="button" class="btn" id="btnNuevoProducto">+ Nuevo producto</button>
+      </div>
     </div>
+    <?php taller_popup_moneda(); ?>
 
     <?php if ($aviso): ?><div class="msg ok"><?php echo ui_icono('check', 16); ?><span><?php echo htmlspecialchars($aviso); ?></span></div><?php endif; ?>
     <?php if ($error): ?><div class="msg bad"><?php echo ui_icono('alerta', 16); ?><span><?php echo htmlspecialchars($error); ?></span></div><?php endif; ?>
@@ -172,6 +187,19 @@ ui_panel_inicio('Productos', $u, 'Productos');
         </div>
 
         <details>
+          <summary>Material de soporte</summary>
+          <div class="inner">
+            <div class="fila-2">
+              <span><label for="cPesoSop">Peso soporte (g)</label><input id="cPesoSop" type="number" min="0" step="1" value="0"></span>
+              <span><label for="cPrecioCarreteSop">Precio carrete sop. <small>(0 = mismo)</small></label>
+                <input id="cPrecioCarreteSop" type="number" min="0" step="100" value="0"></span>
+            </div>
+            <label for="cPesoCarreteSop">Peso carrete soporte (g)</label>
+            <input id="cPesoCarreteSop" type="number" min="1" step="50" value="1000">
+          </div>
+        </details>
+
+        <details>
           <summary>Impresora y electricidad</summary>
           <div class="inner">
             <div class="fila-2">
@@ -210,6 +238,7 @@ ui_panel_inicio('Productos', $u, 'Productos');
 
         <div class="desglose">
           <div class="linea"><span>Material</span><span id="dMaterial">$ 0</span></div>
+          <div class="linea" id="lineaSop" style="display:none"><span>Soporte</span><span id="dSoporte">$ 0</span></div>
           <div class="linea"><span>Electricidad</span><span id="dElec">$ 0</span></div>
           <div class="linea"><span>Desgaste de máquina</span><span id="dDep">$ 0</span></div>
           <div class="linea"><span>Mano de obra</span><span id="dMano">$ 0</span></div>
@@ -239,7 +268,8 @@ ui_panel_inicio('Productos', $u, 'Productos');
 
       // Calculadora: misma logica y misma config recordada que en presupuestos
       var CFG = ['cPrecioCarrete','cPesoCarrete','cWatts','cTarifa','cImpresora','cVida','cMant',
-                 'cPrep','cPost','cTarifaMano','cEmpaque','cEnvio','cOtros','cFallos','cMargen'];
+                 'cPrep','cPost','cTarifaMano','cEmpaque','cEnvio','cOtros','cFallos','cMargen',
+                 'cPrecioCarreteSop','cPesoCarreteSop'];
       try {
         var cfg = JSON.parse(localStorage.getItem('ptools_calc_cfg') || '{}');
         CFG.forEach(function(id){ if (cfg[id] !== undefined && $(id)) $(id).value = cfg[id]; });
@@ -251,21 +281,29 @@ ui_panel_inicio('Productos', $u, 'Productos');
       }
 
       var val = function(id){ return parseFloat($(id).value) || 0; };
-      var fmt = function(n){ return '$ ' + Math.round(n).toLocaleString('es-AR'); };
+      var MONEDA = { s: <?php echo json_encode($moneda_simbolo); ?>, d: <?php echo (int) $moneda_dec; ?> };
+      var fmt = function(n){ return MONEDA.s + ' ' + (+n).toLocaleString('es-AR',
+          { minimumFractionDigits: MONEDA.d, maximumFractionDigits: MONEDA.d }); };
       var ultimo = { costo: 0, sugerido: 0 };
 
       function calcular(){
-        var material = (val('cPrecioCarrete') / (val('cPesoCarrete') || 1)) * val('cPeso');
+        var costoGramo = val('cPrecioCarrete') / (val('cPesoCarrete') || 1);
+        var material = costoGramo * val('cPeso');
+        var sopGramo = val('cPrecioCarreteSop') > 0
+            ? val('cPrecioCarreteSop') / (val('cPesoCarreteSop') || 1) : costoGramo;
+        var soporte = sopGramo * val('cPesoSop');
         var horas = val('cHoras') + val('cMin') / 60;
         var elec = (val('cWatts') / 1000) * horas * val('cTarifa');
         var mano = ((val('cPrep') + val('cPost')) / 60) * val('cTarifaMano');
         var dep = ((val('cImpresora') / (val('cVida') || 1)) + val('cMant') / 1500) * horas;
         var extras = val('cEmpaque') + val('cEnvio') + val('cOtros');
-        var base = material + elec + mano + dep + extras;
+        var base = material + soporte + elec + mano + dep + extras;
         var fallos = Math.min(0.99, val('cFallos') / 100);
         var costoTotal = base / (1 - fallos);
         var sugerido = costoTotal * (1 + val('cMargen') / 100);
         $('dMaterial').textContent = fmt(material);
+        $('lineaSop').style.display = soporte > 0 ? '' : 'none';
+        $('dSoporte').textContent = fmt(soporte);
         $('dElec').textContent = fmt(elec);
         $('dDep').textContent = fmt(dep);
         $('dMano').textContent = fmt(mano);

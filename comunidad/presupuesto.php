@@ -29,6 +29,14 @@ if ($pid) {
     $items = $stmt->fetchAll();
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'moneda') {
+    if (com_csrf_ok($_POST['csrf'] ?? '')) {
+        taller_guardar_moneda($uid, $_POST['moneda'] ?? '');
+    }
+    header('Location: presupuesto.php' . ($pid ? '?id=' . $pid : ''));
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!com_csrf_ok($_POST['csrf'] ?? '')) {
         $error = 'La sesión expiró, probá de nuevo.';
@@ -121,6 +129,8 @@ $estado_json = json_encode([
 ], JSON_UNESCAPED_UNICODE);
 
 $materiales = ['PLA','ABS','PETG','TPU','Nylon','Resina','ASA','PC','HIPS','PVA','CF-Nylon','Wood-PLA','Flex'];
+$moneda = taller_moneda_usuario() ?: 'ARS';
+[$moneda_simbolo, $moneda_dec] = taller_monedas()[$moneda];
 
 ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, 'Presupuestos');
 ?>
@@ -132,7 +142,9 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
         <span class="estado-chip <?php echo $presupuesto['estado']; ?>" id="estadoChip">
           <?php echo $presupuesto['estado'] === 'vendido' ? 'Vendido' : 'Pendiente'; ?></span>
       <?php endif; ?>
+      <?php taller_chip_moneda(); ?>
     </div>
+    <?php taller_popup_moneda(); ?>
     <p class="bajada">Completá los datos del cliente y agregá las piezas.</p>
 
     <?php if (isset($_GET['ok'])): ?><div class="msg ok"><?php echo ui_icono('check', 16); ?><span>Presupuesto guardado.</span></div><?php endif; ?>
@@ -298,6 +310,19 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
         </div>
 
         <details>
+          <summary>Material de soporte</summary>
+          <div class="inner">
+            <div class="fila-2">
+              <span><label for="cPesoSop">Peso soporte (g)</label><input id="cPesoSop" type="number" min="0" step="1" value="0"></span>
+              <span><label for="cPrecioCarreteSop">Precio carrete sop. <small>(0 = mismo)</small></label>
+                <input id="cPrecioCarreteSop" type="number" min="0" step="100" value="0"></span>
+            </div>
+            <label for="cPesoCarreteSop">Peso carrete soporte (g)</label>
+            <input id="cPesoCarreteSop" type="number" min="1" step="50" value="1000">
+          </div>
+        </details>
+
+        <details>
           <summary>Impresora y electricidad</summary>
           <div class="inner">
             <div class="fila-2">
@@ -338,6 +363,7 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
 
         <div class="desglose" id="desglose">
           <div class="linea"><span>Material</span><span id="dMaterial">$ 0</span></div>
+          <div class="linea" id="lineaSop" style="display:none"><span>Soporte</span><span id="dSoporte">$ 0</span></div>
           <div class="linea"><span>Electricidad</span><span id="dElec">$ 0</span></div>
           <div class="linea"><span>Desgaste de máquina</span><span id="dDep">$ 0</span></div>
           <div class="linea"><span>Mano de obra</span><span id="dMano">$ 0</span></div>
@@ -352,6 +378,8 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
           <span><label for="cCantidad">Cantidad</label>
             <input id="cCantidad" type="number" min="1" max="9999" step="1" value="1"></span>
         </div>
+
+        <p id="margenInverso" style="font-size:12.5px;color:var(--txt-3);margin-top:6px"></p>
 
         <label class="check-linea" for="cGuardarProd">
           <input id="cGuardarProd" type="checkbox" checked>
@@ -372,7 +400,9 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
 (function(){
   'use strict';
   const $ = id => document.getElementById(id);
-  const fmt = n => '$ ' + Math.round(n).toLocaleString('es-AR');
+  const MONEDA = { s: <?php echo json_encode($moneda_simbolo); ?>, d: <?php echo (int) $moneda_dec; ?> };
+  const fmt = n => MONEDA.s + ' ' + (+n).toLocaleString('es-AR',
+      { minimumFractionDigits: MONEDA.d, maximumFractionDigits: MONEDA.d });
 
   // ---------- Estado del presupuesto ----------
   const estado = <?php echo $estado_json; ?>;
@@ -447,7 +477,8 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
 
   // ---------- Calculadora (misma lógica que la Calculadora de costos) ----------
   const CFG_CAMPOS = ['cPrecioCarrete','cPesoCarrete','cWatts','cTarifa','cImpresora','cVida','cMant',
-                      'cPrep','cPost','cTarifaMano','cEmpaque','cEnvio','cOtros','cFallos','cMargen'];
+                      'cPrep','cPost','cTarifaMano','cEmpaque','cEnvio','cOtros','cFallos','cMargen',
+                      'cPrecioCarreteSop','cPesoCarreteSop'];
   try {
     const cfg = JSON.parse(localStorage.getItem('ptools_calc_cfg') || '{}');
     CFG_CAMPOS.forEach(id => { if (cfg[id] !== undefined) $(id).value = cfg[id]; });
@@ -464,18 +495,24 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
   function calcular(){
     const costoGramo = val('cPrecioCarrete') / (val('cPesoCarrete') || 1);
     const material = costoGramo * val('cPeso');
+    // Soporte: carrete propio o, si no se cargó precio, el mismo costo por gramo
+    const sopGramo = val('cPrecioCarreteSop') > 0
+        ? val('cPrecioCarreteSop') / (val('cPesoCarreteSop') || 1) : costoGramo;
+    const soporte = sopGramo * val('cPesoSop');
     const horas = val('cHoras') + val('cMin') / 60;
     const elec = (val('cWatts') / 1000) * horas * val('cTarifa');
     const mano = ((val('cPrep') + val('cPost')) / 60) * val('cTarifaMano');
     const depHora = (val('cImpresora') / (val('cVida') || 1)) + val('cMant') / 1500;
     const dep = depHora * horas;
     const extras = val('cEmpaque') + val('cEnvio') + val('cOtros');
-    const base = material + elec + mano + dep + extras;
+    const base = material + soporte + elec + mano + dep + extras;
     const fallos = Math.min(0.99, val('cFallos') / 100);
     const costoTotal = base / (1 - fallos);
     const sugerido = costoTotal * (1 + val('cMargen') / 100);
 
     $('dMaterial').textContent = fmt(material);
+    $('lineaSop').style.display = soporte > 0 ? '' : 'none';
+    $('dSoporte').textContent = fmt(soporte);
     $('dElec').textContent = fmt(elec);
     $('dDep').textContent = fmt(dep);
     $('dMano').textContent = fmt(mano);
@@ -483,6 +520,17 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
     $('dCosto').textContent = fmt(costoTotal);
     $('dSugerido').textContent = fmt(sugerido);
     if (!precioTocado) $('cPrecioFinal').value = Math.round(sugerido);
+
+    // Margen resultante del precio final (editable): igual que el modo precio fijo del cotizador
+    const pf = val('cPrecioFinal');
+    if (costoTotal > 0 && pf > 0) {
+      const m = ((pf - costoTotal) / costoTotal) * 100;
+      $('margenInverso').textContent = 'Con este precio, tu margen es ' + m.toFixed(1) + '% ('
+          + fmt(pf - costoTotal) + ' de ganancia).';
+      $('margenInverso').style.color = m >= 0 ? 'var(--ok)' : 'var(--bad)';
+    } else {
+      $('margenInverso').textContent = '';
+    }
 
     const nombreOk = $('cNombre').value.trim() !== '';
     $('btnAgregar').disabled = !nombreOk;
