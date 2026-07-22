@@ -177,6 +177,20 @@ function taller_migrar() {
             REFERENCES rollos(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+    $db->exec("CREATE TABLE IF NOT EXISTS calc_cotizaciones (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        usuario_id BIGINT UNSIGNED NOT NULL,
+        nombre VARCHAR(255) NOT NULL,
+        precio VARCHAR(64) NOT NULL DEFAULT '',
+        moneda VARCHAR(8) NOT NULL DEFAULT 'ARS',
+        datos_json LONGTEXT,
+        creado_en DATETIME NOT NULL,
+        PRIMARY KEY (id),
+        KEY idx_usuario (usuario_id),
+        CONSTRAINT fk_calccot_usuario FOREIGN KEY (usuario_id)
+            REFERENCES usuarios(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
     $listo = true;
 }
 

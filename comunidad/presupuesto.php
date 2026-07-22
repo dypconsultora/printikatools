@@ -919,6 +919,28 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
 
   render();
   calcular();
+
+  // Pieza que llega desde la Calculadora del panel ("Crear presupuesto")
+  try {
+    if (new URLSearchParams(location.search).get('desde') === 'calculadora') {
+      const cruda = localStorage.getItem('ptools_pieza_calculadora');
+      if (cruda) {
+        localStorage.removeItem('ptools_pieza_calculadora');
+        const p = JSON.parse(cruda);
+        estado.items.push({
+          producto_id: null,
+          nombre: String(p.nombre || 'Impresión 3D').slice(0, 150),
+          descripcion: '',
+          cantidad: 1,
+          precio: Math.max(0, parseFloat(p.precio) || 0),
+          costo: Math.max(0, parseFloat(p.costo) || 0),
+          guardar_producto: false,
+          datos: (p.datos && typeof p.datos === 'object') ? p.datos : {},
+        });
+        render();
+      }
+    }
+  } catch (e) {}
 })();
 </script>
 <?php ui_panel_fin(); ?>

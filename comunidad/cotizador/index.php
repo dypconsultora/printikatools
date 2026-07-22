@@ -11,10 +11,17 @@ require_once __DIR__ . '/auth.php';
 // logueados de la plataforma. Desbloquea lo PRO (beneficio de estar
 // registrado, incluso en el plan gratuito) y oculta el encabezado propio.
 $enPanel = false;
+$panelCsrf = '';
+$panelMoneda = 'ARS';
 if (isset($_GET['panel'])) {
     require_once dirname(__DIR__) . '/inc/auth.php';
-    if (usuario_actual() !== null) {
+    $usuarioPanel = usuario_actual();
+    if ($usuarioPanel !== null) {
         $enPanel = true;
+        $panelCsrf = com_csrf();
+        if (in_array($usuarioPanel['moneda'] ?? '', ['ARS', 'USD', 'EUR'], true)) {
+            $panelMoneda = $usuarioPanel['moneda'];
+        }
     }
     // Cerrar la sesion ptools antes de abrir la sesion propia del cotizador
     if (session_status() === PHP_SESSION_ACTIVE) {
@@ -1249,7 +1256,7 @@ input[type="range"]::-moz-range-thumb {
 .pro-modal__cta:disabled { opacity: 0.6; cursor: default; transform: none; }
 </style>
 <script>
-  window.APP = { api: 'api.php', csrf: <?php echo json_encode($csrf); ?>, pro: <?php echo $proHabilitado ? 'true' : 'false'; ?>, sesion: <?php echo $esPro ? 'true' : 'false'; ?>, trial: <?php echo $enTrial ? 'true' : 'false'; ?>, trialEnd: <?php echo PRO_TRIAL_HASTA * 1000; ?> };
+  window.APP = { api: <?php echo json_encode($enPanel ? '../calculadora_api.php' : 'api.php'); ?>, csrf: <?php echo json_encode($enPanel ? $panelCsrf : $csrf); ?>, panel: <?php echo $enPanel ? 'true' : 'false'; ?>, moneda: <?php echo json_encode($panelMoneda); ?>, pro: <?php echo $proHabilitado ? 'true' : 'false'; ?>, sesion: <?php echo $esPro ? 'true' : 'false'; ?>, trial: <?php echo $enTrial ? 'true' : 'false'; ?>, trialEnd: <?php echo PRO_TRIAL_HASTA * 1000; ?> };
   // Aplicar el tema guardado antes del primer pintado (evita destello)
   (function () {
     try {
@@ -1302,8 +1309,8 @@ body.en-panel #newsModal { display: none !important; }
   <h1>Calculadora de Costos 3D</h1>
   <p>Calcula el precio justo para tus impresiones 3D</p>
   <div class="project-name-bar">
-    <label for="projectName">Proyecto</label>
-    <input type="text" id="projectName" placeholder="Nombre del proyecto...">
+    <label for="projectName"><?php echo $enPanel ? 'Producto' : 'Proyecto'; ?></label>
+    <input type="text" id="projectName" placeholder="<?php echo $enPanel ? 'Nombre del producto o pieza...' : 'Nombre del proyecto...'; ?>">
   </div>
   <?php if ($enTrial): ?>
   <div class="trial-banner" id="trialBanner">
@@ -1765,6 +1772,10 @@ body.en-panel #newsModal { display: none !important; }
       <span class="badge">PRO</span>
     </div>
     <div class="actions-grid">
+      <?php if ($enPanel): ?>
+      <button class="btn btn-primary" onclick="guardarProducto()">&#128230; Guardar como producto</button>
+      <button class="btn btn-primary" onclick="crearPresupuesto()">&#129534; Crear presupuesto</button>
+      <?php endif; ?>
       <button class="btn btn-primary" onclick="saveQuote()">&#128190; Guardar Cotizacion</button>
       <button class="btn" onclick="exportPDF()">&#128196; Exportar PDF</button>
       <button class="btn" onclick="shareQuote()">&#128203; Compartir</button>
@@ -1861,6 +1872,50 @@ body.en-panel #newsModal { display: none !important; }
       calculate();
     });
   });
+
+  // En el panel, arrancar con la moneda del taller (elegida en Configuracion)
+  if (window.APP && APP.panel && APP.moneda && APP.moneda !== 'ARS') {
+    const btnMoneda = document.querySelector('.currency-btn[data-currency="' + APP.moneda + '"]');
+    if (btnMoneda) btnMoneda.click();
+  }
+
+  // === Acciones del panel: conectar la calculadora con el taller ===
+  window.guardarProducto = async function () {
+    const nombre = $('projectName').value.trim();
+    if (!nombre) {
+      showToast('Escribi el nombre del producto en el campo de arriba');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      $('projectName').focus();
+      return;
+    }
+    const c = window.__calc || {};
+    try {
+      const r = await apiCall('producto', {
+        nombre,
+        costo: c.costo || 0,
+        precio: c.precio || 0,
+        datos: { material: c.material || '', peso_g: c.peso_g || 0, horas: c.horas || 0, minutos: c.minutos || 0 }
+      });
+      if (!r || !r.ok) throw new Error((r && r.error) || 'Error');
+      showToast(r.actualizado ? 'Producto actualizado en tu catalogo' : 'Producto creado en tu catalogo');
+    } catch (e) {
+      showToast('No se pudo guardar: ' + e.message);
+    }
+  };
+
+  window.crearPresupuesto = function () {
+    const c = window.__calc || {};
+    const nombre = $('projectName').value.trim() || 'Impresion 3D';
+    try {
+      localStorage.setItem('ptools_pieza_calculadora', JSON.stringify({
+        nombre,
+        precio: c.precio || 0,
+        costo: c.costo || 0,
+        datos: { material: c.material || '', peso_g: c.peso_g || 0, horas: c.horas || 0, minutos: c.minutos || 0 }
+      }));
+    } catch (e) {}
+    window.top.location.href = 'presupuesto.php?desde=calculadora';
+  };
 
   // Support toggle
   $('supportToggle').addEventListener('change', function() {
@@ -2048,6 +2103,16 @@ body.en-panel #newsModal { display: none !important; }
 
     // Donut chart
     updateChart(materialCost + supportCost, electricCost, laborCost, depTotal, totalAdditionalDisplay);
+
+    // Ultimo calculo en numeros crudos (lo usan las acciones del panel)
+    window.__calc = {
+      costo: Math.round(subtotal * 100) / 100,
+      precio: Math.round(finalPrice * 100) / 100,
+      material: $('materialType').value,
+      peso_g: totalWeight,
+      horas: hours,
+      minutos: minutes
+    };
   }
 
   function updateChart(mat, elec, labor, dep, add) {
