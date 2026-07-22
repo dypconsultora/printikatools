@@ -70,6 +70,7 @@ function ptTema(t){document.documentElement.setAttribute('data-theme',t==='light
   :root[data-theme="light"] .logo-claro{display:block !important}
   :root[data-theme="light"] .logo-oscuro{display:none !important}
   *{box-sizing:border-box;margin:0;padding:0}
+  [hidden]{display:none !important}
   html{-webkit-text-size-adjust:100%}
   body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
        background:var(--bg);color:var(--txt);min-height:100vh;line-height:1.55;
