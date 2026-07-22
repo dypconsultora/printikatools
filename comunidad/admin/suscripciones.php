@@ -78,6 +78,7 @@ $usuarios = com_db()->query(
 
 ui_panel_inicio('Suscripciones', $yo, 'Suscripciones', '../');
 ?>
+    <style>.contenido{max-width:none}</style>
     <h1>Suscripciones</h1>
     <p class="bajada">Usuarios de la comunidad y estado de cada suscripción.</p>
 

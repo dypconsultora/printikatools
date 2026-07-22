@@ -1914,7 +1914,9 @@ body.en-panel #newsModal { display: none !important; }
         datos: { material: c.material || '', peso_g: c.peso_g || 0, horas: c.horas || 0, minutos: c.minutos || 0 }
       }));
     } catch (e) {}
-    window.top.location.href = 'presupuesto.php?desde=calculadora';
+    // URL absoluta: el clic nace dentro del iframe y lo relativo se
+    // resolveria contra /cotizador/ (pagina inexistente)
+    window.top.location.href = new URL('../presupuesto.php?desde=calculadora', window.location.href).href;
   };
 
   // Support toggle
