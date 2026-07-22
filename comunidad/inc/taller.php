@@ -132,19 +132,125 @@ function taller_migrar() {
         $db->exec("UPDATE presupuestos SET vendido_en = actualizado_en WHERE estado = 'vendido' AND vendido_en IS NULL");
     }
 
+    $db->exec("CREATE TABLE IF NOT EXISTS rollos (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        usuario_id BIGINT UNSIGNED NOT NULL,
+        marca VARCHAR(100) NOT NULL,
+        tipo VARCHAR(20) NOT NULL DEFAULT 'PLA',
+        color VARCHAR(60) NOT NULL,
+        peso_original INT NOT NULL DEFAULT 1000,
+        peso_disponible INT NOT NULL DEFAULT 1000,
+        costo_kilo DECIMAL(12,2) NOT NULL DEFAULT 0,
+        creado_en DATETIME NOT NULL,
+        PRIMARY KEY (id),
+        KEY idx_usuario_tipo (usuario_id, tipo),
+        CONSTRAINT fk_rollo_usuario FOREIGN KEY (usuario_id)
+            REFERENCES usuarios(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $db->exec("CREATE TABLE IF NOT EXISTS insumos (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        usuario_id BIGINT UNSIGNED NOT NULL,
+        nombre VARCHAR(150) NOT NULL,
+        tipo VARCHAR(100) NOT NULL DEFAULT '',
+        cantidad DECIMAL(12,2) NOT NULL DEFAULT 0,
+        unidad VARCHAR(30) NOT NULL DEFAULT 'unidades',
+        aviso_minimo DECIMAL(12,2) NOT NULL DEFAULT 0,
+        creado_en DATETIME NOT NULL,
+        PRIMARY KEY (id),
+        KEY idx_usuario (usuario_id),
+        CONSTRAINT fk_insumo_usuario FOREIGN KEY (usuario_id)
+            REFERENCES usuarios(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $db->exec("CREATE TABLE IF NOT EXISTS stock_descuentos (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        usuario_id BIGINT UNSIGNED NOT NULL,
+        presupuesto_id BIGINT UNSIGNED NOT NULL,
+        rollo_id BIGINT UNSIGNED NOT NULL,
+        gramos INT NOT NULL,
+        PRIMARY KEY (id),
+        KEY idx_presupuesto (presupuesto_id),
+        CONSTRAINT fk_sd_usuario FOREIGN KEY (usuario_id)
+            REFERENCES usuarios(id) ON DELETE CASCADE,
+        CONSTRAINT fk_sd_rollo FOREIGN KEY (rollo_id)
+            REFERENCES rollos(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
     $listo = true;
 }
 
-/** Registra el cambio de estado manteniendo la fecha de venta. */
+/** Tipos de rollo disponibles en Stock. */
+function taller_tipos_rollo() {
+    return ['PLA', 'PETG', 'ABS', 'TPU', 'Resina', 'Otro'];
+}
+
+/** Mapea el material de la calculadora al tipo de rollo del stock. */
+function taller_material_a_tipo($material) {
+    $directos = ['PLA', 'PETG', 'ABS', 'TPU', 'Resina'];
+    if (in_array($material, $directos, true)) return $material;
+    if ($material === 'Wood-PLA') return 'PLA';
+    return 'Otro';
+}
+
+/** Descuenta del stock (FIFO por rollo más viejo) los gramos de un presupuesto vendido. */
+function taller_stock_descontar($usuario_id, $presupuesto_id) {
+    $db = com_db();
+    // Evitar doble descuento si ya se registró
+    $stmt = $db->prepare('SELECT COUNT(*) c FROM stock_descuentos WHERE presupuesto_id=?');
+    $stmt->execute([(int) $presupuesto_id]);
+    if ((int) $stmt->fetch()['c'] > 0) return;
+
+    $stmt = $db->prepare('SELECT cantidad, datos_json FROM presupuesto_items WHERE presupuesto_id=?');
+    $stmt->execute([(int) $presupuesto_id]);
+    foreach ($stmt->fetchAll() as $item) {
+        $datos = $item['datos_json'] ? json_decode($item['datos_json'], true) : null;
+        $gramos = (int) round((float) ($datos['peso_g'] ?? 0) * (int) $item['cantidad']);
+        if ($gramos <= 0) continue;
+        $tipo = taller_material_a_tipo($datos['material'] ?? '');
+
+        $rollos = $db->prepare('SELECT id, peso_disponible FROM rollos
+                                 WHERE usuario_id=? AND tipo=? AND peso_disponible > 0
+                                 ORDER BY creado_en ASC, id ASC');
+        $rollos->execute([(int) $usuario_id, $tipo]);
+        foreach ($rollos->fetchAll() as $rollo) {
+            if ($gramos <= 0) break;
+            $usar = min($gramos, (int) $rollo['peso_disponible']);
+            $db->prepare('UPDATE rollos SET peso_disponible = peso_disponible - ? WHERE id=?')
+               ->execute([$usar, (int) $rollo['id']]);
+            $db->prepare('INSERT INTO stock_descuentos (usuario_id, presupuesto_id, rollo_id, gramos) VALUES (?,?,?,?)')
+               ->execute([(int) $usuario_id, (int) $presupuesto_id, (int) $rollo['id'], $usar]);
+            $gramos -= $usar;
+        }
+        // Si no alcanzó el stock, el resto queda sin descontar
+    }
+}
+
+/** Devuelve al stock lo descontado por un presupuesto (al volverlo a pendiente). */
+function taller_stock_restaurar($usuario_id, $presupuesto_id) {
+    $db = com_db();
+    $stmt = $db->prepare('SELECT rollo_id, gramos FROM stock_descuentos WHERE presupuesto_id=? AND usuario_id=?');
+    $stmt->execute([(int) $presupuesto_id, (int) $usuario_id]);
+    foreach ($stmt->fetchAll() as $d) {
+        $db->prepare('UPDATE rollos SET peso_disponible = LEAST(peso_original, peso_disponible + ?) WHERE id=?')
+           ->execute([(int) $d['gramos'], (int) $d['rollo_id']]);
+    }
+    $db->prepare('DELETE FROM stock_descuentos WHERE presupuesto_id=? AND usuario_id=?')
+       ->execute([(int) $presupuesto_id, (int) $usuario_id]);
+}
+
+/** Registra el cambio de estado manteniendo la fecha de venta y el stock. */
 function taller_cambiar_estado($usuario_id, $presupuesto_id, $estado) {
     if ($estado === 'vendido') {
         com_db()->prepare("UPDATE presupuestos SET estado='vendido', vendido_en=COALESCE(vendido_en, NOW()),
                            actualizado_en=NOW() WHERE id=? AND usuario_id=?")
             ->execute([(int) $presupuesto_id, (int) $usuario_id]);
+        taller_stock_descontar($usuario_id, $presupuesto_id);
     } else {
         com_db()->prepare("UPDATE presupuestos SET estado='pendiente', vendido_en=NULL,
                            actualizado_en=NOW() WHERE id=? AND usuario_id=?")
             ->execute([(int) $presupuesto_id, (int) $usuario_id]);
+        taller_stock_restaurar($usuario_id, $presupuesto_id);
     }
 }
 

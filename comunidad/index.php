@@ -88,10 +88,11 @@ ui_panel_inicio('Inicio', $u, 'Inicio');
         <h2>Estadísticas</h2>
         <p>Ganancia, ingresos y gastos de los últimos meses.</p>
       </a>
-      <div class="tarjeta-h prox">
+      <a class="tarjeta-h" href="stock.php">
+        <span class="flecha"><?php echo ui_icono('flecha', 16); ?></span>
         <span class="ico-caja"><?php echo ui_icono('stock', 19); ?></span>
-        <h2>Stock de materiales <span class="badge">Próximamente</span></h2>
+        <h2>Stock Materiales</h2>
         <p>Controlá tus rollos de filamento e insumos.</p>
-      </div>
+      </a>
     </div>
 <?php ui_panel_fin(); ?>
