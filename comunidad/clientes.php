@@ -91,8 +91,13 @@ function campo($editando, $k) { return htmlspecialchars($editando[$k] ?? ''); }
 ui_panel_inicio('Clientes', $u, 'Clientes');
 ?>
     <style>.contenido{max-width:none}</style>
-    <h1>Clientes</h1>
-    <p class="bajada">Tu cartera de clientes. Al crear un presupuesto podés elegirlos y quedan vinculados.</p>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div>
+        <h1>Clientes</h1>
+        <p class="bajada">Tu cartera de clientes. Al crear un presupuesto podés elegirlos y quedan vinculados.</p>
+      </div>
+      <button type="button" class="btn" id="btnNuevoCliente">+ Crear cliente</button>
+    </div>
 
     <?php if ($aviso): ?><div class="msg ok"><?php echo ui_icono('check', 16); ?><span><?php echo htmlspecialchars($aviso); ?></span></div><?php endif; ?>
     <?php if ($error): ?><div class="msg bad"><?php echo ui_icono('alerta', 16); ?><span><?php echo htmlspecialchars($error); ?></span></div><?php endif; ?>
@@ -124,7 +129,7 @@ ui_panel_inicio('Clientes', $u, 'Clientes');
       @media (max-width:560px){ .form-cli .grilla{grid-template-columns:1fr} }
     </style>
 
-    <div class="form-cli">
+    <div class="form-cli" id="formCliente" <?php echo ($editando || $error) ? '' : 'hidden'; ?>>
       <h2><?php echo $editando ? 'Editar cliente' : 'Nuevo cliente'; ?></h2>
       <?php if ($editando && ($editando['email'] === '' || $editando['telefono'] === '')): ?>
         <p class="bajada" style="margin-bottom:0;color:var(--warn)">Este cliente se creó desde un presupuesto: completá el email y el teléfono.</p>
@@ -150,11 +155,27 @@ ui_panel_inicio('Clientes', $u, 'Clientes');
             <input id="c-prov" type="text" name="provincia" maxlength="100" value="<?php echo campo($editando, 'provincia'); ?>"></span>
         </div>
         <div class="pie">
-          <?php if ($editando): ?><a href="clientes.php" style="font-size:13px">Cancelar edición</a><?php endif; ?>
+          <?php if ($editando): ?>
+            <a href="clientes.php" style="font-size:13px">Cancelar edición</a>
+          <?php else: ?>
+            <button type="button" class="btn sec" id="btnCancelarCliente">Cancelar</button>
+          <?php endif; ?>
           <button class="btn" type="submit"><?php echo $editando ? 'Guardar cambios' : 'Crear cliente'; ?></button>
         </div>
       </form>
     </div>
+    <script>
+      (function(){
+        var form = document.getElementById('formCliente');
+        var abrir = document.getElementById('btnNuevoCliente');
+        abrir.addEventListener('click', function(){
+          form.hidden = !form.hidden;
+          if (!form.hidden) document.getElementById('c-nombre').focus();
+        });
+        var cancelar = document.getElementById('btnCancelarCliente');
+        if (cancelar) cancelar.addEventListener('click', function(){ form.hidden = true; });
+      })();
+    </script>
 
     <div class="barra-sup">
       <form method="get">
