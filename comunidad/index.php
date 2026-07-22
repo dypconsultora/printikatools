@@ -58,11 +58,18 @@ ui_panel_inicio('Inicio', $u, 'Inicio');
         <h2>Calculadora de costos</h2>
         <p>Calculá el precio justo de tus impresiones 3D.</p>
       </a>
-      <div class="tarjeta-h prox">
+      <a class="tarjeta-h" href="presupuestos.php">
+        <span class="flecha"><?php echo ui_icono('flecha', 16); ?></span>
         <span class="ico-caja"><?php echo ui_icono('presupuestos', 19); ?></span>
-        <h2>Presupuestos <span class="badge">Próximamente</span></h2>
-        <p>Generá y guardá presupuestos para tus clientes.</p>
-      </div>
+        <h2>Presupuestos</h2>
+        <p>Generá y enviá presupuestos profesionales a tus clientes.</p>
+      </a>
+      <a class="tarjeta-h" href="productos.php">
+        <span class="flecha"><?php echo ui_icono('flecha', 16); ?></span>
+        <span class="ico-caja"><?php echo ui_icono('etiqueta', 19); ?></span>
+        <h2>Productos</h2>
+        <p>Tu catálogo de piezas con costo y precio de venta.</p>
+      </a>
       <div class="tarjeta-h prox">
         <span class="ico-caja"><?php echo ui_icono('clientes', 19); ?></span>
         <h2>Clientes <span class="badge">Próximamente</span></h2>

@@ -21,6 +21,7 @@ function ui_icono($nombre, $tam = 18) {
         'whatsapp'     => '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
         'admin'        => '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1 1 0 0 1 1.52 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/>',
         'salir'        => '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
+        'etiqueta'     => '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>',
         'flecha'       => '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
         'sol'          => '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
         'luna'         => '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
@@ -163,7 +164,8 @@ function ui_menu() {
             ['libreria',     'Librería STL',  null, false],
         ],
         'Mi taller' => [
-            ['presupuestos', 'Presupuestos',  null, false],
+            ['presupuestos', 'Presupuestos',  'presupuestos.php', true],
+            ['etiqueta',     'Productos',     'productos.php', true],
             ['clientes',     'Clientes',      null, false],
             ['stock',        'Stock',         null, false],
             ['ventas',       'Ventas',        null, false],
