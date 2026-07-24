@@ -22,17 +22,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (($_POST['accion'] ?? '') === 'subir') {
         $nombre = mb_substr(trim($_POST['nombre'] ?? ''), 0, 150);
         $cat    = mb_substr(trim($_POST['categoria'] ?? ''), 0, 80);
-        $arch   = $_FILES['archivo'] ?? null;
 
-        $ext = strtolower(pathinfo($arch['name'] ?? '', PATHINFO_EXTENSION));
-        if ($nombre === '') {
+        // Hasta 4 archivos por modelo (piezas de un mismo diseño)
+        $archivos = [];
+        for ($k = 0; $k < 4 && $error === ''; $k++) {
+            if (empty($_FILES['archivos']['tmp_name'][$k]) || !is_uploaded_file($_FILES['archivos']['tmp_name'][$k])) continue;
+            $extK = strtolower(pathinfo($_FILES['archivos']['name'][$k], PATHINFO_EXTENSION));
+            if (!in_array($extK, ['stl', 'zip', '3mf', 'obj'], true)) {
+                $error = 'El archivo ' . ($k + 1) . ' tiene que ser STL, 3MF, OBJ o ZIP.';
+            } elseif ($_FILES['archivos']['size'][$k] > 60 * 1024 * 1024) {
+                $error = 'El archivo ' . ($k + 1) . ' no puede superar los 60 MB.';
+            } else {
+                $archivos[] = ['tmp' => $_FILES['archivos']['tmp_name'][$k],
+                               'ext' => $extK, 'tam' => (int) $_FILES['archivos']['size'][$k]];
+            }
+        }
+
+        if ($error !== '') {
+            // ya hay mensaje
+        } elseif ($nombre === '') {
             $error = 'Poné el nombre del modelo.';
-        } elseif (empty($arch['tmp_name']) || !is_uploaded_file($arch['tmp_name'])) {
-            $error = 'Elegí el archivo STL (o ZIP con varios).';
-        } elseif (!in_array($ext, ['stl', 'zip', '3mf', 'obj'], true)) {
-            $error = 'El archivo tiene que ser STL, 3MF, OBJ o ZIP.';
-        } elseif ($arch['size'] > 60 * 1024 * 1024) {
-            $error = 'El archivo no puede superar los 60 MB.';
+        } elseif (!$archivos) {
+            $error = 'Elegí al menos un archivo STL (o ZIP con varios).';
         } else {
             $img_ext = '';
             if (!empty($_FILES['imagen']['tmp_name']) && is_uploaded_file($_FILES['imagen']['tmp_name'])) {
@@ -46,17 +57,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             if ($error === '') {
                 if (!is_dir($dir)) mkdir($dir, 0755, true);
+                $tam_total = array_sum(array_column($archivos, 'tam'));
                 $db->prepare('INSERT INTO stl_items (nombre, categoria, archivo_ext, imagen_ext, tam_bytes, creado_en)
                               VALUES (?, ?, ?, ?, ?, NOW())')
-                   ->execute([$nombre, $cat, $ext, $img_ext, (int) $arch['size']]);
+                   ->execute([$nombre, $cat, $archivos[0]['ext'], $img_ext, $tam_total]);
                 $id = (int) $db->lastInsertId();
-                $ok1 = move_uploaded_file($arch['tmp_name'], "$dir/stl-$id.$ext");
-                $ok2 = $img_ext === '' || move_uploaded_file($_FILES['imagen']['tmp_name'], "$dir/img-$id.$img_ext");
-                if ($ok1 && $ok2) {
-                    $aviso = "«{$nombre}» cargado en la librería.";
+                $ok = move_uploaded_file($archivos[0]['tmp'], "$dir/stl-$id." . $archivos[0]['ext']);
+                foreach (array_slice($archivos, 1) as $n => $a) {
+                    $orden = $n + 2;
+                    if (move_uploaded_file($a['tmp'], "$dir/stl-$id-$orden." . $a['ext'])) {
+                        $db->prepare('INSERT INTO stl_archivos (stl_id, orden, ext, tam_bytes) VALUES (?,?,?,?)')
+                           ->execute([$id, $orden, $a['ext'], $a['tam']]);
+                    } else {
+                        $ok = false;
+                    }
+                }
+                $ok = $ok && ($img_ext === '' || move_uploaded_file($_FILES['imagen']['tmp_name'], "$dir/img-$id.$img_ext"));
+                if ($ok) {
+                    $aviso = "«{$nombre}» cargado en la librería"
+                           . (count($archivos) > 1 ? ' (' . count($archivos) . ' archivos).' : '.');
                 } else {
+                    foreach (glob("$dir/stl-$id*") ?: [] as $f) @unlink($f);
                     $db->prepare('DELETE FROM stl_items WHERE id=?')->execute([$id]);
-                    $error = 'No se pudo guardar el archivo. Probá de nuevo.';
+                    $error = 'No se pudieron guardar los archivos. Probá de nuevo.';
                 }
             }
         }
@@ -69,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $db->prepare('SELECT * FROM stl_items WHERE id=?');
         $stmt->execute([$id]);
         if ($it = $stmt->fetch()) {
-            @unlink("$dir/stl-$id." . $it['archivo_ext']);
+            foreach (glob("$dir/stl-$id*") ?: [] as $f) @unlink($f);
             if ($it['imagen_ext']) @unlink("$dir/img-$id." . $it['imagen_ext']);
             $db->prepare('DELETE FROM stl_items WHERE id=?')->execute([$id]);
             $aviso = 'Modelo eliminado.';
@@ -77,7 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$items = $db->query('SELECT * FROM stl_items ORDER BY creado_en DESC, id DESC')->fetchAll();
+$items = $db->query('SELECT i.*, 1 + (SELECT COUNT(*) FROM stl_archivos a WHERE a.stl_id = i.id) AS cant_archivos
+                     FROM stl_items i ORDER BY i.creado_en DESC, i.id DESC')->fetchAll();
 
 ui_panel_inicio('Cargar STL', $yo, 'Cargar STL', '../');
 ?>
@@ -93,7 +117,9 @@ ui_panel_inicio('Cargar STL', $yo, 'Cargar STL', '../');
             padding:20px;margin-bottom:18px;max-width:860px}
       .alta h2{font-size:15px;font-weight:600;margin-bottom:10px}
       .alta .fila{display:grid;grid-template-columns:1.2fr 1fr;gap:12px}
-      .alta .fila2{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;margin-top:4px}
+      .alta .fila2{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;margin-top:10px}
+      .alta .fila-archivos{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+      @media (max-width:1100px){ .alta .fila-archivos{grid-template-columns:1fr 1fr} }
       input[type=file]{height:auto;padding:8px 12px;font-size:13px}
       .lista{background:var(--surface);border:1px solid var(--bd-suave);border-radius:var(--radio-g);padding:6px 20px;overflow-x:auto}
       table{width:100%;border-collapse:collapse;font-size:13.5px}
@@ -120,14 +146,24 @@ ui_panel_inicio('Cargar STL', $yo, 'Cargar STL', '../');
         <option>Hogar</option><option>Deco</option><option>Gadgets</option><option>Organización</option>
         <option>Juguetes</option><option>Repuestos</option>
       </datalist>
+      <label style="margin-top:12px">Archivos del modelo (STL / 3MF / OBJ / ZIP · máx. 60 MB cada uno)</label>
+      <div class="fila-archivos">
+        <span><label for="s-arch1" style="font-size:12px;color:var(--txt-3)">Archivo 1 *</label>
+          <input id="s-arch1" type="file" name="archivos[]" accept=".stl,.zip,.3mf,.obj" required></span>
+        <span><label for="s-arch2" style="font-size:12px;color:var(--txt-3)">Archivo 2 (opcional)</label>
+          <input id="s-arch2" type="file" name="archivos[]" accept=".stl,.zip,.3mf,.obj"></span>
+        <span><label for="s-arch3" style="font-size:12px;color:var(--txt-3)">Archivo 3 (opcional)</label>
+          <input id="s-arch3" type="file" name="archivos[]" accept=".stl,.zip,.3mf,.obj"></span>
+        <span><label for="s-arch4" style="font-size:12px;color:var(--txt-3)">Archivo 4 (opcional)</label>
+          <input id="s-arch4" type="file" name="archivos[]" accept=".stl,.zip,.3mf,.obj"></span>
+      </div>
+      <p style="font-size:12px;color:var(--txt-3);margin-top:4px">Si el modelo tiene varias piezas, cargalas acá:
+        el usuario las descarga todas juntas en un ZIP. Límite del servidor:
+        <?php echo htmlspecialchars(ini_get('upload_max_filesize')); ?> por archivo (si dice 64M, está todo bien).</p>
       <div class="fila2">
-        <span><label for="s-arch">Archivo STL / 3MF / OBJ / ZIP * (máx. 60 MB)</label>
-          <input id="s-arch" type="file" name="archivo" accept=".stl,.zip,.3mf,.obj" required>
-          <p style="font-size:12px;color:var(--txt-3);margin-top:4px">Límite del servidor:
-            <?php echo htmlspecialchars(ini_get('upload_max_filesize')); ?> por archivo
-            (si dice 64M, está todo bien)</p></span>
         <span><label for="s-img">Foto de vista previa (PNG/JPG/WebP)</label>
           <input id="s-img" type="file" name="imagen" accept="image/png,image/jpeg,image/webp"></span>
+        <span></span>
         <button class="btn" type="submit"><?php echo ui_icono('nube', 16); ?> Cargar STL</button>
       </div>
     </form>
@@ -143,7 +179,8 @@ ui_panel_inicio('Cargar STL', $yo, 'Cargar STL', '../');
               <img class="mini" src="../uploads/stl/img-<?php echo (int) $it['id'] . '.' . htmlspecialchars($it['imagen_ext']); ?>" alt="">
               <?php else: ?><span class="mini" style="display:flex;align-items:center;justify-content:center;color:var(--txt-3)"><?php echo ui_icono('libreria', 20); ?></span><?php endif; ?></td>
             <td><strong><?php echo htmlspecialchars($it['nombre']); ?></strong><br>
-              <span style="font-size:12px;color:var(--txt-3)"><?php echo strtoupper($it['archivo_ext']); ?></span></td>
+              <span style="font-size:12px;color:var(--txt-3)"><?php echo strtoupper($it['archivo_ext']);
+                echo (int) $it['cant_archivos'] > 1 ? ' · ' . (int) $it['cant_archivos'] . ' archivos' : ''; ?></span></td>
             <td><?php echo htmlspecialchars($it['categoria'] ?: '—'); ?></td>
             <td><?php echo (int) $it['descargas']; ?></td>
             <td><?php echo $it['publicado'] ? '<span style="color:var(--ok)">Publicado</span>' : '<span style="color:var(--txt-3)">Oculto</span>'; ?></td>

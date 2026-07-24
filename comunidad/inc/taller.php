@@ -257,6 +257,18 @@ function taller_migrar() {
         }
     }
 
+    $db->exec("CREATE TABLE IF NOT EXISTS stl_archivos (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        stl_id BIGINT UNSIGNED NOT NULL,
+        orden TINYINT UNSIGNED NOT NULL DEFAULT 2,
+        ext VARCHAR(10) NOT NULL,
+        tam_bytes BIGINT UNSIGNED NOT NULL DEFAULT 0,
+        PRIMARY KEY (id),
+        KEY idx_stl (stl_id),
+        CONSTRAINT fk_stlarch_item FOREIGN KEY (stl_id)
+            REFERENCES stl_items(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
     $listo = true;
 }
 

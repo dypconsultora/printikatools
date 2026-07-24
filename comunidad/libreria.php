@@ -21,6 +21,34 @@ if (preg_match('/^\d+$/', $_GET['descargar'] ?? '')) {
     if ($item && is_readable($ruta)) {
         $db->prepare('UPDATE stl_items SET descargas = descargas + 1 WHERE id=?')->execute([(int) $item['id']]);
         $nombre = preg_replace('/[^\w\s\-\.]/u', '', $item['nombre']) ?: 'modelo';
+
+        // Con varios archivos, van todos juntos en un ZIP
+        $stmt = $db->prepare('SELECT * FROM stl_archivos WHERE stl_id=? ORDER BY orden');
+        $stmt->execute([(int) $item['id']]);
+        $extras = $stmt->fetchAll();
+
+        if ($extras) {
+            $tmp = tempnam(sys_get_temp_dir(), 'stlzip');
+            $zip = new ZipArchive();
+            if ($zip->open($tmp, ZipArchive::OVERWRITE) === true) {
+                $zip->addFile($ruta, $nombre . '-1.' . $item['archivo_ext']);
+                foreach ($extras as $e) {
+                    $rutaE = __DIR__ . '/uploads/stl/stl-' . $item['id'] . '-' . $e['orden'] . '.' . $e['ext'];
+                    if (is_readable($rutaE)) {
+                        $zip->addFile($rutaE, $nombre . '-' . $e['orden'] . '.' . $e['ext']);
+                    }
+                }
+                $zip->close();
+                header('Content-Type: application/zip');
+                header('Content-Disposition: attachment; filename="' . $nombre . '.zip"');
+                header('Content-Length: ' . filesize($tmp));
+                readfile($tmp);
+                @unlink($tmp);
+                exit;
+            }
+            @unlink($tmp);
+        }
+
         header('Content-Type: application/octet-stream');
         header('Content-Disposition: attachment; filename="' . $nombre . '.' . $item['archivo_ext'] . '"');
         header('Content-Length: ' . filesize($ruta));

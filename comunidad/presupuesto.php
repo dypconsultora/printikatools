@@ -337,7 +337,8 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
 
         <div class="acciones-pie">
           <span class="nota-pie" id="notaPie"></span>
-          <button type="button" class="btn sec" id="btnPdf"><?php echo ui_icono('descargar', 16); ?> Exportar PDF</button>
+          <button type="button" class="btn sec" id="btnPdf"><?php echo ui_icono('descargar', 16); ?> Descargar PDF</button>
+          <button type="button" class="btn sec" id="btnImprimir"><?php echo ui_icono('pdf', 16); ?> Imprimir</button>
           <button type="button" class="btn sec" id="btnWpp"><?php echo ui_icono('whatsapp', 16); ?> Compartir</button>
           <button type="button" class="btn sec" id="btnVendido">Guardar y marcar vendido</button>
           <button type="button" class="btn" id="btnGuardar">Guardar</button>
@@ -489,8 +490,18 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
         '<td><button type="button" class="quitar" title="Quitar" aria-label="Quitar">✕</button></td>';
       tr.querySelector('strong').textContent = it.nombre + (it.guardar_producto ? ' ★' : '');
       tr.querySelector('div').textContent = it.descripcion || '';
-      tr.querySelector('.cant').addEventListener('input', e => { it.cantidad = Math.max(1, parseInt(e.target.value || 1)); render(); });
-      tr.querySelector('.precio-in').addEventListener('input', e => { it.precio = Math.max(0, parseFloat(e.target.value || 0)); totales(); });
+      // Actualizar solo el subtotal de la fila (redibujar toda la tabla haría perder el foco al tipear)
+      const subCelda = tr.children[3].querySelector('strong');
+      tr.querySelector('.cant').addEventListener('input', e => {
+        it.cantidad = Math.max(1, parseInt(e.target.value || 1));
+        subCelda.textContent = fmt(it.precio * it.cantidad);
+        totales();
+      });
+      tr.querySelector('.precio-in').addEventListener('input', e => {
+        it.precio = Math.max(0, parseFloat(e.target.value || 0));
+        subCelda.textContent = fmt(it.precio * it.cantidad);
+        totales();
+      });
       tr.querySelector('.quitar').addEventListener('click', () => { estado.items.splice(i, 1); render(); });
       tb.appendChild(tr);
     });
@@ -676,7 +687,22 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
   printDoc.setAttribute('aria-hidden', 'true');
   document.body.appendChild(printDoc);
 
-  $('btnPdf').addEventListener('click', () => {
+  // Descargar PDF: baja el archivo directo (sin pasar por la ventana de impresion)
+  $('btnPdf').addEventListener('click', async () => {
+    const cliente = $('cliente').value.trim() || 'Cliente';
+    $('btnPdf').disabled = true;
+    try {
+      const doc = await generarPdf();
+      doc.save('Presupuesto - ' + cliente + '.pdf');
+    } catch (e) {
+      alert('No se pudo generar el PDF. Probá de nuevo.');
+    } finally {
+      $('btnPdf').disabled = false;
+    }
+  });
+
+  // Imprimir: abre la vista de impresion del navegador
+  $('btnImprimir').addEventListener('click', () => {
     const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const cliente = $('cliente').value.trim() || 'Cliente';
     const fecha = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
