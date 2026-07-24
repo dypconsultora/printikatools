@@ -85,6 +85,7 @@ if (!com_preview_ok()): ?>
     #cargador .barra i{display:block;height:100%;width:0;background:var(--accent,#2db7fa)}
     /* Que los anclajes frenen debajo de la barra fija */
     #herramientas,#comunidad,#planes,#faq{scroll-margin-top:118px}
+    .moneda-sel button.activo{opacity:1 !important;background:var(--accent) !important;color:var(--accent-ink,#06202f) !important}
     .anim-oculto{opacity:0}
     .h1-serena .palabra{display:inline-block;opacity:0;transition:color .3s ease,transform .3s ease}
     .h1-serena .palabra:hover{transform:translateY(-2px);color:var(--accent)}
@@ -417,7 +418,7 @@ if (!com_preview_ok()): ?>
                   title="Modo noche" aria-label="Modo noche"><?php echo ui_icono('luna', 15); ?></button>
         </span>
         <a class="entrar" href="comunidad/login.php">Iniciar sesión</a>
-        <a class="btn" href="comunidad/registro.php">Registrarse</a>
+        <a class="btn" href="#planes">Registrarse</a>
       </nav>
     </div>
   </header>
@@ -561,6 +562,11 @@ if (!com_preview_ok()): ?>
           <span class="ceja">Precios</span>
           <h2>Planes simples, sin sorpresas</h2>
           <p>Empezá gratis y pasate a la suscripción cuando tu taller lo pida.</p>
+          <div class="moneda-sel" role="group" aria-label="Moneda de pago" style="display:inline-flex;align-items:center;gap:2px;margin-top:18px;background:var(--surface-2,rgba(255,255,255,.06));border:1px solid var(--bd,rgba(255,255,255,.12));border-radius:999px;padding:3px">
+            <span style="font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--txt-3,#8a95a8);padding:0 8px 0 12px">MONEDA</span>
+            <button type="button" data-mon="ars" class="activo" style="background:none;border:none;border-radius:999px;padding:5px 14px;font-family:inherit;font-size:12px;font-weight:700;color:inherit;cursor:pointer;opacity:.55">ARS</button>
+            <button type="button" data-mon="usd" style="background:none;border:none;border-radius:999px;padding:5px 14px;font-family:inherit;font-size:12px;font-weight:700;color:inherit;cursor:pointer;opacity:.55">USD</button>
+          </div>
         </div>
         <div class="planes-grilla">
           <div class="plan">
@@ -586,7 +592,9 @@ if (!com_preview_ok()): ?>
               <li><?php echo ui_icono('check', 15); ?>Soporte técnico prioritario</li>
               <li><?php echo ui_icono('check', 15); ?>Herramientas nuevas cada mes</li>
             </ul>
-            <a class="btn sec" href="comunidad/registro.php?plan=mensual">Suscribirme</a>
+            <a class="btn sec btn-pago" target="_blank" rel="noopener"
+               data-mp="https://mpago.la/CAMBIAR-mensual" data-pp="https://www.paypal.com/CAMBIAR-mensual"
+               href="https://mpago.la/CAMBIAR-mensual">Suscribirme</a>
           </div>
           <div class="plan destacado">
             <span class="etiqueta">Más de 2 meses gratis</span>
@@ -600,7 +608,9 @@ if (!com_preview_ok()): ?>
               <li><?php echo ui_icono('check', 15); ?>Precio congelado por 12 meses</li>
               <li><?php echo ui_icono('check', 15); ?>Acceso anticipado a herramientas nuevas</li>
             </ul>
-            <a class="btn" href="comunidad/registro.php?plan=anual">Suscribirme</a>
+            <a class="btn btn-pago" target="_blank" rel="noopener"
+               data-mp="https://mpago.la/CAMBIAR-anual" data-pp="https://www.paypal.com/CAMBIAR-anual"
+               href="https://mpago.la/CAMBIAR-anual">Suscribirme</a>
           </div>
         </div>
       </div>
@@ -769,6 +779,20 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.btn').forEach(function (b) {
     b.addEventListener('mouseenter', function () { gsap.to(b, { scale: 1.03, duration: 0.18, ease: 'power2.out' }); });
     b.addEventListener('mouseleave', function () { gsap.to(b, { scale: 1, duration: 0.22, ease: 'power2.out' }); });
+  });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var botones = document.querySelectorAll('.moneda-sel button');
+  botones.forEach(function (b) {
+    b.addEventListener('click', function () {
+      botones.forEach(function (x) { x.classList.toggle('activo', x === b); });
+      var usd = b.dataset.mon === 'usd';
+      document.querySelectorAll('.btn-pago').forEach(function (a) {
+        a.href = usd ? a.dataset.pp : a.dataset.mp;
+      });
+    });
   });
 });
 </script>

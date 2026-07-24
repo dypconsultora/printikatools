@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded',function(){
 (function () {
   if (ptIdioma() !== 'en') return;
   var D = {
-    'Idioma':'Language','Herramientas':'Tools','Comunidad':'Community','Precios':'Pricing','FAQ':'FAQ',
+    'Idioma':'Language','Moneda':'Currency','Herramientas':'Tools','Comunidad':'Community','Precios':'Pricing','FAQ':'FAQ',
     'Calculadora':'Calculator','Iniciar sesión':'Log in','Registrarse':'Sign up',
     'Comunidad 3D en español':'3D community, built for makers',
     'Manejá tu taller de impresión 3D':'Run your 3D printing workshop','como un negocio':'like a business',
