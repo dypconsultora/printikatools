@@ -593,8 +593,8 @@ if (!com_preview_ok()): ?>
               <li><?php echo ui_icono('check', 15); ?>Herramientas nuevas cada mes</li>
             </ul>
             <a class="btn sec btn-pago" target="_blank" rel="noopener"
-               data-mp="https://mpago.la/CAMBIAR-mensual" data-pp="https://www.paypal.com/CAMBIAR-mensual"
-               href="https://mpago.la/CAMBIAR-mensual">Suscribirme</a>
+               data-mp="https://mpago.la/118mn81" data-pp="https://www.paypal.com/CAMBIAR-mensual"
+               href="https://mpago.la/118mn81">Suscribirme</a>
           </div>
           <div class="plan destacado">
             <span class="etiqueta">Más de 2 meses gratis</span>
@@ -609,8 +609,8 @@ if (!com_preview_ok()): ?>
               <li><?php echo ui_icono('check', 15); ?>Acceso anticipado a herramientas nuevas</li>
             </ul>
             <a class="btn btn-pago" target="_blank" rel="noopener"
-               data-mp="https://mpago.la/CAMBIAR-anual" data-pp="https://www.paypal.com/CAMBIAR-anual"
-               href="https://mpago.la/CAMBIAR-anual">Suscribirme</a>
+               data-mp="https://mpago.la/1vNcghS" data-pp="https://www.paypal.com/CAMBIAR-anual"
+               href="https://mpago.la/1vNcghS">Suscribirme</a>
           </div>
         </div>
       </div>
