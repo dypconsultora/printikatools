@@ -57,7 +57,7 @@ ui_panel_inicio('Tu plan', $u, 'Tu plan');
 
     <div class="planes">
       <div class="plan-c">
-        <h2>Gratuito</h2>
+        <h2>Printika Free</h2>
         <p class="precio">$0</p>
         <p class="detalle">Para siempre</p>
         <ul>
@@ -69,7 +69,7 @@ ui_panel_inicio('Tu plan', $u, 'Tu plan');
       </div>
 
       <div class="plan-c<?php echo $elegido === 'mensual' ? ' destacado' : ''; ?>">
-        <h2>Comunidad Mensual</h2>
+        <h2>Printika Pro</h2>
         <p class="precio"><?php echo '$' . number_format(COMUNIDAD_PRECIO_MENSUAL, 0, ',', '.'); ?> <small>/mes</small></p>
         <p class="detalle">Renovación mes a mes, sin permanencia</p>
         <ul>
@@ -85,7 +85,7 @@ ui_panel_inicio('Tu plan', $u, 'Tu plan');
 
       <div class="plan-c destacado">
         <span class="cinta">Más de 2 meses gratis</span>
-        <h2>Comunidad Anual</h2>
+        <h2>Printika Pro Anual</h2>
         <p class="precio"><?php echo '$' . number_format(COMUNIDAD_PRECIO_ANUAL, 0, ',', '.'); ?> <small>/año</small></p>
         <p class="detalle">Equivale a $14.167 por mes · ahorrás $46.000</p>
         <ul>

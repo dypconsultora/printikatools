@@ -233,8 +233,9 @@ if (!com_preview_ok()): ?>
     /* ---- Comunidad (foto + beneficios) ---- */
     .comunidad{background:linear-gradient(180deg,var(--bg),var(--fondo));
         border-top:1px solid var(--bd-suave);border-bottom:1px solid var(--bd-suave)}
-    .comunidad .dos{display:grid;grid-template-columns:.95fr 1.05fr;gap:48px;align-items:center}
-    .foto-taller{position:relative}
+    .comunidad .dos{display:grid;grid-template-columns:.95fr 1.05fr;gap:48px;align-items:stretch}
+    .foto-taller{position:relative;min-height:360px}
+    .foto-taller > img{width:100%;height:100%;object-fit:cover}
     .foto-taller img{width:100%;height:auto;display:block;border-radius:18px;
         border:1px solid var(--raised);box-shadow:var(--sombra-img)}
     .foto-taller .flotante{position:absolute;right:-14px;top:26px;display:flex;align-items:center;
@@ -243,7 +244,7 @@ if (!com_preview_ok()): ?>
     .foto-taller .flotante .punto{width:8px;height:8px;border-radius:99px;background:var(--ok);
         box-shadow:0 0 8px rgba(62,207,142,.8)}
     .foto-taller .flotante span{font-size:12.5px;font-weight:600}
-    .beneficios{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .beneficios{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-content:stretch;height:100%}
     .beneficio{display:flex;gap:12px;align-items:flex-start;background:var(--vidrio);
         border:1px solid var(--bd-suave);border-radius:var(--radio-g);padding:16px;
         transition:border-color .15s ease,background-color .15s ease}
@@ -306,7 +307,16 @@ if (!com_preview_ok()): ?>
     /* ---- Footer ---- */
     footer{border-top:1px solid var(--bd-suave);padding:52px 0 32px;background:var(--fondo)}
     footer .cont{max-width:none;padding:0 36px}
-    .footer-grilla{display:grid;grid-template-columns:2fr 1fr 1fr;gap:48px;margin-bottom:40px}
+    .footer-grilla{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;
+      padding:56px 0 40px;border-top:1px solid var(--bd-suave)}
+    .footer-marca img{height:92px;width:auto}
+    .footer-cta{margin-top:18px;display:inline-flex}
+    footer h4{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+      color:var(--txt-3);margin-bottom:14px}
+    footer ul{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+    footer ul a{font-size:14px;color:var(--txt-2)}
+    footer ul a:hover{color:var(--accent)}
+    @media (max-width:900px){ .footer-grilla{grid-template-columns:1fr 1fr} }
     .footer-grilla img{height:92px;width:auto;margin-bottom:14px}
     .footer-grilla .desc{font-size:13.5px;color:var(--txt-2);max-width:290px}
     .footer-grilla h4{font-family:var(--titulos);font-size:12px;font-weight:700;text-transform:uppercase;
@@ -482,7 +492,7 @@ if (!com_preview_ok()): ?>
           </div>
           <div class="beneficios">
             <div class="beneficio"><?php echo ui_icono('soporte', 18); ?>
-              <div><h3>Soporte directo</h3><p>Te ayudamos por WhatsApp cuando lo necesitás.</p></div>
+              <div><h3>Soporte directo</h3><p>Te ayudamos por Telegram cuando lo necesitás.</p></div>
             </div>
             <div class="beneficio"><?php echo ui_icono('clientes', 18); ?>
               <div><h3>Comunidad de makers</h3><p>Precios, consejos y experiencia compartida.</p></div>
@@ -513,20 +523,18 @@ if (!com_preview_ok()): ?>
         </div>
         <div class="planes-grilla">
           <div class="plan">
-            <h3>Gratuito</h3>
+            <h3>Printika Free</h3>
             <p class="precio">$0</p>
             <p class="nota">Para probar y empezar</p>
             <ul>
               <li><?php echo ui_icono('check', 15); ?>Calculadora de costos online</li>
               <li><?php echo ui_icono('check', 15); ?>Cálculo en ARS, USD y EUR</li>
               <li><?php echo ui_icono('check', 15); ?>Cuenta gratuita en la comunidad</li>
-              <li class="no"><?php echo ui_icono('check', 15); ?>Herramientas del taller</li>
-              <li class="no"><?php echo ui_icono('check', 15); ?>Datos guardados en tu cuenta</li>
             </ul>
             <a class="btn sec" href="comunidad/registro.php?plan=gratis">Empezar gratis</a>
           </div>
           <div class="plan">
-            <h3>Comunidad Mensual</h3>
+            <h3>Printika Pro</h3>
             <p class="precio">$18.000 <small>/mes</small></p>
             <p class="nota">Renovación mes a mes, sin permanencia</p>
             <ul>
@@ -541,7 +549,7 @@ if (!com_preview_ok()): ?>
           </div>
           <div class="plan destacado">
             <span class="etiqueta">Más de 2 meses gratis</span>
-            <h3>Comunidad Anual</h3>
+            <h3>Printika Pro Anual</h3>
             <p class="precio">$170.000 <small>/año</small></p>
             <span class="ahorro">Equivale a $14.167 por mes · ahorrás $46.000</span>
             <p class="nota" style="margin-top:12px">Un solo pago y te olvidás todo el año</p>
@@ -611,23 +619,33 @@ if (!com_preview_ok()): ?>
   <footer>
     <div class="cont">
       <div class="footer-grilla">
-        <div>
+        <div class="footer-marca">
           <img class="logo-oscuro" src="assets/img/printika-tools-dark.svg" alt="Printika Tools">
           <img class="logo-claro" src="assets/img/printika-tools.svg" alt="Printika Tools">
           <p class="desc">Las herramientas y la comunidad para manejar tu taller de impresión 3D como un negocio.</p>
+          <a class="btn sec footer-cta" href="comunidad/registro.php?plan=gratis">Comenzar gratis</a>
         </div>
         <div>
           <h4>Plataforma</h4>
           <ul>
             <li><a href="comunidad/cotizador/">Calculadora</a></li>
+            <li><a href="#herramientas">Herramientas</a></li>
             <li><a href="#planes">Precios</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Tu cuenta</h4>
+          <ul>
             <li><a href="comunidad/login.php">Iniciar sesión</a></li>
-            <li><a href="comunidad/registro.php">Registrarse</a></li>
+            <li><a href="comunidad/registro.php?plan=gratis">Registrarse</a></li>
+            <li><a href="comunidad/suscripcion.php">Planes</a></li>
           </ul>
         </div>
         <div>
           <h4>Comunidad</h4>
           <ul>
+            <li><a href="https://t.me/+N5f7IcWPXihhMWQx" target="_blank" rel="noopener">Telegram</a></li>
             <li><a href="<?php echo COMUNIDAD_WHATSAPP; ?>" target="_blank" rel="noopener">WhatsApp</a></li>
             <li><a href="https://printika3d.com" target="_blank" rel="noopener">Printika 3D</a></li>
           </ul>
@@ -635,7 +653,7 @@ if (!com_preview_ok()): ?>
       </div>
       <div class="footer-pie">
         <p>© <?php echo date('Y'); ?> Printika Tools. Todos los derechos reservados.</p>
-        <p>Comunidad 3D</p>
+        <p>Hecho con impresoras 3D en Argentina</p>
       </div>
     </div>
   </footer>

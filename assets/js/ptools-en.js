@@ -40,7 +40,7 @@
       "You're on the Free plan: calculator and STL library. Upgrade to unlock the whole workshop.",
     'Gratuito': 'Free', 'Para siempre': 'Forever',
     'Calculadora de costos completa': 'Full cost calculator',
-    'Comunidad Mensual': 'Monthly Community', 'Comunidad Anual': 'Yearly Community',
+    
     'Renovación mes a mes, sin permanencia': 'Renews monthly, cancel anytime',
     'Todo Mi taller: presupuestos, productos, clientes': 'Full workshop: quotes, products, clients',
     'Stock, ventas y estadísticas': 'Stock, sales and statistics',
