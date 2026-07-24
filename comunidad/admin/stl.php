@@ -122,7 +122,10 @@ ui_panel_inicio('Cargar STL', $yo, 'Cargar STL', '../');
       </datalist>
       <div class="fila2">
         <span><label for="s-arch">Archivo STL / 3MF / OBJ / ZIP * (máx. 60 MB)</label>
-          <input id="s-arch" type="file" name="archivo" accept=".stl,.zip,.3mf,.obj" required></span>
+          <input id="s-arch" type="file" name="archivo" accept=".stl,.zip,.3mf,.obj" required>
+          <p style="font-size:12px;color:var(--txt-3);margin-top:4px">Límite del servidor:
+            <?php echo htmlspecialchars(ini_get('upload_max_filesize')); ?> por archivo
+            (si dice 64M, está todo bien)</p></span>
         <span><label for="s-img">Foto de vista previa (PNG/JPG/WebP)</label>
           <input id="s-img" type="file" name="imagen" accept="image/png,image/jpeg,image/webp"></span>
         <button class="btn" type="submit"><?php echo ui_icono('nube', 16); ?> Cargar STL</button>
