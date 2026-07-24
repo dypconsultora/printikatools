@@ -71,7 +71,7 @@ function com_db_ok() {
  * ingreso a la comunidad requieren una clave. Se guarda solo el hash.
  * Para lanzar el sitio al publico, poner COM_PREVIEW_ACTIVO en false.
  */
-define('COM_PREVIEW_ACTIVO', true);
+define('COM_PREVIEW_ACTIVO', false);
 define('COM_PREVIEW_CLAVE_HASH', 'bc803cf09c73d136d64df1625c46ce48ced7c604d8614cad1e72e7e3ca9efb18');
 define('COM_PREVIEW_COOKIE', 'pt_preview');
 
