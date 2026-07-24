@@ -67,7 +67,7 @@ ui_tarjeta_inicio('Crear cuenta');
 ?>
     <h1>Crear cuenta</h1>
     <p class="sub">Sumate a la comunidad de impresión 3D</p>
-    <p style="font-size:13px;margin:-6px 0 14px">
+    <p style="font-size:13px;margin:-6px 0 14px;text-align:center">
       <span style="display:inline-block;background:var(--accent-tinte,rgba(45,183,250,.12));color:var(--accent,#2db7fa);
             font-weight:600;padding:4px 12px;border-radius:999px">Plan elegido: <?php echo $PLANES_TXT[$plan]; ?></span>
       <?php if ($plan !== 'gratis'): ?><a href="registro.php" style="font-size:12px;margin-left:6px">cambiar</a><?php endif; ?>
