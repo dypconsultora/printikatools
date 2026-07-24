@@ -84,6 +84,27 @@ if (!com_preview_ok()): ?>
     #cargador .barra{width:min(300px,60vw);height:3px;border-radius:99px;background:rgba(128,148,180,.18);overflow:hidden}
     #cargador .barra i{display:block;height:100%;width:0;background:var(--accent,#2db7fa)}
     .anim-oculto{opacity:0}
+    .h1-serena .palabra{display:inline-block;opacity:0;transition:color .3s ease,transform .3s ease}
+    .h1-serena .palabra:hover{transform:translateY(-2px);color:var(--accent)}
+    @keyframes palabra-aparece{0%{opacity:0;transform:translateY(30px) scale(.8);filter:blur(10px)}
+      50%{opacity:.8;transform:translateY(10px) scale(.95);filter:blur(2px)}
+      100%{opacity:1;transform:none;filter:none}}
+    .linea-fx{stroke:rgba(148,163,184,.7);stroke-width:.5;opacity:0;stroke-dasharray:5 5;
+      stroke-dashoffset:1000;animation:traza-fx 2.4s ease-out forwards}
+    @keyframes traza-fx{0%{stroke-dashoffset:1000;opacity:0}50%{opacity:.28}100%{stroke-dashoffset:0;opacity:.14}}
+    .punto-fx{fill:rgba(45,183,250,.9);opacity:0;animation:brilla-fx 3s ease-in-out infinite}
+    @keyframes brilla-fx{0%,100%{opacity:.1;transform:scale(1)}50%{opacity:.4;transform:scale(1.15)}}
+    .flota-fx{position:absolute;width:3px;height:3px;background:var(--accent,#2db7fa);border-radius:50%;
+      opacity:0;animation:flota 5s ease-in-out infinite}
+    @keyframes flota{0%,100%{transform:none;opacity:.15}25%{transform:translate(5px,-10px);opacity:.6}
+      50%{transform:translate(-3px,-5px);opacity:.35}75%{transform:translate(7px,-15px);opacity:.7}}
+    #halo-mouse{position:fixed;width:380px;height:380px;border-radius:50%;pointer-events:none;z-index:5;
+      background:radial-gradient(circle,rgba(45,183,250,.06),rgba(45,183,250,.03),transparent 70%);
+      transform:translate(-50%,-50%);filter:blur(30px);opacity:0;
+      transition:left 70ms linear,top 70ms linear,opacity .3s ease-out}
+    .onda-fx{position:fixed;width:5px;height:5px;background:rgba(45,183,250,.55);border-radius:50%;
+      transform:translate(-50%,-50%);pointer-events:none;z-index:9999;animation:brilla-fx 1s ease-out forwards}
+    @media (prefers-reduced-motion: reduce){ .h1-serena .palabra{opacity:1} .linea-fx,.punto-fx,.flota-fx{animation:none} }
     @media (prefers-reduced-motion: reduce){ #cargador{display:none} .anim-oculto{opacity:1} }
   </style>
   <style>
@@ -399,11 +420,28 @@ if (!com_preview_ok()): ?>
   </header>
 
   <main>
-    <div class="hero">
+    <div class="hero" style="position:relative;overflow:hidden">
+      <svg class="hero-fx" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" aria-hidden="true">
+        <defs><pattern id="grillaPt" width="60" height="60" patternUnits="userSpaceOnUse">
+          <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(100,116,139,.09)" stroke-width="0.5"/></pattern></defs>
+        <rect width="100%" height="100%" fill="url(#grillaPt)"/>
+        <line x1="0" y1="22%" x2="100%" y2="22%" class="linea-fx" style="animation-delay:.5s"/>
+        <line x1="0" y1="82%" x2="100%" y2="82%" class="linea-fx" style="animation-delay:1s"/>
+        <line x1="18%" y1="0" x2="18%" y2="100%" class="linea-fx" style="animation-delay:1.5s"/>
+        <line x1="82%" y1="0" x2="82%" y2="100%" class="linea-fx" style="animation-delay:2s"/>
+        <circle cx="18%" cy="22%" r="2" class="punto-fx" style="animation-delay:2.6s"/>
+        <circle cx="82%" cy="22%" r="2" class="punto-fx" style="animation-delay:2.8s"/>
+        <circle cx="18%" cy="82%" r="2" class="punto-fx" style="animation-delay:3s"/>
+        <circle cx="82%" cy="82%" r="2" class="punto-fx" style="animation-delay:3.2s"/>
+      </svg>
+      <span class="flota-fx" style="top:25%;left:12%;animation-delay:.5s"></span>
+      <span class="flota-fx" style="top:60%;left:88%;animation-delay:1s"></span>
+      <span class="flota-fx" style="top:42%;left:7%;animation-delay:1.5s"></span>
+      <span class="flota-fx" style="top:78%;left:93%;animation-delay:2s"></span>
       <div class="cont">
         <div>
           <span class="insignia"><span class="punto"></span>Comunidad 3D en español</span>
-          <h1>Manejá tu taller de impresión 3D <em>como un negocio</em></h1>
+          <h1 class="h1-serena"><span class="palabra" data-delay="0">Manejá</span> <span class="palabra" data-delay="120">tu</span> <span class="palabra" data-delay="240">taller</span> <span class="palabra" data-delay="360">de</span> <span class="palabra" data-delay="480">impresión</span> <span class="palabra" data-delay="600">3D</span> <em><span class="palabra" data-delay="780">como</span> <span class="palabra" data-delay="900">un</span> <span class="palabra" data-delay="1020">negocio</span></em></h1>
           <p class="sub">Calculadora de costos, presupuestos, clientes y stock de materiales.
              Las herramientas de una comunidad de makers, en un mismo lugar.</p>
           <div class="ctas">
@@ -661,10 +699,14 @@ if (!com_preview_ok()): ?>
 document.addEventListener('DOMContentLoaded', function () {
   var reducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var cargador = document.getElementById('cargador');
-  if (reducido || !window.gsap) { if (cargador) cargador.remove(); return; }
+  if (reducido || !window.gsap) {
+    if (cargador) cargador.remove();
+    document.querySelectorAll('.h1-serena .palabra').forEach(function (w) { w.style.opacity = 1; });
+    return;
+  }
 
   // Elementos que entran animados
-  var heroSel = ['.hero .badge-soft', '.hero h1', '.hero .sub', '.hero .hero-cta', '.hero .stats', '.hero-visual'];
+  var heroSel = ['.hero .insignia', '.hero .sub', '.hero .ctas', '.hero .stats', '.hero-visual'];
   var heroEls = heroSel.map(function (q) { return document.querySelector(q); }).filter(Boolean);
   gsap.set(heroEls, { opacity: 0, y: 26 });
 
@@ -682,7 +724,28 @@ document.addEventListener('DOMContentLoaded', function () {
   })
   .to(cargador, { yPercent: -100, duration: 0.65, ease: 'power3.inOut' }, '+=0.15')
   .add(function () { cargador.remove(); }, '-=0.2')
-  .to(heroEls, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: 0.09 }, '-=0.35');
+  .to(heroEls, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: 0.09 }, '-=0.35')
+  .add(function () {
+    document.querySelectorAll('.h1-serena .palabra').forEach(function (w) {
+      setTimeout(function () { w.style.animation = 'palabra-aparece .8s ease-out forwards'; },
+        parseInt(w.dataset.delay || 0, 10));
+    });
+  }, '-=0.55');
+
+  // Halo que sigue al mouse + ondas al hacer click
+  var halo = document.createElement('div');
+  halo.id = 'halo-mouse';
+  document.body.appendChild(halo);
+  document.addEventListener('mousemove', function (e) {
+    halo.style.left = e.clientX + 'px'; halo.style.top = e.clientY + 'px'; halo.style.opacity = 1;
+  });
+  document.addEventListener('mouseleave', function () { halo.style.opacity = 0; });
+  document.addEventListener('click', function (e) {
+    var o = document.createElement('div');
+    o.className = 'onda-fx'; o.style.left = e.clientX + 'px'; o.style.top = e.clientY + 'px';
+    document.body.appendChild(o);
+    setTimeout(function () { o.remove(); }, 1000);
+  });
   window.__tlCarga = tl;
   // Seguro: si la pestaña estuvo en segundo plano, terminar la carga igual
   setTimeout(function () { if (document.getElementById('cargador')) tl.progress(1); }, 7000);
