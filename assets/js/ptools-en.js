@@ -12,7 +12,7 @@
     'Stock Materiales': 'Materials Stock', 'Ventas': 'Sales', 'Estadísticas': 'Statistics',
     'Configuración': 'Settings', 'Día': 'Day', 'Noche': 'Night',
     'Suscriptor': 'Subscriber', 'Administrador': 'Administrator',
-    'Próximamente': 'Coming soon', 'Idioma': 'Language', 'Inicio': 'Home', 'Tu plan': 'Your plan',
+    'Próximamente': 'Coming soon', 'Idioma': 'Language', 'Herramientas': 'Tools', 'Precios': 'Pricing', 'Inicio': 'Home', 'Tu plan': 'Your plan',
     'Disponible en el plan completo': 'Available in the full plan',
     // Login / registro
     'Comunidad': 'Community', 'Ingresá con tu cuenta de miembro': 'Log in with your member account',

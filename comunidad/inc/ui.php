@@ -185,7 +185,15 @@ function ui_tarjeta_inicio($titulo) { ?>
 <title><?php echo htmlspecialchars($titulo); ?> · Printika Tools</title>
 <?php ui_css(); ?>
 <style>
-  body{display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg)}
+  body{display:flex;align-items:center;justify-content:center;padding:96px 24px 24px;background:var(--bg)}
+  .volver-nav{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;
+      justify-content:space-between;gap:14px;padding:14px clamp(16px,4vw,40px);
+      border-bottom:1px solid var(--bd-suave);background:var(--surface)}
+  .volver-nav .marca-mini img{height:44px;width:auto;display:block}
+  .volver-nav nav{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .volver-nav nav a{font-size:13.5px;font-weight:500;color:var(--txt-2)}
+  .volver-nav nav a:hover{color:var(--accent)}
+  @media (max-width:640px){ .volver-nav nav a.opcional{display:none} }
   .tarjeta{background:var(--surface);border:1px solid var(--bd-suave);border-radius:var(--radio-g);
            padding:40px 36px;width:100%;max-width:400px}
   .logo{display:block;margin:0 auto 28px;height:112px;width:auto}
@@ -197,6 +205,19 @@ function ui_tarjeta_inicio($titulo) { ?>
 </style>
 </head>
 <body>
+  <header class="volver-nav">
+    <a class="marca-mini" href="<?php echo ui_base(); ?>/" title="Volver al inicio">
+      <img class="logo-oscuro" src="<?php echo ui_base(); ?>/assets/img/printika-tools-dark.svg" alt="Printika Tools">
+      <img class="logo-claro" src="<?php echo ui_base(); ?>/assets/img/printika-tools.svg" alt="Printika Tools">
+    </a>
+    <nav>
+      <a class="opcional" href="<?php echo ui_base(); ?>/#herramientas">Herramientas</a>
+      <a class="opcional" href="<?php echo ui_base(); ?>/#comunidad">Comunidad</a>
+      <a href="<?php echo ui_base(); ?>/#planes">Precios</a>
+      <a class="opcional" href="<?php echo ui_base(); ?>/#faq">FAQ</a>
+      <a href="<?php echo ui_base(); ?>/comunidad/login.php">Iniciar sesión</a>
+    </nav>
+  </header>
   <main class="tarjeta">
     <img class="logo logo-oscuro" src="<?php echo ui_base(); ?>/assets/img/printika-tools-dark.svg" alt="Printika Tools">
     <img class="logo logo-claro" src="<?php echo ui_base(); ?>/assets/img/printika-tools.svg" alt="Printika Tools">
