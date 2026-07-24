@@ -74,6 +74,18 @@ if (!com_preview_ok()): ?>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>.idioma button.activo{opacity:1 !important;background:var(--surface,rgba(255,255,255,.12)) !important}</style>
   <script src="assets/js/landing-en.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+  <style>
+    #cargador{position:fixed;inset:0;z-index:200;background:var(--bg,#0b0f17);display:flex;
+      flex-direction:column;align-items:center;justify-content:center;gap:26px}
+    #cargador img{width:min(300px,60vw);height:auto}
+    #cargador .num{font-family:'Space Grotesk',Inter,sans-serif;font-size:clamp(38px,6vw,64px);
+      font-weight:700;letter-spacing:-.02em;color:var(--txt,#e8edf5);font-variant-numeric:tabular-nums}
+    #cargador .barra{width:min(300px,60vw);height:3px;border-radius:99px;background:rgba(128,148,180,.18);overflow:hidden}
+    #cargador .barra i{display:block;height:100%;width:0;background:var(--accent,#2db7fa)}
+    .anim-oculto{opacity:0}
+    @media (prefers-reduced-motion: reduce){ #cargador{display:none} .anim-oculto{opacity:1} }
+  </style>
   <style>
     :root{
       color-scheme:dark;
@@ -112,7 +124,7 @@ if (!com_preview_ok()): ?>
          -webkit-font-smoothing:antialiased;overflow-x:hidden}
     a{color:var(--accent);text-decoration:none}
     .ico{flex-shrink:0}
-    .cont{max-width:1120px;margin:0 auto;padding:0 24px}
+    .cont{max-width:1560px;margin:0 auto;padding:0 clamp(24px,4vw,64px)}
     h1,h2,h3{font-family:var(--titulos)}
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--accent);
          color:var(--accent-ink);border:1px solid transparent;border-radius:var(--radio);padding:0 20px;
@@ -342,6 +354,11 @@ if (!com_preview_ok()): ?>
   </style>
 </head>
 <body>
+  <div id="cargador" aria-hidden="true">
+    <img src="assets/img/printika-tools-dark.svg" alt="">
+    <div class="num">0%</div>
+    <div class="barra"><i></i></div>
+  </div>
   <header class="nav">
     <div class="cont">
       <a class="marca" href="/">
@@ -622,5 +639,54 @@ if (!com_preview_ok()): ?>
       </div>
     </div>
   </footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var reducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var cargador = document.getElementById('cargador');
+  if (reducido || !window.gsap) { if (cargador) cargador.remove(); return; }
+
+  // Elementos que entran animados
+  var heroSel = ['.hero .badge-soft', '.hero h1', '.hero .sub', '.hero .hero-cta', '.hero .stats', '.hero-visual'];
+  var heroEls = heroSel.map(function (q) { return document.querySelector(q); }).filter(Boolean);
+  gsap.set(heroEls, { opacity: 0, y: 26 });
+
+  // Contador 0 -> 100%
+  var st = { v: 0 };
+  var num = cargador.querySelector('.num');
+  var barra = cargador.querySelector('.barra i');
+  var tl = gsap.timeline();
+  tl.to(st, {
+    v: 100, duration: 1.5, ease: 'power2.inOut',
+    onUpdate: function () {
+      num.textContent = Math.round(st.v) + '%';
+      barra.style.width = st.v + '%';
+    }
+  })
+  .to(cargador, { yPercent: -100, duration: 0.65, ease: 'power3.inOut' }, '+=0.15')
+  .add(function () { cargador.remove(); }, '-=0.2')
+  .to(heroEls, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: 0.09 }, '-=0.35');
+  window.__tlCarga = tl;
+  // Seguro: si la pestaña estuvo en segundo plano, terminar la carga igual
+  setTimeout(function () { if (document.getElementById('cargador')) tl.progress(1); }, 7000);
+
+  // Aparicion al scrollear: tarjetas, planes, faq y titulos de seccion
+  var reveal = document.querySelectorAll('.caja, .plan, .faq details, .cabeza, .vent, .cierre .cont');
+  reveal.forEach(function (el) { gsap.set(el, { opacity: 0, y: 30 }); });
+  var io = new IntersectionObserver(function (entradas) {
+    entradas.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      gsap.to(e.target, { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' });
+      io.unobserve(e.target);
+    });
+  }, { rootMargin: '0px 0px -60px 0px' });
+  reveal.forEach(function (el) { io.observe(el); });
+
+  // Micro-interaccion en los botones principales
+  document.querySelectorAll('.btn').forEach(function (b) {
+    b.addEventListener('mouseenter', function () { gsap.to(b, { scale: 1.03, duration: 0.18, ease: 'power2.out' }); });
+    b.addEventListener('mouseleave', function () { gsap.to(b, { scale: 1, duration: 0.22, ease: 'power2.out' }); });
+  });
+});
+</script>
 </body>
 </html>
