@@ -324,7 +324,40 @@ if (!com_preview_ok()): ?>
         padding:104px 0}
     .cierre::before{content:'';position:absolute;inset:0;pointer-events:none;
         background:radial-gradient(55% 90% at 50% 0%, rgba(45,183,250,.14), transparent 70%)}
-    .cierre .cont{position:relative}
+    .cierre .cont{position:relative;z-index:2}
+    #fondoCierre{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;
+        color:var(--txt-3);opacity:.35}
+    #fondoCierre g{opacity:0;transition:opacity 2s ease}
+    #fondoCierre g.activa{opacity:1}
+    #fondoCierre .traza{fill:none;stroke:currentColor;stroke-linecap:round;
+        stroke-dasharray:240;stroke-dashoffset:240;animation:dibuja-c 9s ease-in-out infinite}
+    #fondoCierre .nodo{fill:var(--accent);animation:late-c 4s ease-in-out infinite}
+    @keyframes dibuja-c{0%{stroke-dashoffset:240;opacity:0}35%{opacity:.7}70%{stroke-dashoffset:0;opacity:.4}100%{stroke-dashoffset:0;opacity:0}}
+    @keyframes late-c{0%,100%{opacity:.15;transform:scale(1)}50%{opacity:.7;transform:scale(1.25)}}
+    .orbe{position:absolute;border-radius:50%;filter:blur(10px);pointer-events:none;z-index:1}
+    .orbe.o1{width:22px;height:22px;background:rgba(45,183,250,.35);top:24%;left:18%;animation:orbita 7s ease-in-out infinite}
+    .orbe.o2{width:30px;height:30px;background:rgba(147,97,255,.3);bottom:20%;right:22%;animation:orbita 9s ease-in-out infinite reverse}
+    @keyframes orbita{0%,100%{transform:none;opacity:.35}50%{transform:translate(12px,-18px) scale(1.15);opacity:.75}}
+    .patron-dots{position:absolute;top:22px;right:26px;display:flex;gap:7px;z-index:2}
+    .patron-dots i{width:7px;height:7px;border-radius:50%;background:var(--bd);transition:all .3s ease}
+    .patron-dots i.on{background:var(--accent);transform:scale(1.25)}
+    .titulo-letras .letra{display:inline-block;opacity:0;transform:translateY(40px) rotateX(-80deg);
+        transition:opacity .6s ease,transform .6s cubic-bezier(.2,.9,.3,1.2)}
+    .titulo-letras.lista .letra{opacity:1;transform:none}
+    .cta-borde{display:inline-block;padding:2px;border-radius:16px;
+        background:linear-gradient(90deg,#2db7fa,#7c4dff,#ff5db1);background-size:200% 100%;
+        animation:borde-vivo 6s linear infinite;transition:transform .25s ease,box-shadow .25s ease}
+    .cta-borde:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(45,183,250,.25)}
+    @keyframes borde-vivo{0%{background-position:0% 0}100%{background-position:200% 0}}
+    .cta-btn{display:inline-flex;align-items:center;gap:10px;padding:15px 34px;border-radius:14px;
+        background:var(--surface);color:var(--txt);font-size:16px;font-weight:700}
+    .cta-btn:hover{color:var(--txt)}
+    .flecha-cta{display:inline-block;animation:va-viene 2s ease-in-out infinite}
+    @keyframes va-viene{0%,100%{transform:none}50%{transform:translateX(5px)}}
+    @media (prefers-reduced-motion: reduce){
+      .titulo-letras .letra{opacity:1;transform:none}
+      #fondoCierre .traza,#fondoCierre .nodo,.orbe,.flecha-cta,.cta-borde{animation:none}
+    }
     .cierre h2{font-size:clamp(24px,3.2vw,34px);font-weight:700;
         letter-spacing:-.02em;margin-bottom:12px}
     .cierre p{color:var(--txt-2);font-size:15.5px;max-width:520px;margin:0 auto 30px}
@@ -658,11 +691,17 @@ if (!com_preview_ok()): ?>
     </section>
 
     <section class="cierre">
+      <svg id="fondoCierre" viewBox="0 0 800 420" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+      <span class="orbe o1"></span><span class="orbe o2"></span>
+      <div class="patron-dots" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
       <div class="cont">
-        <h2>Empezá hoy — es gratis</h2>
+        <h2 id="tituloCierre" class="titulo-letras">Empezá hoy — es gratis</h2>
         <p>Creá tu cuenta, probá la calculadora y descubrí por qué cada vez más makers
            manejan su taller con Printika Tools.</p>
-        <a class="btn" href="comunidad/registro.php">Crear mi cuenta</a>
+        <span class="cta-borde">
+          <a class="cta-btn" href="comunidad/registro.php?plan=gratis">Crear mi cuenta
+            <span class="flecha-cta">→</span></a>
+        </span>
       </div>
     </section>
   </main>
@@ -797,6 +836,89 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
   });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var svg = document.getElementById('fondoCierre');
+  if (!svg) return;
+  var NS = 'http://www.w3.org/2000/svg';
+  var az = function (n) { return Math.random() * n; };
+
+  // Patron 1: red neuronal (nodos + conexiones)
+  var gRed = document.createElementNS(NS, 'g');
+  var nodos = [];
+  for (var i = 0; i < 34; i++) nodos.push([az(800), az(420)]);
+  nodos.forEach(function (a, i) {
+    nodos.forEach(function (b, j2) {
+      if (j2 <= i) return;
+      var d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+      if (d < 120 && Math.random() > .5) {
+        var l = document.createElementNS(NS, 'path');
+        l.setAttribute('d', 'M' + a[0] + ',' + a[1] + ' L' + b[0] + ',' + b[1]);
+        l.setAttribute('class', 'traza'); l.setAttribute('stroke-width', '.6');
+        l.style.animationDelay = az(8) + 's';
+        gRed.appendChild(l);
+      }
+    });
+    var c = document.createElementNS(NS, 'circle');
+    c.setAttribute('cx', a[0]); c.setAttribute('cy', a[1]); c.setAttribute('r', '2');
+    c.setAttribute('class', 'nodo'); c.style.animationDelay = az(4) + 's';
+    gRed.appendChild(c);
+  });
+
+  // Patron 2: ondas fluidas
+  var gOndas = document.createElementNS(NS, 'g');
+  for (var o = 0; o < 10; o++) {
+    var y = 40 + o * 40, amp = 34 + o * 6;
+    var w = document.createElementNS(NS, 'path');
+    w.setAttribute('d', 'M-60,' + y + ' Q200,' + (y - amp) + ' 400,' + y + ' T860,' + y);
+    w.setAttribute('class', 'traza'); w.setAttribute('stroke-width', 1 + o * .18);
+    w.style.animationDelay = (o * .7) + 's';
+    gOndas.appendChild(w);
+  }
+
+  // Patron 3: cuadricula geometrica
+  var gGeo = document.createElementNS(NS, 'g');
+  for (var x = 0; x < 20; x++) for (var yy = 0; yy < 10; yy++) {
+    if (Math.random() > .78) {
+      var t = 42, r = document.createElementNS(NS, 'path');
+      r.setAttribute('d', 'M' + (x * t) + ',' + (yy * t) + ' h' + t + ' v' + t + ' h-' + t + ' Z');
+      r.setAttribute('class', 'traza'); r.setAttribute('stroke-width', '.8');
+      r.style.animationDelay = az(6) + 's';
+      gGeo.appendChild(r);
+    }
+  }
+
+  var patrones = [gRed, gOndas, gGeo];
+  patrones.forEach(function (g) { svg.appendChild(g); });
+  var dots = document.querySelectorAll('.patron-dots i');
+  var actual = 0;
+  patrones[0].classList.add('activa');
+  setInterval(function () {
+    patrones[actual].classList.remove('activa');
+    dots[actual].classList.remove('on');
+    actual = (actual + 1) % patrones.length;
+    patrones[actual].classList.add('activa');
+    dots[actual].classList.add('on');
+  }, 10000);
+
+  // Titulo letra por letra al entrar en pantalla (despues de la traduccion)
+  var h2 = document.getElementById('tituloCierre');
+  var texto = h2.textContent;
+  h2.textContent = '';
+  texto.split('').forEach(function (ch, idx) {
+    var sp = document.createElement('span');
+    sp.className = 'letra';
+    sp.textContent = ch === ' ' ? '\u00A0' : ch;
+    sp.style.transitionDelay = (idx * 35) + 'ms';
+    h2.appendChild(sp);
+  });
+  new IntersectionObserver(function (es, io) {
+    es.forEach(function (e) {
+      if (e.isIntersecting) { h2.classList.add('lista'); io.disconnect(); }
+    });
+  }, { rootMargin: '0px 0px -80px 0px' }).observe(h2);
 });
 </script>
 </body>
