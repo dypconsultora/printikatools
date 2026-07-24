@@ -67,6 +67,15 @@ function ui_campo_password($id, $name, $atributos = '') { ?>
 function ui_css() { ?>
 <script>(function(){if(localStorage.getItem('ptools_tema')==='light'){document.documentElement.setAttribute('data-theme','light');}})();
 function ptTema(t){document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');localStorage.setItem('ptools_tema',t);}
+function ptIdioma(){try{var v=localStorage.getItem('ptools_idioma');if(v==='es'||v==='en')return v;}catch(e){}
+  return ((navigator.language||'es').toLowerCase().indexOf('es')===0)?'es':'en';}
+function ptIdiomaSet(v){try{localStorage.setItem('ptools_idioma',v);}catch(e){}location.reload();}
+document.addEventListener('DOMContentLoaded',function(){
+  document.querySelectorAll('.idioma button').forEach(function(b){
+    b.classList.toggle('activo',b.dataset.idi===ptIdioma());
+    b.addEventListener('click',function(){ptIdiomaSet(b.dataset.idi);});
+  });
+});
 document.addEventListener('click',function(e){
   var b=e.target.closest('.ver-pass');if(!b)return;
   var i=document.getElementById(b.dataset.pass);if(!i)return;
@@ -77,6 +86,7 @@ document.addEventListener('click',function(e){
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="<?php echo ui_base(); ?>/assets/js/ptools-en.js" defer></script>
 <style>
   :root{
     color-scheme:dark;
@@ -104,6 +114,11 @@ document.addEventListener('click',function(e){
   :root[data-theme="light"] .logo-oscuro{display:none !important}
   *{box-sizing:border-box;margin:0;padding:0}
   [hidden]{display:none !important}
+  .idioma{display:inline-flex;gap:2px;background:var(--surface-2);border:1px solid var(--bd-suave);
+        border-radius:999px;padding:2px}
+  .idioma button{background:none;border:none;border-radius:999px;padding:3px 10px;font-family:inherit;
+        font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--txt-3);cursor:pointer}
+  .idioma button.activo{background:var(--surface);color:var(--txt);box-shadow:0 1px 2px rgba(0,0,0,.18)}
   .campo-pass{position:relative;display:block}
   .campo-pass input{width:100%;padding-right:44px}
   .ver-pass{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:none;
@@ -183,6 +198,10 @@ function ui_tarjeta_inicio($titulo) { ?>
   <main class="tarjeta">
     <img class="logo logo-oscuro" src="<?php echo ui_base(); ?>/assets/img/printika-tools-dark.svg" alt="Printika Tools">
     <img class="logo logo-claro" src="<?php echo ui_base(); ?>/assets/img/printika-tools.svg" alt="Printika Tools">
+    <div class="idioma" style="margin:-10px auto 20px;width:max-content;display:flex" role="group" aria-label="Idioma / Language">
+      <button type="button" data-idi="es">ESP</button>
+      <button type="button" data-idi="en">ENG</button>
+    </div>
 <?php }
 
 function ui_tarjeta_fin() { ?>
@@ -321,6 +340,10 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
       <img class="logo-oscuro" src="<?php echo ui_base(); ?>/assets/img/printika-tools-dark.svg" alt="Printika Tools">
       <img class="logo-claro" src="<?php echo ui_base(); ?>/assets/img/printika-tools.svg" alt="Printika Tools">
     </a>
+    <div class="idioma" style="margin:-14px 10px 14px" role="group" aria-label="Idioma / Language">
+      <button type="button" data-idi="es">ESP</button>
+      <button type="button" data-idi="en">ENG</button>
+    </div>
     <?php
       $esAdmin = $usuario['rol'] === 'admin';
       $conTodo = acceso_total();
