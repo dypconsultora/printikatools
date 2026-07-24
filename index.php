@@ -213,7 +213,8 @@ if (!com_preview_ok()): ?>
         box-shadow:0 0 8px rgba(62,207,142,.8)}
     .hero h1{font-size:clamp(32px,4.4vw,52px);font-weight:700;letter-spacing:-.025em;line-height:1.08;
         margin-bottom:20px}
-    .hero h1 em{font-style:normal;background:linear-gradient(92deg,var(--accent),var(--accent-2));
+    .hero h1 em{font-style:normal}
+    .hero h1 em .palabra{background:linear-gradient(92deg,var(--accent),var(--accent-2));
         -webkit-background-clip:text;background-clip:text;color:transparent}
     .hero .sub{font-size:clamp(15px,1.6vw,17.5px);color:var(--txt-2);max-width:480px;margin-bottom:32px}
     .hero .ctas{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:44px}
