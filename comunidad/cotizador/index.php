@@ -172,6 +172,29 @@ $proHabilitado = $esPro || $enTrial;
 
 /* Selector dia/noche (las dos opciones a la vista).
    Centrado verticalmente con el logo y un poco alejado del borde. */
+.ir-web {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 9.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #04222f;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+.ir-web:hover { filter: brightness(1.1); transform: translateY(-50%) scale(1.03); }
+@media (max-width: 900px) {
+  .ir-web { position: static; transform: none; display: inline-flex; margin: 0.75rem auto 0; }
+}
+body.en-panel .ir-web { display: none !important; }
 .theme-switch {
   position: absolute;
   top: 50%;
@@ -1298,6 +1321,9 @@ body.en-panel #newsModal { display: none !important; }
     <img src="../../assets/img/printika-tools.svg" alt="Printika Tools" class="logo-light">
     <img src="../../assets/img/printika-tools-dark.svg" alt="Printika Tools" class="logo-dark">
   </a>
+  <?php if (!$enPanel): ?>
+  <a class="ir-web" href="https://printikatools.com/">Ir a la web &rarr;</a>
+  <?php endif; ?>
   <div class="theme-switch" role="group" aria-label="Elegir tema">
     <button type="button" class="theme-opt" data-theme-opt="light" aria-label="Modo dia" title="Modo dia">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
