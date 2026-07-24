@@ -132,7 +132,7 @@ $estado_json = json_encode([
 $materiales = ['PLA','ABS','PETG','TPU','Nylon','Resina','ASA','PC','HIPS','PVA','CF-Nylon','Wood-PLA','Flex'];
 $moneda = taller_moneda_usuario() ?: 'ARS';
 [$moneda_simbolo, $moneda_dec] = taller_monedas()[$moneda];
-$logo_pdf = taller_logo_url($u, '../') ?: '../assets/img/printika-tools.svg';
+$logo_pdf = taller_logo_url($u) ?: '../assets/img/printika-tools.svg';
 $taller_pie = trim(($u['taller_nombre'] ?? '') !== '' && ($u['taller_telefono'] ?? '') !== ''
     ? $u['taller_nombre'] . ' · ' . $u['taller_telefono']
     : ($u['taller_nombre'] ?? '') . ($u['taller_telefono'] ?? ''));
