@@ -72,6 +72,8 @@ if (!com_preview_ok()): ?>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>.idioma button.activo{opacity:1 !important;background:var(--surface,rgba(255,255,255,.12)) !important}</style>
+  <script src="assets/js/landing-en.js" defer></script>
   <style>
     :root{
       color-scheme:dark;
@@ -353,6 +355,11 @@ if (!com_preview_ok()): ?>
         <a class="link-seccion" href="#faq">FAQ</a>
         <a class="link-seccion" href="comunidad/cotizador/">Calculadora</a>
         <span class="tema" role="group" aria-label="Tema de la página">
+          <span class="idioma" role="group" aria-label="Idioma / Language" style="display:inline-flex;align-items:center;gap:2px;background:var(--surface-2,rgba(255,255,255,.06));border:1px solid var(--bd,rgba(255,255,255,.12));border-radius:999px;padding:2px;margin-right:10px">
+            <span style="font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--txt-3,#8a95a8);padding:0 6px 0 10px">IDIOMA</span>
+            <button type="button" data-idi="es" style="background:none;border:none;border-radius:999px;padding:3px 10px;font-family:inherit;font-size:11px;font-weight:700;color:inherit;cursor:pointer;opacity:.55">ESP</button>
+            <button type="button" data-idi="en" style="background:none;border:none;border-radius:999px;padding:3px 10px;font-family:inherit;font-size:11px;font-weight:700;color:inherit;cursor:pointer;opacity:.55">ENG</button>
+          </span>
           <button type="button" class="tema-btn" data-tema="light" onclick="ptTema('light')"
                   title="Modo día" aria-label="Modo día"><?php echo ui_icono('sol', 15); ?></button>
           <button type="button" class="tema-btn" data-tema="dark" onclick="ptTema('dark')"

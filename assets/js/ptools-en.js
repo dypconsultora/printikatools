@@ -126,8 +126,8 @@
 
   function traducirNodo(n) {
     if (n.nodeType === 3) {
-      var t = n.nodeValue, r = t.trim();
-      if (r && D[r]) n.nodeValue = t.replace(r, D[r]);
+      var t = n.nodeValue, r = t.replace(/\s+/g, ' ').trim();
+      if (r && D[r]) n.nodeValue = ' ' + D[r] + ' ';
       return;
     }
     if (n.nodeType !== 1 || n.tagName === 'SCRIPT' || n.tagName === 'STYLE') return;
