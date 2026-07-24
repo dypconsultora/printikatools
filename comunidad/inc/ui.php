@@ -114,8 +114,10 @@ document.addEventListener('click',function(e){
   :root[data-theme="light"] .logo-oscuro{display:none !important}
   *{box-sizing:border-box;margin:0;padding:0}
   [hidden]{display:none !important}
-  .idioma{display:inline-flex;gap:2px;background:var(--surface-2);border:1px solid var(--bd-suave);
+  .idioma{display:inline-flex;align-items:center;gap:2px;background:var(--surface-2);border:1px solid var(--bd-suave);
         border-radius:999px;padding:2px}
+  .idioma .idioma-tit{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+        color:var(--txt-3);padding:0 6px 0 10px}
   .idioma button{background:none;border:none;border-radius:999px;padding:3px 10px;font-family:inherit;
         font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--txt-3);cursor:pointer}
   .idioma button.activo{background:var(--surface);color:var(--txt);box-shadow:0 1px 2px rgba(0,0,0,.18)}
@@ -199,6 +201,7 @@ function ui_tarjeta_inicio($titulo) { ?>
     <img class="logo logo-oscuro" src="<?php echo ui_base(); ?>/assets/img/printika-tools-dark.svg" alt="Printika Tools">
     <img class="logo logo-claro" src="<?php echo ui_base(); ?>/assets/img/printika-tools.svg" alt="Printika Tools">
     <div class="idioma" style="margin:-10px auto 20px;width:max-content;display:flex" role="group" aria-label="Idioma / Language">
+      <span class="idioma-tit">Idioma</span>
       <button type="button" data-idi="es">ESP</button>
       <button type="button" data-idi="en">ENG</button>
     </div>
@@ -341,6 +344,7 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
       <img class="logo-claro" src="<?php echo ui_base(); ?>/assets/img/printika-tools.svg" alt="Printika Tools">
     </a>
     <div class="idioma" style="margin:-14px 10px 14px" role="group" aria-label="Idioma / Language">
+      <span class="idioma-tit">Idioma</span>
       <button type="button" data-idi="es">ESP</button>
       <button type="button" data-idi="en">ENG</button>
     </div>
