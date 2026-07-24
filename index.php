@@ -84,7 +84,7 @@ if (!com_preview_ok()): ?>
     #cargador .barra{width:min(300px,60vw);height:3px;border-radius:99px;background:rgba(128,148,180,.18);overflow:hidden}
     #cargador .barra i{display:block;height:100%;width:0;background:var(--accent,#2db7fa)}
     /* Que los anclajes frenen debajo de la barra fija */
-    #herramientas,#comunidad,#planes,#faq{scroll-margin-top:118px}
+    #herramientas,#comunidad,#planes,#faq{scroll-margin-top:36px}
     .moneda-sel button.activo{opacity:1 !important;background:var(--accent) !important;color:var(--accent-ink,#06202f) !important}
     .anim-oculto{opacity:0}
     .h1-serena .palabra{display:inline-block;opacity:0;transition:color .3s ease,transform .3s ease}
