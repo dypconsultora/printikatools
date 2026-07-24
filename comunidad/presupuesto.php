@@ -489,6 +489,9 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
   $('cliente').value = estado.cliente;
   $('notas').value = estado.notas;
 
+  const esExterno = it => !!(it.datos && it.datos.externo);
+  const soloPiezas = () => estado.items.filter(it => !esExterno(it));
+
   function render(){
     const tb = $('tablaItems').querySelector('tbody');
     tb.innerHTML = '';
@@ -520,7 +523,7 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
     });
     $('zonaTabla').style.display = estado.items.length ? '' : 'none';
     $('vacioItems').style.display = estado.items.length ? 'none' : '';
-    $('cuentaItems').textContent = '(' + estado.items.length + ')';
+    $('cuentaItems').textContent = '(' + soloPiezas().length + ')';
     totales();
   }
 
@@ -748,7 +751,7 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
     const dv = Math.max(0, parseFloat($('descValor').value || 0));
     const desc = estado.descuento_tipo === 'porcentaje' ? st * Math.min(100, dv) / 100 : Math.min(st, dv);
     const total = Math.max(0, st - desc);
-    const unidades = estado.items.reduce((a, it) => a + it.cantidad, 0);
+    const unidades = soloPiezas().reduce((a, it) => a + it.cantidad, 0);
 
     let html =
       '<div class="pd-top">' +
@@ -760,7 +763,7 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
         '</div>' +
       '</div>' +
       '<div class="pd-specs">' +
-        '<div class="pd-spec">Piezas<strong>' + estado.items.length + '</strong></div>' +
+        '<div class="pd-spec">Piezas<strong>' + soloPiezas().length + '</strong></div>' +
         '<div class="pd-spec">Unidades<strong>' + unidades + '</strong></div>' +
         '<div class="pd-spec">Fecha de emision<strong>' + esc(fecha) + '</strong></div>' +
       '</div>' +
@@ -836,12 +839,16 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
     const fecha = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
     let t = '*PRESUPUESTO*\n';
     t += (cliente ? 'Cliente: ' + cliente + '\n' : '') + 'Fecha: ' + fecha + '\n\n';
-    t += '*Piezas:*\n';
-    estado.items.forEach(it => {
-      t += '• ' + it.nombre + (it.cantidad > 1 ? ' x' + it.cantidad : '')
+    const linea = it => '• ' + it.nombre + (it.cantidad > 1 ? ' x' + it.cantidad : '')
          + (it.descripcion ? ' (' + it.descripcion + ')' : '')
          + ' — ' + fmt(it.precio * it.cantidad) + '\n';
-    });
+    t += '*Piezas:*\n';
+    soloPiezas().forEach(it => { t += linea(it); });
+    const extras = estado.items.filter(esExterno);
+    if (extras.length) {
+      t += '\n*Extras:*\n';
+      extras.forEach(it => { t += linea(it); });
+    }
     t += '\nSubtotal: ' + fmt(st) + '\n';
     if (desc > 0) {
       t += 'Descuento' + (estado.descuento_tipo === 'porcentaje' ? ' (' + Math.max(0, parseFloat($('descValor').value || 0)) + '%)' : '')
@@ -866,7 +873,7 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
     const dv = Math.max(0, parseFloat($('descValor').value || 0));
     const desc = estado.descuento_tipo === 'porcentaje' ? st * Math.min(100, dv) / 100 : Math.min(st, dv);
     const total = Math.max(0, st - desc);
-    const unidades = estado.items.reduce((a, it) => a + it.cantidad, 0);
+    const unidades = soloPiezas().reduce((a, it) => a + it.cantidad, 0);
 
     // Encabezado: logo + PRESUPUESTO / cliente / fecha (mismo diseño que el export del cotizador)
     if (logo) {
@@ -891,7 +898,7 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
       doc.setFontSize(11); doc.setTextColor(16, 27, 41); doc.setFont('helvetica', 'bold');
       doc.text(String(v), x, y + 5.5);
     };
-    spec(MI, 'Piezas', estado.items.length);
+    spec(MI, 'Piezas', soloPiezas().length);
     spec(MI + 30, 'Unidades', unidades);
     spec(MI + 60, 'Fecha de emision', fecha);
     y += 16;
