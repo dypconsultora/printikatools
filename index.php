@@ -597,14 +597,14 @@ if (!com_preview_ok()): ?>
                href="https://mpago.la/118mn81">Suscribirme</a>
           </div>
           <div class="plan destacado">
-            <span class="etiqueta">Más de 2 meses gratis</span>
+            <span class="etiqueta swap-mon" data-ars="Más de 2 meses gratis" data-usd="1 mes gratis">Más de 2 meses gratis</span>
             <h3>Printika Pro Anual</h3>
             <p class="precio"><span class="monto" data-ars="$170.000" data-usd="US$165">$170.000</span> <small>/año</small></p>
             <span class="ahorro" data-ars="Equivale a $14.167 por mes · ahorrás $46.000" data-usd="Equivale a US$13,75 por mes · ahorrás US$15">Equivale a $14.167 por mes · ahorrás $46.000</span>
             <p class="nota" style="margin-top:12px">Un solo pago y te olvidás todo el año</p>
             <ul>
               <li><?php echo ui_icono('check', 15); ?>Todo lo del plan mensual</li>
-              <li><?php echo ui_icono('check', 15); ?>Más de 2 meses sin cargo ($46.000 de ahorro)</li>
+              <li><?php echo ui_icono('check', 15); ?><span class="swap-mon" data-ars="Más de 2 meses sin cargo ($46.000 de ahorro)" data-usd="1 mes sin cargo (US$15 de ahorro)">Más de 2 meses sin cargo ($46.000 de ahorro)</span></li>
               <li><?php echo ui_icono('check', 15); ?>Precio congelado por 12 meses</li>
               <li><?php echo ui_icono('check', 15); ?>Acceso anticipado a herramientas nuevas</li>
             </ul>
@@ -792,7 +792,7 @@ document.addEventListener('DOMContentLoaded', function () {
       document.querySelectorAll('.btn-pago').forEach(function (a) {
         a.href = usd ? a.dataset.pp : a.dataset.mp;
       });
-      document.querySelectorAll('#planes .monto, #planes .ahorro').forEach(function (el) {
+      document.querySelectorAll('#planes .monto, #planes .ahorro, #planes .swap-mon').forEach(function (el) {
         el.textContent = usd ? el.dataset.usd : el.dataset.ars;
       });
     });
