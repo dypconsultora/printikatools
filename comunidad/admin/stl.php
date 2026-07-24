@@ -146,24 +146,13 @@ ui_panel_inicio('Cargar STL', $yo, 'Cargar STL', '../');
         <option>Hogar</option><option>Deco</option><option>Gadgets</option><option>Organización</option>
         <option>Juguetes</option><option>Repuestos</option>
       </datalist>
-      <label style="margin-top:12px">Archivos del modelo (STL / 3MF / OBJ / ZIP · máx. 60 MB cada uno)</label>
-      <div class="fila-archivos">
-        <span><label for="s-arch1" style="font-size:12px;color:var(--txt-3)">Archivo 1 *</label>
-          <input id="s-arch1" type="file" name="archivos[]" accept=".stl,.zip,.3mf,.obj" required></span>
-        <span><label for="s-arch2" style="font-size:12px;color:var(--txt-3)">Archivo 2 (opcional)</label>
-          <input id="s-arch2" type="file" name="archivos[]" accept=".stl,.zip,.3mf,.obj"></span>
-        <span><label for="s-arch3" style="font-size:12px;color:var(--txt-3)">Archivo 3 (opcional)</label>
-          <input id="s-arch3" type="file" name="archivos[]" accept=".stl,.zip,.3mf,.obj"></span>
-        <span><label for="s-arch4" style="font-size:12px;color:var(--txt-3)">Archivo 4 (opcional)</label>
-          <input id="s-arch4" type="file" name="archivos[]" accept=".stl,.zip,.3mf,.obj"></span>
-      </div>
-      <p style="font-size:12px;color:var(--txt-3);margin-top:4px">Si el modelo tiene varias piezas, cargalas acá:
-        el usuario las descarga todas juntas en un ZIP. Límite del servidor:
-        <?php echo htmlspecialchars(ini_get('upload_max_filesize')); ?> por archivo (si dice 64M, está todo bien).</p>
       <div class="fila2">
+        <span><label for="s-arch">Archivo STL / 3MF / OBJ / ZIP * (máx. 60 MB)</label>
+          <input id="s-arch" type="file" name="archivos[]" accept=".stl,.zip,.3mf,.obj" required>
+          <p style="font-size:12px;color:var(--txt-3);margin-top:4px">Si el modelo tiene varias piezas, subilas juntas en un ZIP.
+            Límite del servidor: <?php echo htmlspecialchars(ini_get('upload_max_filesize')); ?> por archivo.</p></span>
         <span><label for="s-img">Foto de vista previa (PNG/JPG/WebP)</label>
           <input id="s-img" type="file" name="imagen" accept="image/png,image/jpeg,image/webp"></span>
-        <span></span>
         <button class="btn" type="submit"><?php echo ui_icono('nube', 16); ?> Cargar STL</button>
       </div>
     </form>
