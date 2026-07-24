@@ -449,7 +449,7 @@ if (!com_preview_ok()): ?>
           <p class="sub">Calculadora de costos, presupuestos, clientes y stock de materiales.
              Las herramientas de una comunidad de makers, en un mismo lugar.</p>
           <div class="ctas">
-            <a class="btn" href="comunidad/registro.php">Comenzar gratis</a>
+            <a class="btn" href="comunidad/registro.php?plan=gratis">Comenzar gratis</a>
             <a class="btn sec" href="#planes">Ver planes</a>
           </div>
           <div class="stats">
