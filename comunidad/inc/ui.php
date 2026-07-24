@@ -193,7 +193,16 @@ function ui_tarjeta_inicio($titulo) { ?>
   .volver-nav nav{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
   .volver-nav nav a{font-size:13.5px;font-weight:500;color:var(--txt-2)}
   .volver-nav nav a:hover{color:var(--accent)}
-  @media (max-width:640px){ .volver-nav nav a.opcional{display:none} }
+  .volver-nav .tema-mini{display:inline-flex;gap:2px;background:var(--surface-2);
+      border:1px solid var(--bd-suave);border-radius:999px;padding:2px}
+  .volver-nav .tema-mini button{display:flex;align-items:center;justify-content:center;width:30px;height:26px;
+      background:none;border:none;border-radius:999px;color:var(--txt-3);cursor:pointer}
+  :root:not([data-theme="light"]) .volver-nav .tema-mini button[data-tema="dark"],
+  :root[data-theme="light"] .volver-nav .tema-mini button[data-tema="light"]{
+      background:var(--surface);color:var(--txt);box-shadow:0 1px 2px rgba(0,0,0,.18)}
+  .volver-nav .btn-nav{padding:8px 16px;font-size:13.5px}
+  @media (max-width:900px){ .volver-nav nav a.opcional,.volver-nav .idioma .idioma-tit{display:none} }
+  @media (max-width:640px){ .volver-nav .tema-mini,.volver-nav .btn-nav{display:none} }
   .tarjeta{background:var(--surface);border:1px solid var(--bd-suave);border-radius:var(--radio-g);
            padding:40px 36px;width:100%;max-width:400px}
   .logo{display:block;margin:0 auto 28px;height:112px;width:auto}
@@ -215,7 +224,18 @@ function ui_tarjeta_inicio($titulo) { ?>
       <a class="opcional" href="<?php echo ui_base(); ?>/#comunidad">Comunidad</a>
       <a href="<?php echo ui_base(); ?>/#planes">Precios</a>
       <a class="opcional" href="<?php echo ui_base(); ?>/#faq">FAQ</a>
+      <a class="opcional" href="<?php echo ui_base(); ?>/comunidad/cotizador/">Calculadora</a>
+      <span class="idioma" role="group" aria-label="Idioma / Language">
+        <span class="idioma-tit">Idioma</span>
+        <button type="button" data-idi="es">ESP</button>
+        <button type="button" data-idi="en">ENG</button>
+      </span>
+      <span class="tema-mini" role="group" aria-label="Tema de la página">
+        <button type="button" data-tema="light" onclick="ptTema('light')" title="Modo día" aria-label="Modo día"><?php echo ui_icono('sol', 15); ?></button>
+        <button type="button" data-tema="dark" onclick="ptTema('dark')" title="Modo noche" aria-label="Modo noche"><?php echo ui_icono('luna', 15); ?></button>
+      </span>
       <a href="<?php echo ui_base(); ?>/comunidad/login.php">Iniciar sesión</a>
+      <a class="btn btn-nav" href="<?php echo ui_base(); ?>/#planes">Registrarse</a>
     </nav>
   </header>
   <main class="tarjeta">
