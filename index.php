@@ -582,7 +582,7 @@ if (!com_preview_ok()): ?>
           </div>
           <div class="plan">
             <h3>Printika Pro</h3>
-            <p class="precio">$18.000 <small>/mes</small></p>
+            <p class="precio"><span class="monto" data-ars="$18.000" data-usd="US$15">$18.000</span> <small>/mes</small></p>
             <p class="nota">Renovación mes a mes, sin permanencia</p>
             <ul>
               <li><?php echo ui_icono('check', 15); ?>Calculadora completa (versión PRO)</li>
@@ -599,8 +599,8 @@ if (!com_preview_ok()): ?>
           <div class="plan destacado">
             <span class="etiqueta">Más de 2 meses gratis</span>
             <h3>Printika Pro Anual</h3>
-            <p class="precio">$170.000 <small>/año</small></p>
-            <span class="ahorro">Equivale a $14.167 por mes · ahorrás $46.000</span>
+            <p class="precio"><span class="monto" data-ars="$170.000" data-usd="US$165">$170.000</span> <small>/año</small></p>
+            <span class="ahorro" data-ars="Equivale a $14.167 por mes · ahorrás $46.000" data-usd="Equivale a US$13,75 por mes · ahorrás US$15">Equivale a $14.167 por mes · ahorrás $46.000</span>
             <p class="nota" style="margin-top:12px">Un solo pago y te olvidás todo el año</p>
             <ul>
               <li><?php echo ui_icono('check', 15); ?>Todo lo del plan mensual</li>
@@ -791,6 +791,9 @@ document.addEventListener('DOMContentLoaded', function () {
       var usd = b.dataset.mon === 'usd';
       document.querySelectorAll('.btn-pago').forEach(function (a) {
         a.href = usd ? a.dataset.pp : a.dataset.mp;
+      });
+      document.querySelectorAll('#planes .monto, #planes .ahorro').forEach(function (el) {
+        el.textContent = usd ? el.dataset.usd : el.dataset.ars;
       });
     });
   });
