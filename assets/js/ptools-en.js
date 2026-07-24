@@ -220,7 +220,9 @@
     'Peso argentino': 'Argentine peso', 'Dólar': 'US dollar', 'Euro': 'Euro', 'Guardando...': 'Saving...',
     'Completa el costo del formulario (y el precio, si está vacío).': 'It fills in the cost (and the price, if empty).',
     'Administrás la plataforma.': 'You manage the platform.',
-    '/mes': '/month', '/año': '/year'
+    '/mes': '/month', '/año': '/year',
+    'Ítem externo': 'External item', 'Detalle': 'Detail', 'Monto $': 'Amount $',
+    'Pintado a mano, bulones, envío especial...': 'Hand painting, bolts, special shipping...'
   };
 
   function traducirNodo(n) {

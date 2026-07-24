@@ -316,6 +316,19 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
                 </button>
               <?php endforeach; endif; ?>
             </div>
+
+            <button type="button" class="btn sec" id="btnExterno" style="margin-top:10px">
+              <?php echo ui_icono('mas', 16); ?> Ítem externo</button>
+            <div id="zonaExterno" hidden
+                 style="margin-top:10px;padding:14px;border:1px dashed var(--bd);border-radius:var(--radio);
+                        display:grid;grid-template-columns:minmax(0,1fr) 150px auto;gap:10px;align-items:end">
+              <span><label for="extTexto">Detalle</label>
+                <input id="extTexto" type="text" maxlength="150"
+                       placeholder="Pintado a mano, bulones, envío especial..."></span>
+              <span><label for="extMonto">Monto $</label>
+                <input id="extMonto" type="number" min="0" step="0.01" placeholder="0"></span>
+              <button type="button" class="btn" id="btnAgregarExterno">Agregar</button>
+            </div>
           </div>
 
           <div class="totales">
@@ -541,6 +554,31 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
 
   // ---------- Elegir producto ----------
   $('btnElegir').addEventListener('click', () => $('listaProd').classList.toggle('abierta'));
+
+  // Ítem externo: texto libre + monto (tercerizados, extras, envíos...)
+  $('btnExterno').addEventListener('click', () => {
+    const z = $('zonaExterno');
+    z.hidden = !z.hidden;
+    if (!z.hidden) $('extTexto').focus();
+  });
+  $('btnAgregarExterno').addEventListener('click', () => {
+    const nombre = $('extTexto').value.trim();
+    const monto = Math.max(0, parseFloat($('extMonto').value || 0));
+    if (!nombre) { $('extTexto').focus(); return; }
+    estado.items.push({
+      producto_id: null,
+      nombre: nombre,
+      descripcion: '',
+      cantidad: 1,
+      precio: monto,
+      costo: 0,
+      guardar_producto: false,
+      datos: { externo: true },
+    });
+    $('extTexto').value = ''; $('extMonto').value = '';
+    $('zonaExterno').hidden = true;
+    render();
+  });
   document.addEventListener('click', e => {
     if (!e.target.closest('.elegir-prod')) $('listaProd').classList.remove('abierta');
   });
