@@ -906,6 +906,8 @@ document.addEventListener('DOMContentLoaded', function () {
   // Titulo letra por letra al entrar en pantalla (despues de la traduccion)
   var h2 = document.getElementById('tituloCierre');
   var texto = h2.textContent;
+  // Si la pagina esta en ingles, traducir antes de partir en letras
+  if (window.__ptEN && window.__ptEN[texto.trim()]) texto = window.__ptEN[texto.trim()];
   h2.textContent = '';
   texto.split('').forEach(function (ch, idx) {
     var sp = document.createElement('span');

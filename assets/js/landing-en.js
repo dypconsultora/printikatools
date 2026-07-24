@@ -81,8 +81,16 @@ document.addEventListener('DOMContentLoaded',function(){
     'Crear mi cuenta':'Create my account',
     'Las herramientas y la comunidad para manejar tu taller de impresión 3D como un negocio.':'The tools and the community to run your 3D printing workshop like a business.',
     'Plataforma':'Platform','© Printika Tools. Todos los derechos reservados.':'© Printika Tools. All rights reserved.',
-    'Comunidad 3D':'3D Community'
+    'Comunidad 3D':'3D Community','IDIOMA':'LANGUAGE','MONEDA':'CURRENCY',
+    '1 mes gratis':'1 month free','1 mes sin cargo (US$15 de ahorro)':'1 month at no cost (US$15 in savings)',
+    'Equivale a US$13,75 por mes · ahorrás US$15':'Works out to US$13.75/month · you save US$15',
+    'Empezá hoy — es gratis':'Start today — it is free',
+    'Creá tu cuenta, probá la calculadora y descubrí por qué cada vez más makers manejan su taller con Printika Tools.':'Create your account, try the calculator and see why more and more makers run their workshop with Printika Tools.',
+    'Crear mi cuenta':'Create my account','Tu cuenta':'Your account','Planes':'Plans',
+    'Hecho con impresoras 3D en Argentina':'Made with 3D printers in Argentina',
+    'Iniciar sesión':'Log in','Registrarse':'Sign up'
   };
+  window.__ptEN = D;
   function tr(n){
     if(n.nodeType===3){var t=n.nodeValue,r=t.replace(/\s+/g,' ').trim();if(r&&D[r])n.nodeValue=' '+D[r]+' ';return;}
     if(n.nodeType!==1||n.tagName==='SCRIPT'||n.tagName==='STYLE')return;
@@ -91,5 +99,23 @@ document.addEventListener('DOMContentLoaded',function(){
     for(var i=0;i<n.childNodes.length;i++)tr(n.childNodes[i]);
   }
   document.documentElement.lang='en';
-  document.addEventListener('DOMContentLoaded',function(){try{tr(document.body);}catch(e){}});
+  function heroEN(){
+    var h1=document.querySelector('.h1-serena');
+    if(!h1)return;
+    var arma=function(pares){return pares.map(function(p){
+      return '<span class="palabra" data-delay="'+p[1]+'">'+p[0]+'</span>';}).join(' ');};
+    h1.innerHTML=arma([['Run',0],['your',120],['3D',240],['printing',360],['workshop',480]])
+      +' <em>'+arma([['like',660],['a',780],['business',900]])+'</em>';
+    if(!window.gsap||window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      h1.querySelectorAll('.palabra').forEach(function(w){w.style.opacity=1;});
+    }
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    try{tr(document.body);heroEN();}catch(e){}
+    try{
+      new MutationObserver(function(ms){ms.forEach(function(m){
+        m.addedNodes&&m.addedNodes.forEach(function(n){try{tr(n);}catch(e){}});
+      });}).observe(document.body,{childList:true,subtree:true});
+    }catch(e){}
+  });
 })();
