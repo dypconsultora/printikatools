@@ -1,3 +1,8 @@
+# REFERENCIA — NO es un .htaccess activo
+# Este archivo se dejo como texto porque el hosting no aplica .htaccess en la
+# raiz y ademas su escritura trababa el auto-deploy desde GitHub.
+# Las cabeceras de seguridad hoy las manda PHP desde comunidad/inc/bootstrap.php
+# y comunidad/cotizador/auth.php. Esto queda solo por si se migra a otro hosting.
 # ==========================================================
 #  Printika Tools — seguridad y rendimiento
 #  Todo va con IfModule para que el sitio no se caiga si el
