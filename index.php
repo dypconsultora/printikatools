@@ -633,12 +633,12 @@ if (!com_preview_ok()): ?>
           <div class="plan destacado">
             <span class="etiqueta swap-mon" data-ars="2 meses gratis" data-usd="1 mes gratis">2 meses gratis</span>
             <h3>Printika Pro Anual</h3>
-            <p class="precio"><span class="monto" data-ars="$150.000" data-usd="US$165">$150.000</span> <small>/año</small></p>
-            <span class="ahorro" data-ars="Equivale a $12.500 por mes · ahorrás $66.000" data-usd="Equivale a US$13,75 por mes · ahorrás US$15">Equivale a $12.500 por mes · ahorrás $66.000</span>
+            <p class="precio"><span class="monto" data-ars="$180.000" data-usd="US$165">$180.000</span> <small>/año</small></p>
+            <span class="ahorro" data-ars="Equivale a $15.000 por mes · ahorrás $36.000" data-usd="Equivale a US$13,75 por mes · ahorrás US$15">Equivale a $15.000 por mes · ahorrás $36.000</span>
             <p class="nota" style="margin-top:12px">Un solo pago y te olvidás todo el año</p>
             <ul>
               <li><?php echo ui_icono('check', 15); ?>Todo lo del plan mensual</li>
-              <li><?php echo ui_icono('check', 15); ?><span class="swap-mon" data-ars="2 meses sin cargo ($66.000 de ahorro)" data-usd="1 mes sin cargo (US$15 de ahorro)">2 meses sin cargo ($66.000 de ahorro)</span></li>
+              <li><?php echo ui_icono('check', 15); ?><span class="swap-mon" data-ars="2 meses sin cargo ($36.000 de ahorro)" data-usd="1 mes sin cargo (US$15 de ahorro)">2 meses sin cargo ($36.000 de ahorro)</span></li>
               <li><?php echo ui_icono('check', 15); ?>Precio congelado por 12 meses</li>
               <li><?php echo ui_icono('check', 15); ?>Recursos en videos y PDF</li>
               <li><?php echo ui_icono('check', 15); ?>Acceso anticipado a herramientas nuevas</li>
@@ -666,7 +666,7 @@ if (!com_preview_ok()): ?>
           <details>
             <summary>¿El pago es mensual o anual?</summary>
             <p class="resp">Como prefieras: el plan mensual cuesta $18.000 y se renueva mes a mes sin permanencia,
-            y el plan anual cuesta $150.000 — ahorrás $66.000 (2 meses gratis) y el precio queda congelado todo el año.</p>
+            y el plan anual cuesta $180.000 — ahorrás $36.000 (2 meses gratis) y el precio queda congelado todo el año.</p>
           </details>
           <details>
             <summary>¿Puedo cancelar cuando quiera?</summary>

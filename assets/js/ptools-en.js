@@ -48,7 +48,7 @@
     'Todo lo del plan mensual': 'Everything in the monthly plan',
     'Más de 2 meses gratis': '2+ months free', 'Más de 2 meses sin cargo': '2+ months at no cost',
     'Precio congelado por 12 meses': 'Price locked for 12 months',
-    'Equivale a $12.500 por mes · ahorrás $66.000': 'Works out to $12,500/month · you save $66,000',
+    'Equivale a $15.000 por mes · ahorrás $36.000': 'Works out to $15,000/month · you save $36,000',
     'Tu plan actual': 'Your current plan', 'Incluido en tu plan': 'Included in your plan',
     'Suscribirme con Mercado Pago': 'Subscribe with Mercado Pago',
     'El pago se procesa de forma segura en Mercado Pago y la renovación es automática.': 'Payments are processed securely by Mercado Pago and renew automatically.',

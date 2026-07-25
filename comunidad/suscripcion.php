@@ -87,7 +87,7 @@ ui_panel_inicio('Tu plan', $u, 'Tu plan');
         <span class="cinta">2 meses gratis</span>
         <h2>Printika Pro Anual</h2>
         <p class="precio"><?php echo '$' . number_format(COMUNIDAD_PRECIO_ANUAL, 0, ',', '.'); ?> <small>/año</small></p>
-        <p class="detalle">Equivale a $12.500 por mes · ahorrás $66.000</p>
+        <p class="detalle">Equivale a $15.000 por mes · ahorrás $36.000</p>
         <ul>
           <li><?php echo ui_icono('check', 15); ?>Todo lo del plan mensual</li>
           <li><?php echo ui_icono('check', 15); ?>2 meses sin cargo</li>

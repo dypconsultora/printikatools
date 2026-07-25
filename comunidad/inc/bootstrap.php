@@ -19,7 +19,7 @@ if (!defined('COMUNIDAD_NOMBRE')) {
     define('COMUNIDAD_NOMBRE', 'Printika Tools · Comunidad');
 }
 define('COMUNIDAD_PRECIO_MENSUAL', 18000);
-define('COMUNIDAD_PRECIO_ANUAL', 150000);
+define('COMUNIDAD_PRECIO_ANUAL', 180000);
 define('COMUNIDAD_WHATSAPP', 'https://wa.me/5491131373425?text=' . rawurlencode('Hola! Quiero activar mi suscripción de Printika Tools.'));
 
 /** Conexion PDO compartida. Devuelve null si no hay config o no conecta. */
