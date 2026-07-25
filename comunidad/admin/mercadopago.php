@@ -22,12 +22,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (($_POST['accion'] ?? '') === 'guardar') {
         $token = trim($_POST['access_token'] ?? '');
         $pub   = trim($_POST['public_key'] ?? '');
+        $sec   = trim($_POST['webhook_secret'] ?? '');
         if ($token !== '') cfg_set('mp_access_token', $token);
         if ($pub !== '')   cfg_set('mp_public_key', $pub);
+        if ($sec !== '')   cfg_set('mp_webhook_secret', $sec);
         $aviso = 'Credenciales guardadas.';
     } elseif (($_POST['accion'] ?? '') === 'desconectar') {
         cfg_set('mp_access_token', '');
         cfg_set('mp_public_key', '');
+        cfg_set('mp_webhook_secret', '');
         $aviso = 'Mercado Pago desconectado.';
     } elseif (($_POST['accion'] ?? '') === 'probar') {
         if (!mp_conectado()) {
@@ -44,6 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $token = mp_token();
 $pub   = mp_public_key();
+$sec   = mp_webhook_secret();
 $mask  = fn($v) => $v === '' ? '' : substr($v, 0, 12) . '····' . substr($v, -4);
 $base  = (!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'printikatools.com');
 $webhook = $base . '/comunidad/mp_webhook.php';
@@ -89,6 +93,9 @@ ui_panel_inicio('Mercado Pago', $yo, 'Mercado Pago', '../');
         <label for="mp-pub">Public Key</label>
         <input id="mp-pub" type="text" name="public_key"
                placeholder="<?php echo $pub ? 'Guardada: ' . htmlspecialchars($mask($pub)) : 'APP_USR-...'; ?>">
+        <label for="mp-sec">Clave secreta del webhook</label>
+        <input id="mp-sec" type="text" name="webhook_secret"
+               placeholder="<?php echo $sec ? 'Guardada: ' . htmlspecialchars($mask($sec)) : 'La generás en MP al crear el webhook'; ?>">
         <p class="nota" style="margin-top:6px">Dejá un campo vacío para conservar el valor guardado.</p>
         <div class="mp-botones">
           <button class="btn" type="submit">Guardar credenciales</button>
@@ -114,6 +121,11 @@ ui_panel_inicio('Mercado Pago', $yo, 'Mercado Pago', '../');
         en Mercado Pago → Tus integraciones → tu aplicación → <strong>Webhooks</strong>,
         marcando el evento <strong>Planes y suscripciones</strong>:</p>
       <code><?php echo htmlspecialchars($webhook); ?></code>
+      <p class="nota" style="margin-top:10px">Al crear el webhook, Mercado Pago te muestra una
+        <strong>clave secreta</strong>: copiala en el campo de arriba. Sirve para comprobar que los
+        avisos vienen de verdad de Mercado Pago y no de un tercero.
+        <?php if (!$sec): ?><br><span style="color:var(--warn)">Todavía no está cargada: los avisos se
+        aceptan sin verificar.</span><?php endif; ?></p>
       <p class="nota" style="margin-top:10px">Doble seguro: aunque un aviso no llegue, cada plan tiene su
         vencimiento guardado en nuestra base — al vencer sin renovación, la cuenta baja a gratis sola.</p>
     </div>

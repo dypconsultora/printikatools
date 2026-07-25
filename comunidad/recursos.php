@@ -24,7 +24,7 @@ if (preg_match('/^\d+$/', $_GET['descargar'] ?? '')) {
     $ruta = $item ? __DIR__ . '/uploads/recursos/pdf-' . $item['id'] . '.pdf' : '';
     if ($item && is_readable($ruta)) {
         $db->prepare('UPDATE recursos_pdf SET descargas = descargas + 1 WHERE id=?')->execute([(int) $item['id']]);
-        $nombre = preg_replace('/[^\w\s\-\.]/u', '', $item['titulo']) ?: 'recurso';
+        $nombre = trim(preg_replace('/\s+/u', ' ', preg_replace('/[^\w\s\-\.]/u', '', $item['titulo']))) ?: 'recurso';
         header('Content-Type: application/pdf');
         header('Content-Disposition: attachment; filename="' . $nombre . '.pdf"');
         header('Content-Length: ' . filesize($ruta));

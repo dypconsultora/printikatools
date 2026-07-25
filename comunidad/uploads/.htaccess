@@ -1,5 +1,12 @@
 # Solo archivos estaticos: nunca ejecutar codigo en la carpeta de subidas
-<FilesMatch "\.(php|phtml|php\d|pht|cgi|pl)$">
+<FilesMatch "\.(php|phtml|php\d|pht|phar|cgi|pl|py|sh|htaccess)$">
   Require all denied
 </FilesMatch>
-RemoveHandler .php .phtml
+RemoveHandler .php .phtml .phar
+
+# Los logs internos (Mercado Pago) no se sirven por web
+<FilesMatch "\.(txt|log)$">
+  Require all denied
+</FilesMatch>
+
+Options -Indexes

@@ -124,6 +124,72 @@ function requerir_admin() {
     }
 }
 
+/**
+ * Freno de fuerza bruta: cuenta los intentos fallidos por IP en los ultimos
+ * 15 minutos. La tabla se crea sola la primera vez.
+ */
+function com_login_intentos_migrar() {
+    static $listo = false;
+    if ($listo || !com_db_ok()) return;
+    try {
+        com_db()->exec("CREATE TABLE IF NOT EXISTS login_intentos (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            ip VARCHAR(45) NOT NULL,
+            email VARCHAR(190) NOT NULL DEFAULT '',
+            momento DATETIME NOT NULL,
+            PRIMARY KEY (id),
+            KEY idx_ip_momento (ip, momento)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $listo = true;
+    } catch (Throwable $e) { /* sin tabla, el freno no aplica */ }
+}
+
+/** IP del visitante (considera proxys del hosting). */
+function com_ip() {
+    foreach (['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'] as $k) {
+        if (!empty($_SERVER[$k])) {
+            $ip = trim(explode(',', $_SERVER[$k])[0]);
+            if (filter_var($ip, FILTER_VALIDATE_IP)) return mb_substr($ip, 0, 45);
+        }
+    }
+    return '0.0.0.0';
+}
+
+/** true si esta IP supero el limite de intentos fallidos (10 en 15 minutos). */
+function com_login_bloqueado() {
+    com_login_intentos_migrar();
+    if (!com_db_ok()) return false;
+    try {
+        $stmt = com_db()->prepare("SELECT COUNT(*) c FROM login_intentos
+                                    WHERE ip = ? AND momento > DATE_SUB(NOW(), INTERVAL 15 MINUTE)");
+        $stmt->execute([com_ip()]);
+        return (int) $stmt->fetch()['c'] >= 10;
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
+/** Registra un intento fallido y limpia los viejos. */
+function com_login_fallo($email) {
+    com_login_intentos_migrar();
+    if (!com_db_ok()) return;
+    try {
+        com_db()->prepare('INSERT INTO login_intentos (ip, email, momento) VALUES (?, ?, NOW())')
+            ->execute([com_ip(), mb_substr((string) $email, 0, 190)]);
+        if (random_int(1, 20) === 1) {
+            com_db()->exec("DELETE FROM login_intentos WHERE momento < DATE_SUB(NOW(), INTERVAL 1 DAY)");
+        }
+    } catch (Throwable $e) { /* no bloquear el login por esto */ }
+}
+
+/** Borra los intentos de la IP tras un login correcto. */
+function com_login_ok_limpiar() {
+    if (!com_db_ok()) return;
+    try {
+        com_db()->prepare('DELETE FROM login_intentos WHERE ip = ?')->execute([com_ip()]);
+    } catch (Throwable $e) { /* nada */ }
+}
+
 function com_login($email, $password) {
     if (!com_db_ok()) return false;
     $stmt = com_db()->prepare('SELECT * FROM usuarios WHERE email = ? LIMIT 1');
@@ -134,6 +200,7 @@ function com_login($email, $password) {
     session_regenerate_id(true);
     $_SESSION['uid'] = (int) $u['id'];
     com_db()->prepare('UPDATE usuarios SET ultimo_login = NOW() WHERE id = ?')->execute([(int) $u['id']]);
+    com_login_ok_limpiar();
     return true;
 }
 

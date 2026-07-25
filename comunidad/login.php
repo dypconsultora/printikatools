@@ -20,10 +20,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'La sesión expiró, probá de nuevo.';
     } elseif (!com_db_ok()) {
         $error = 'La plataforma está en mantenimiento. Probá en unos minutos.';
+    } elseif (com_login_bloqueado()) {
+        $error = 'Demasiados intentos fallidos. Esperá 15 minutos y probá de nuevo.';
     } elseif (com_login($_POST['email'] ?? '', $_POST['password'] ?? '')) {
         header('Location: index.php');
         exit;
     } else {
+        com_login_fallo($_POST['email'] ?? '');
         $error = 'Email o contraseña incorrectos.';
     }
 }

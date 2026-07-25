@@ -1,0 +1,46 @@
+# ==========================================================
+#  Printika Tools — seguridad y rendimiento
+#  Todo va con IfModule para que el sitio no se caiga si el
+#  hosting no tiene alguno de estos modulos.
+# ==========================================================
+
+<IfModule mod_headers.c>
+  # Evita que el sitio sea embebido en otro dominio (clickjacking)
+  Header always set X-Frame-Options "SAMEORIGIN"
+  # Impide que el navegador adivine tipos de archivo distintos al declarado
+  Header always set X-Content-Type-Options "nosniff"
+  # No filtrar la URL completa al salir del sitio
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  # Apagar APIs del navegador que el sitio no usa
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+  # Forzar HTTPS por un año (el sitio ya tiene certificado)
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  # No cachear respuestas de las areas privadas
+  <FilesMatch "\.(php)$">
+    Header set X-Robots-Tag "noarchive"
+  </FilesMatch>
+</IfModule>
+
+# --- Archivos que nunca deben servirse ---
+<FilesMatch "^(\.env|\.user\.ini|config\.php|.*\.log|.*\.sql|.*\.bak|composer\.(json|lock)|package(-lock)?\.json)$">
+  Require all denied
+</FilesMatch>
+
+# Carpetas internas de la plataforma
+RedirectMatch 404 ^/comunidad/inc/
+RedirectMatch 404 ^/\.git
+
+# Sin listado de directorios
+Options -Indexes
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript application/json image/svg+xml
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/webp "access plus 6 months"
+  ExpiresByType image/svg+xml "access plus 6 months"
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+</IfModule>

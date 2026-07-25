@@ -23,6 +23,14 @@ taller_migrar();
 $cuerpo = json_decode(file_get_contents('php://input'), true) ?: [];
 $tipo = $cuerpo['type'] ?? ($_GET['type'] ?? ($_GET['topic'] ?? ''));
 $id   = $cuerpo['data']['id'] ?? ($_GET['data_id'] ?? ($_GET['id'] ?? ''));
+
+// Solo aceptamos avisos firmados por Mercado Pago (evita que un tercero
+// falsifique notificaciones). El secreto se carga en Admin > Mercado Pago.
+if (!mp_firma_valida($id)) {
+    mp_log("webhook RECHAZADO (firma invalida) tipo=$tipo id=$id ip=" . com_ip());
+    exit;
+}
+
 mp_log("webhook tipo=$tipo id=$id");
 if ($id === '') exit;
 

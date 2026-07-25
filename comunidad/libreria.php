@@ -20,7 +20,7 @@ if (preg_match('/^\d+$/', $_GET['descargar'] ?? '')) {
     $ruta = $item ? __DIR__ . '/uploads/stl/stl-' . $item['id'] . '.' . $item['archivo_ext'] : '';
     if ($item && is_readable($ruta)) {
         $db->prepare('UPDATE stl_items SET descargas = descargas + 1 WHERE id=?')->execute([(int) $item['id']]);
-        $nombre = preg_replace('/[^\w\s\-\.]/u', '', $item['nombre']) ?: 'modelo';
+        $nombre = trim(preg_replace('/\s+/u', ' ', preg_replace('/[^\w\s\-\.]/u', '', $item['nombre']))) ?: 'modelo';
 
         // Con varios archivos, van todos juntos en un ZIP
         $stmt = $db->prepare('SELECT * FROM stl_archivos WHERE stl_id=? ORDER BY orden');

@@ -54,6 +54,42 @@ function mp_cancelar_plan($usuario_id) {
         ->execute([(int) $usuario_id]);
 }
 
+/** Secreto para validar la firma de los webhooks (Admin > Mercado Pago). */
+function mp_webhook_secret() { return (string) (cfg_get('mp_webhook_secret') ?? ''); }
+
+/**
+ * Valida la cabecera x-signature que manda Mercado Pago.
+ * El manifiesto es "id:<data.id>;request-id:<x-request-id>;ts:<ts>;" firmado
+ * con HMAC-SHA256 y el secreto del panel de MP.
+ * Si todavia no se cargo el secreto, se acepta (para no frenar la puesta en
+ * marcha) pero queda registrado en el log como aviso.
+ */
+function mp_firma_valida($data_id) {
+    $secreto = mp_webhook_secret();
+    if ($secreto === '') {
+        mp_log('AVISO: webhook sin secreto configurado — cargalo en Admin > Mercado Pago');
+        return true;
+    }
+    $firma = $_SERVER['HTTP_X_SIGNATURE'] ?? '';
+    $req   = $_SERVER['HTTP_X_REQUEST_ID'] ?? '';
+    if ($firma === '') return false;
+
+    $ts = $v1 = '';
+    foreach (explode(',', $firma) as $parte) {
+        $kv = explode('=', trim($parte), 2);
+        if (count($kv) !== 2) continue;
+        if (trim($kv[0]) === 'ts') $ts = trim($kv[1]);
+        if (trim($kv[0]) === 'v1') $v1 = trim($kv[1]);
+    }
+    if ($ts === '' || $v1 === '') return false;
+
+    // Rechazar avisos viejos (repeticion de una notificacion capturada)
+    if (abs(time() - (int) $ts) > 600) return false;
+
+    $manifiesto = 'id:' . $data_id . ';request-id:' . $req . ';ts:' . $ts . ';';
+    return hash_equals(hash_hmac('sha256', $manifiesto, $secreto), $v1);
+}
+
 /** Registro simple de lo que pasa con MP (para poder mirar si algo falla). */
 function mp_log($mensaje) {
     $dir = dirname(__DIR__) . '/uploads';
