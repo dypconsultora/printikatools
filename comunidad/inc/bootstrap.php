@@ -15,6 +15,26 @@ if (is_readable($__cfg_propio)) {
     require_once $__cfg_cotizador;
 }
 
+/**
+ * Cabeceras de seguridad. Se mandan desde PHP y no desde .htaccess porque
+ * el hosting no siempre aplica las reglas de Apache.
+ *  - SAMEORIGIN: nadie puede embeber el sitio en otro dominio (clickjacking).
+ *    El panel embebe el cotizador desde el MISMO dominio, asi que sigue andando.
+ *  - nosniff: el navegador respeta el tipo declarado y no adivina.
+ *  - HSTS: obliga HTTPS por un año.
+ */
+function com_cabeceras_seguridad() {
+    if (headers_sent()) return;
+    header('X-Frame-Options: SAMEORIGIN');
+    header('X-Content-Type-Options: nosniff');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header('Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()');
+    if (!empty($_SERVER['HTTPS'])) {
+        header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+    }
+}
+com_cabeceras_seguridad();
+
 if (!defined('COMUNIDAD_NOMBRE')) {
     define('COMUNIDAD_NOMBRE', 'Printika Tools · Comunidad');
 }

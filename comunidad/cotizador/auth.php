@@ -5,6 +5,18 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/db.php';
 
+/** Cabeceras de seguridad (el cotizador no pasa por el bootstrap del panel). */
+function cot_cabeceras_seguridad() {
+    if (headers_sent()) return;
+    header('X-Frame-Options: SAMEORIGIN');
+    header('X-Content-Type-Options: nosniff');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    if (!empty($_SERVER['HTTPS'])) {
+        header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+    }
+}
+cot_cabeceras_seguridad();
+
 function iniciar_sesion() {
     if (session_status() === PHP_SESSION_NONE) {
         session_name('calc3d');
