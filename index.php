@@ -631,14 +631,14 @@ if (!com_preview_ok()): ?>
                href="https://mpago.la/118mn81">Suscribirme</a>
           </div>
           <div class="plan destacado">
-            <span class="etiqueta swap-mon" data-ars="2 meses gratis" data-usd="1 mes gratis">2 meses gratis</span>
+            <span class="etiqueta swap-mon" data-ars="2 meses gratis" data-usd="2 meses gratis">2 meses gratis</span>
             <h3>Printika Pro Anual</h3>
-            <p class="precio"><span class="monto" data-ars="$180.000" data-usd="US$165">$180.000</span> <small>/año</small></p>
-            <span class="ahorro" data-ars="Equivale a $15.000 por mes · ahorrás $36.000" data-usd="Equivale a US$13,75 por mes · ahorrás US$15">Equivale a $15.000 por mes · ahorrás $36.000</span>
+            <p class="precio"><span class="monto" data-ars="$180.000" data-usd="US$150">$180.000</span> <small>/año</small></p>
+            <span class="ahorro" data-ars="Equivale a $15.000 por mes · ahorrás $36.000" data-usd="Equivale a US$12,50 por mes · ahorrás US$30">Equivale a $15.000 por mes · ahorrás $36.000</span>
             <p class="nota" style="margin-top:12px">Un solo pago y te olvidás todo el año</p>
             <ul>
               <li><?php echo ui_icono('check', 15); ?>Todo lo del plan mensual</li>
-              <li><?php echo ui_icono('check', 15); ?><span class="swap-mon" data-ars="2 meses sin cargo ($36.000 de ahorro)" data-usd="1 mes sin cargo (US$15 de ahorro)">2 meses sin cargo ($36.000 de ahorro)</span></li>
+              <li><?php echo ui_icono('check', 15); ?><span class="swap-mon" data-ars="2 meses sin cargo ($36.000 de ahorro)" data-usd="2 meses sin cargo (US$30 de ahorro)">2 meses sin cargo ($36.000 de ahorro)</span></li>
               <li><?php echo ui_icono('check', 15); ?>Precio congelado por 12 meses</li>
               <li><?php echo ui_icono('check', 15); ?>Recursos en videos y PDF</li>
               <li><?php echo ui_icono('check', 15); ?>Acceso anticipado a herramientas nuevas</li>
