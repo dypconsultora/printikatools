@@ -609,7 +609,6 @@ if (!com_preview_ok()): ?>
             <ul>
               <li><?php echo ui_icono('check', 15); ?>Calculadora de costos online</li>
               <li><?php echo ui_icono('check', 15); ?>Cálculo en ARS, USD y EUR</li>
-              <li><?php echo ui_icono('check', 15); ?>Cuenta gratuita en la comunidad</li>
               <li><?php echo ui_icono('check', 15); ?>Recursos en videos y PDF</li>
             </ul>
             <a class="btn sec" href="comunidad/registro.php?plan=gratis">Empezar gratis</a>
