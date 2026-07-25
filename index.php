@@ -65,8 +65,100 @@ if (!com_preview_ok()): ?>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Printika Tools — Herramientas y comunidad de impresión 3D</title>
-  <meta name="description" content="Calculadora de costos, presupuestos, clientes y stock. La comunidad con las herramientas que tu taller de impresión 3D necesita, en español.">
+  <title>Calculadora de costos y presupuestos para impresión 3D | Printika Tools</title>
+  <meta name="description" content="Calculá el costo real de tus impresiones 3D y armá presupuestos en segundos. Calculadora gratis en ARS, USD y EUR, más clientes, stock y ventas para tu taller.">
+  <link rel="canonical" href="https://printikatools.com/">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+  <meta name="author" content="Printika Tools">
+  <meta name="theme-color" content="#0b0f17">
+  <link rel="icon" type="image/svg+xml" href="assets/img/printika-tools-dark.svg">
+  <link rel="apple-touch-icon" href="assets/img/printika-tools-dark.svg">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Printika Tools">
+  <meta property="og:locale" content="es_AR">
+  <meta property="og:url" content="https://printikatools.com/">
+  <meta property="og:title" content="Calculadora de costos y presupuestos para impresión 3D | Printika Tools">
+  <meta property="og:description" content="Calculá el costo real de tus impresiones 3D y armá presupuestos en segundos. Calculadora gratis en ARS, USD y EUR, más clientes, stock y ventas para tu taller.">
+  <meta property="og:image" content="https://printikatools.com/assets/img/landing/hero-impresora.webp">
+  <meta property="og:image:alt" content="Impresora 3D imprimiendo una pieza en un taller">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Calculadora de costos y presupuestos para impresión 3D | Printika Tools">
+  <meta name="twitter:description" content="Calculá el costo real de tus impresiones 3D y armá presupuestos en segundos. Gratis, en ARS, USD y EUR.">
+  <meta name="twitter:image" content="https://printikatools.com/assets/img/landing/hero-impresora.webp">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://printikatools.com/#organizacion",
+        "name": "Printika Tools",
+        "url": "https://printikatools.com/",
+        "logo": "https://printikatools.com/assets/img/printika-tools-dark.svg",
+        "description": "Comunidad y herramientas de gestión para talleres de impresión 3D en español.",
+        "areaServed": "AR",
+        "sameAs": ["https://printika3d.com", "https://t.me/+N5f7IcWPXihhMWQx"]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://printikatools.com/#sitio",
+        "url": "https://printikatools.com/",
+        "name": "Printika Tools",
+        "inLanguage": "es-AR",
+        "publisher": {"@id": "https://printikatools.com/#organizacion"}
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://printikatools.com/#app",
+        "name": "Printika Tools",
+        "applicationCategory": "BusinessApplication",
+        "applicationSubCategory": "Calculadora de costos de impresión 3D",
+        "operatingSystem": "Web",
+        "url": "https://printikatools.com/",
+        "inLanguage": ["es-AR", "en"],
+        "description": "Calculadora de costos de impresión 3D, presupuestos, clientes, stock de filamento, ventas y estadísticas para talleres de impresión 3D.",
+        "featureList": [
+          "Calculadora de costos de impresión 3D en ARS, USD y EUR",
+          "Presupuestos profesionales en PDF",
+          "Gestión de clientes",
+          "Stock de filamento con descuento automático",
+          "Ventas y estadísticas del taller",
+          "Librería de modelos STL"
+        ],
+        "publisher": {"@id": "https://printikatools.com/#organizacion"},
+        "offers": [
+          {"@type": "Offer", "name": "Printika Free", "price": "0", "priceCurrency": "ARS",
+           "description": "Calculadora de costos, librería STL y recursos en videos y PDF."},
+          {"@type": "Offer", "name": "Printika Pro", "price": "18000", "priceCurrency": "ARS",
+           "description": "Todas las herramientas del taller, renovación mensual."},
+          {"@type": "Offer", "name": "Printika Pro Anual", "price": "180000", "priceCurrency": "ARS",
+           "description": "Todas las herramientas del taller con 2 meses sin cargo."}
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://printikatools.com/#faq",
+        "inLanguage": "es-AR",
+        "mainEntity": [
+          {"@type": "Question", "name": "¿Cómo me uno a la comunidad?",
+           "acceptedAnswer": {"@type": "Answer", "text": "Creás tu cuenta gratis con el botón Registrarse y después activás tu suscripción. En minutos tenés acceso a todas las herramientas."}},
+          {"@type": "Question", "name": "¿El pago es mensual o anual?",
+           "acceptedAnswer": {"@type": "Answer", "text": "Como prefieras: el plan mensual cuesta $18.000 y se renueva mes a mes sin permanencia; el plan anual cuesta $180.000, ahorrás $36.000 (2 meses gratis) y el precio queda congelado todo el año."}},
+          {"@type": "Question", "name": "¿Puedo cancelar cuando quiera?",
+           "acceptedAnswer": {"@type": "Answer", "text": "Sí. Si cancelás, mantenés el acceso hasta el vencimiento de tu suscripción y no se te cobra nada más."}},
+          {"@type": "Question", "name": "¿Qué incluye el plan gratuito?",
+           "acceptedAnswer": {"@type": "Answer", "text": "La calculadora de costos online completa, la librería de modelos STL y los recursos en videos y PDF, sin costo."}},
+          {"@type": "Question", "name": "¿Mis datos quedan guardados?",
+           "acceptedAnswer": {"@type": "Answer", "text": "Sí. Cada suscriptor tiene su propia cuenta: tus presupuestos, clientes y stock se guardan y podés consultarlos desde cualquier dispositivo."}},
+          {"@type": "Question", "name": "¿Van a agregar más herramientas?",
+           "acceptedAnswer": {"@type": "Answer", "text": "Todos los meses sumamos mejoras y herramientas nuevas para el taller de impresión 3D."}}
+        ]
+      }
+    ]
+  }
+  </script>
   <script>(function(){if(localStorage.getItem('ptools_tema')==='light'){document.documentElement.setAttribute('data-theme','light');}})();
   function ptTema(t){document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');localStorage.setItem('ptools_tema',t);}</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -423,7 +515,7 @@ if (!com_preview_ok()): ?>
 </head>
 <body>
   <div id="cargador" aria-hidden="true">
-    <img src="assets/img/printika-tools-dark.svg" alt="">
+    <img src="assets/img/printika-tools-dark.svg" alt="" width="300" height="96" aria-hidden="true">
     <div class="num">0%</div>
     <div class="barra"><i></i></div>
   </div>
@@ -492,7 +584,7 @@ if (!com_preview_ok()): ?>
           </div>
         </div>
         <div class="hero-visual">
-          <img src="assets/img/landing/hero-impresora.webp" alt="Impresora 3D imprimiendo una pieza"
+          <img src="assets/img/landing/hero-impresora.webp" alt="Impresora 3D imprimiendo una pieza en un taller" decoding="async" fetchpriority="high"
                width="1376" height="768" fetchpriority="high">
         </div>
       </div>
@@ -561,7 +653,7 @@ if (!com_preview_ok()): ?>
         </div>
         <div class="dos">
           <div class="foto-taller">
-            <img src="assets/img/landing/taller-maker.webp" alt="Taller de impresión 3D con piezas impresas y rollos de filamento"
+            <img src="assets/img/landing/taller-maker.webp" alt="Taller de impresión 3D con piezas impresas y rollos de filamento" decoding="async"
                  width="1376" height="768" loading="lazy">
             <div class="flotante" aria-hidden="true"><span class="punto"></span><span>Comunidad activa</span></div>
           </div>
@@ -745,7 +837,7 @@ if (!com_preview_ok()): ?>
       </div>
       <div class="footer-pie">
         <p>© <?php echo date('Y'); ?> Printika Tools. Todos los derechos reservados.</p>
-        <p>Hecho con impresoras 3D en Argentina</p>
+        <p>Hecho con impresoras 3D en Argentina · <span>Actualizado el <time datetime="<?php echo date('Y-m-d'); ?>"><?php echo date('d/m/Y'); ?></time></span></p>
       </div>
     </div>
   </footer>

@@ -1,0 +1,48 @@
+# Printika Tools — printikatools.com
+User-agent: *
+Allow: /
+Allow: /comunidad/cotizador/
+
+# Areas privadas y de gestion: no indexar
+Disallow: /comunidad/admin/
+Disallow: /comunidad/uploads/
+Disallow: /comunidad/inc/
+Disallow: /comunidad/login.php
+Disallow: /comunidad/registro.php
+Disallow: /comunidad/logout.php
+Disallow: /comunidad/presupuesto.php
+Disallow: /comunidad/presupuestos.php
+Disallow: /comunidad/productos.php
+Disallow: /comunidad/clientes.php
+Disallow: /comunidad/ventas.php
+Disallow: /comunidad/estadisticas.php
+Disallow: /comunidad/configuracion.php
+Disallow: /comunidad/stock.php
+Disallow: /comunidad/suscripcion.php
+Disallow: /comunidad/calculadora.php
+Disallow: /comunidad/mp_checkout.php
+Disallow: /comunidad/mp_webhook.php
+Disallow: /comunidad/*_api.php$
+Disallow: /*?panel=1$
+
+# --- Buscadores con IA: permitidos para que puedan citarnos ---
+User-agent: GPTBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: anthropic-ai
+Allow: /
+User-agent: Claude-SearchBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+User-agent: Applebot-Extended
+Allow: /
+
+Sitemap: https://printikatools.com/sitemap.xml

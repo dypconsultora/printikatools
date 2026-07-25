@@ -1,0 +1,46 @@
+# Printika Tools
+
+> Plataforma en español para talleres de impresión 3D: calculadora de costos,
+> presupuestos, clientes, stock de filamento, ventas y estadísticas.
+> Hecha en Argentina, con precios en ARS, USD y EUR.
+
+Printika Tools resuelve el problema más común de quien imprime en 3D para vender:
+saber cuánto cuesta realmente una pieza y cuánto cobrar por ella. La calculadora
+es gratuita y no requiere registro.
+
+## Qué incluye la calculadora de costos (gratis, sin registro)
+- Costo del material: precio del carrete, peso del carrete y gramos usados
+- Consumo eléctrico según el modelo de impresora (22 modelos precargados) y la tarifa por kWh
+- Depreciación de la máquina: costo de la impresora, vida útil y mantenimiento anual
+- Mano de obra: tiempo de preparación y post-proceso por hora
+- Costos adicionales: empaquetado, envío y otros costos fijos
+- Tasa de fallos y margen de ganancia (con precio fijo inverso)
+- Comisiones de Mercado Libre (Clásica y Premium)
+- Resultado en ARS, USD o EUR y exportación del presupuesto a PDF
+
+## Herramientas del taller (planes pagos)
+- Presupuestos profesionales con PDF y envío por WhatsApp
+- Catálogo de productos con costo, precio y ganancia
+- Clientes vinculados a sus presupuestos
+- Stock de filamento con descuento automático al marcar un presupuesto como vendido
+- Ventas y estadísticas mes a mes
+- Librería de modelos STL y recursos en video y PDF
+
+## Planes y precios
+- Printika Free: $0 — calculadora de costos, librería STL y recursos en videos y PDF
+- Printika Pro: $18.000 ARS por mes o US$15 por mes
+- Printika Pro Anual: $180.000 ARS por año o US$150 por año (2 meses sin cargo)
+Detalle legible por máquina: https://printikatools.com/pricing.md
+
+## Enlaces
+- Sitio: https://printikatools.com/
+- Calculadora de costos gratuita: https://printikatools.com/comunidad/cotizador/
+- Planes y precios: https://printikatools.com/#planes
+- Preguntas frecuentes: https://printikatools.com/#faq
+- Comunidad en Telegram: https://t.me/+N5f7IcWPXihhMWQx
+- Proyecto hermano: https://printika3d.com
+
+## Datos
+- Idiomas: español (Argentina) e inglés
+- Monedas: ARS, USD, EUR
+- Materiales soportados en la calculadora: PLA, ABS, PETG, TPU, Nylon, Resina, ASA, PC, HIPS, PVA, Nylon con fibra de carbono, PLA madera y flexible

@@ -40,7 +40,47 @@ $proHabilitado = $esPro || $enTrial;
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculadora de Costos de Impresion 3D</title>
+<title>Calculadora de costos de impresión 3D gratis | Printika Tools</title>
+<?php if ($enPanel): ?>
+<meta name="robots" content="noindex, follow">
+<?php else: ?>
+<meta name="description" content="Calculadora gratis de costos de impresión 3D: material, electricidad, desgaste de la máquina, mano de obra y ganancia. Precio final en ARS, USD o EUR, sin registro.">
+<link rel="canonical" href="https://printikatools.com/comunidad/cotizador/">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+<link rel="icon" type="image/svg+xml" href="../../assets/img/printika-tools-dark.svg">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Printika Tools">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://printikatools.com/comunidad/cotizador/">
+<meta property="og:title" content="Calculadora de costos de impresión 3D gratis | Printika Tools">
+<meta property="og:description" content="Calculá el precio justo de cada impresión 3D: material, luz, desgaste, mano de obra y ganancia. Gratis y sin registro, en ARS, USD o EUR.">
+<meta property="og:image" content="https://printikatools.com/assets/img/landing/hero-impresora.webp">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Calculadora de costos de impresión 3D",
+  "url": "https://printikatools.com/comunidad/cotizador/",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web",
+  "inLanguage": ["es-AR", "en"],
+  "browserRequirements": "Requiere JavaScript",
+  "description": "Calculadora gratuita para saber cuánto cuesta una impresión 3D: filamento, electricidad, depreciación de la impresora, mano de obra, tasa de fallos y margen de ganancia, con precio final en ARS, USD o EUR y comisiones de Mercado Libre.",
+  "featureList": [
+    "Costo de material por gramo y por pieza",
+    "Consumo eléctrico según el modelo de impresora",
+    "Depreciación de la máquina y mantenimiento",
+    "Mano de obra, empaquetado y envío",
+    "Tasa de fallos y margen de ganancia",
+    "Comisiones de Mercado Libre",
+    "Exportación del presupuesto a PDF"
+  ],
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "ARS"},
+  "publisher": {"@type": "Organization", "name": "Printika Tools", "url": "https://printikatools.com/"}
+}
+</script>
+<?php endif; ?>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
