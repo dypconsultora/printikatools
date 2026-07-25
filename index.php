@@ -438,7 +438,7 @@ if (!com_preview_ok()): ?>
         <a class="link-seccion" href="#comunidad">Comunidad</a>
         <a class="link-seccion" href="#planes">Precios</a>
         <a class="link-seccion" href="#faq">FAQ</a>
-        <a class="link-seccion" href="comunidad/cotizador/">Calculadora</a>
+        <a class="link-seccion" href="comunidad/cotizador/" target="_blank" rel="noopener">Calculadora</a>
         <span class="tema" role="group" aria-label="Tema de la página">
           <span class="idioma" role="group" aria-label="Idioma / Language" style="display:inline-flex;align-items:center;gap:2px;background:var(--surface-2,rgba(255,255,255,.06));border:1px solid var(--bd,rgba(255,255,255,.12));border-radius:999px;padding:2px;margin-right:10px">
             <span style="font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--txt-3,#8a95a8);padding:0 6px 0 10px">IDIOMA</span>
