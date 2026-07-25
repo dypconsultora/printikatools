@@ -1300,6 +1300,17 @@ input[type="range"]::-moz-range-thumb {
     } catch (e) {}
   })();
 </script>
+<script src="../../assets/js/cotizador-en.js" defer></script>
+<style>
+.idioma { position: absolute; top: 0.9rem; right: 1rem; display: inline-flex; align-items: center; gap: 2px;
+  background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 999px; padding: 2px; z-index: 5; }
+.idioma .idioma-tit { font-size: 10px; font-weight: 600; letter-spacing: .08em; color: var(--text-muted); padding: 0 6px 0 10px; }
+.idioma button { background: none; border: none; border-radius: 999px; padding: 3px 10px; font-family: inherit;
+  font-size: 11px; font-weight: 700; color: var(--text-secondary); cursor: pointer; opacity: .55; }
+.idioma button.activo { opacity: 1; background: var(--accent); color: #04222f; }
+@media (max-width: 900px) { .idioma { top: 0.6rem; right: 0.75rem; } }
+body.en-panel .idioma { display: none !important; }
+</style>
 <?php if ($enPanel): ?>
 <style>
 /* === Modo panel: el panel ya pone logo, titulo y selector de tema === */
@@ -1314,6 +1325,11 @@ body.en-panel #newsModal { display: none !important; }
 <body<?php echo $enPanel ? ' class="en-panel"' : ''; ?>>
 
 <header class="header">
+  <span class="idioma" role="group" aria-label="Idioma / Language">
+    <span class="idioma-tit">IDIOMA</span>
+    <button type="button" data-idi="es">ESP</button>
+    <button type="button" data-idi="en">ENG</button>
+  </span>
   <?php if ($esPro && !$enPanel): ?>
     <span class="pro-session">Modo <strong>PRO</strong> &middot; <a href="logout.php">Salir</a></span>
   <?php endif; ?>

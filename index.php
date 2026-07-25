@@ -522,27 +522,27 @@ if (!com_preview_ok()): ?>
           </div>
           <div class="caja">
             <span class="ico-caja"><?php echo ui_icono('presupuestos', 20); ?></span>
-            <h3>Presupuestos <span class="chip">Pronto</span></h3>
+            <h3>Presupuestos <span class="chip activo">Disponible</span></h3>
             <p>Generá presupuestos profesionales, guardalos y marcá los vendidos.</p>
           </div>
           <div class="caja">
             <span class="ico-caja"><?php echo ui_icono('clientes', 20); ?></span>
-            <h3>Clientes <span class="chip">Pronto</span></h3>
+            <h3>Clientes <span class="chip activo">Disponible</span></h3>
             <p>Tu cartera de clientes con su historial de trabajos.</p>
           </div>
           <div class="caja">
             <span class="ico-caja"><?php echo ui_icono('stock', 20); ?></span>
-            <h3>Stock <span class="chip">Pronto</span></h3>
+            <h3>Stock <span class="chip activo">Disponible</span></h3>
             <p>Rollos e insumos controlados, con descuento automático al vender.</p>
           </div>
           <div class="caja">
             <span class="ico-caja"><?php echo ui_icono('libreria', 20); ?></span>
-            <h3>Librería STL <span class="chip">Pronto</span></h3>
+            <h3>Librería STL <span class="chip activo">Disponible</span></h3>
             <p>Modelos listos para imprimir, exclusivos para suscriptores.</p>
           </div>
           <div class="caja">
             <span class="ico-caja"><?php echo ui_icono('estadisticas', 20); ?></span>
-            <h3>Estadísticas <span class="chip">Pronto</span></h3>
+            <h3>Estadísticas <span class="chip activo">Disponible</span></h3>
             <p>Cuánto imprimís, vendés y ganás, mes a mes.</p>
           </div>
         </div>
@@ -610,6 +610,7 @@ if (!com_preview_ok()): ?>
               <li><?php echo ui_icono('check', 15); ?>Calculadora de costos online</li>
               <li><?php echo ui_icono('check', 15); ?>Cálculo en ARS, USD y EUR</li>
               <li><?php echo ui_icono('check', 15); ?>Cuenta gratuita en la comunidad</li>
+              <li><?php echo ui_icono('check', 15); ?>Recursos en videos y PDF</li>
             </ul>
             <a class="btn sec" href="comunidad/registro.php?plan=gratis">Empezar gratis</a>
           </div>
@@ -621,6 +622,7 @@ if (!com_preview_ok()): ?>
               <li><?php echo ui_icono('check', 15); ?>Calculadora completa (versión PRO)</li>
               <li><?php echo ui_icono('check', 15); ?>Mi Taller: presupuestos, clientes y stock</li>
               <li><?php echo ui_icono('check', 15); ?>Librería STL y estadísticas</li>
+              <li><?php echo ui_icono('check', 15); ?>Recursos en videos y PDF</li>
               <li><?php echo ui_icono('check', 15); ?>Tus datos guardados en tu cuenta</li>
               <li><?php echo ui_icono('check', 15); ?>Soporte técnico prioritario</li>
               <li><?php echo ui_icono('check', 15); ?>Herramientas nuevas cada mes</li>
@@ -630,15 +632,16 @@ if (!com_preview_ok()): ?>
                href="https://mpago.la/118mn81">Suscribirme</a>
           </div>
           <div class="plan destacado">
-            <span class="etiqueta swap-mon" data-ars="Más de 2 meses gratis" data-usd="1 mes gratis">Más de 2 meses gratis</span>
+            <span class="etiqueta swap-mon" data-ars="2 meses gratis" data-usd="1 mes gratis">2 meses gratis</span>
             <h3>Printika Pro Anual</h3>
-            <p class="precio"><span class="monto" data-ars="$170.000" data-usd="US$165">$170.000</span> <small>/año</small></p>
-            <span class="ahorro" data-ars="Equivale a $14.167 por mes · ahorrás $46.000" data-usd="Equivale a US$13,75 por mes · ahorrás US$15">Equivale a $14.167 por mes · ahorrás $46.000</span>
+            <p class="precio"><span class="monto" data-ars="$150.000" data-usd="US$165">$150.000</span> <small>/año</small></p>
+            <span class="ahorro" data-ars="Equivale a $12.500 por mes · ahorrás $66.000" data-usd="Equivale a US$13,75 por mes · ahorrás US$15">Equivale a $12.500 por mes · ahorrás $66.000</span>
             <p class="nota" style="margin-top:12px">Un solo pago y te olvidás todo el año</p>
             <ul>
               <li><?php echo ui_icono('check', 15); ?>Todo lo del plan mensual</li>
-              <li><?php echo ui_icono('check', 15); ?><span class="swap-mon" data-ars="Más de 2 meses sin cargo ($46.000 de ahorro)" data-usd="1 mes sin cargo (US$15 de ahorro)">Más de 2 meses sin cargo ($46.000 de ahorro)</span></li>
+              <li><?php echo ui_icono('check', 15); ?><span class="swap-mon" data-ars="2 meses sin cargo ($66.000 de ahorro)" data-usd="1 mes sin cargo (US$15 de ahorro)">2 meses sin cargo ($66.000 de ahorro)</span></li>
               <li><?php echo ui_icono('check', 15); ?>Precio congelado por 12 meses</li>
+              <li><?php echo ui_icono('check', 15); ?>Recursos en videos y PDF</li>
               <li><?php echo ui_icono('check', 15); ?>Acceso anticipado a herramientas nuevas</li>
             </ul>
             <a class="btn btn-pago" target="_blank" rel="noopener"
@@ -664,7 +667,7 @@ if (!com_preview_ok()): ?>
           <details>
             <summary>¿El pago es mensual o anual?</summary>
             <p class="resp">Como prefieras: el plan mensual cuesta $18.000 y se renueva mes a mes sin permanencia,
-            y el plan anual cuesta $170.000 — ahorrás $46.000 (más de 2 meses gratis) y el precio queda congelado todo el año.</p>
+            y el plan anual cuesta $150.000 — ahorrás $66.000 (2 meses gratis) y el precio queda congelado todo el año.</p>
           </details>
           <details>
             <summary>¿Puedo cancelar cuando quiera?</summary>
