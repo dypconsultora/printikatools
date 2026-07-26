@@ -11,6 +11,7 @@ if ($u === null) {
     header('Location: login.php');
     exit;
 }
+com_exigir_email_verificado();
 
 $plan = ($_GET['plan'] ?? '') === 'anual' ? 'anual' : 'mensual';
 $info = mp_planes()[$plan];

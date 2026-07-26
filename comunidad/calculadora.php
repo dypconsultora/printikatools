@@ -12,6 +12,7 @@ if (usuario_actual() === null) {
     header('Location: login.php');
     exit;
 }
+com_exigir_email_verificado();
 $u = usuario_actual();
 
 ui_panel_inicio('Calculadora', $u, 'Calculadora');

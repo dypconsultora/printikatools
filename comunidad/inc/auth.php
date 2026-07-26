@@ -98,6 +98,7 @@ function requerir_miembro() {
         header('Location: login.php');
         exit;
     }
+    com_exigir_email_verificado();
     if (!acceso_total()) {
         header('Location: suscripcion.php');
         exit;
@@ -110,6 +111,14 @@ function requerir_usuario() {
         header('Location: login.php');
         exit;
     }
+    com_exigir_email_verificado();
+}
+
+/** Si la cuenta no confirmó el correo, no entra a ninguna pantalla. */
+function com_exigir_email_verificado($raiz = '') {
+    if (com_email_verificado()) return;
+    header('Location: ' . $raiz . 'confirmar.php');
+    exit;
 }
 
 /** Paginas de administracion: exige rol admin. */
@@ -118,10 +127,108 @@ function requerir_admin() {
         header('Location: ../login.php');
         exit;
     }
+    com_exigir_email_verificado('../');
     if (!es_admin()) {
         http_response_code(403);
         exit('Acceso solo para administradores.');
     }
+}
+
+/**
+ * Verificación de email: agrega las columnas la primera vez. Los usuarios
+ * que YA existían quedan verificados para no dejar a nadie afuera.
+ */
+function com_verif_migrar() {
+    static $listo = false;
+    if ($listo || !com_db_ok()) return;
+    try {
+        $col = com_db()->query("SELECT COUNT(*) c FROM information_schema.columns
+                                WHERE table_schema = DATABASE() AND table_name = 'usuarios'
+                                  AND column_name = 'email_verificado'")->fetch();
+        if ((int) $col['c'] === 0) {
+            com_db()->exec("ALTER TABLE usuarios
+                ADD COLUMN email_verificado TINYINT(1) NOT NULL DEFAULT 1,
+                ADD COLUMN verif_token VARCHAR(64) NOT NULL DEFAULT '',
+                ADD COLUMN verif_expira DATETIME NULL,
+                ADD COLUMN verif_enviado DATETIME NULL");
+            // Las cuentas anteriores a esta funcion quedan verificadas
+            com_db()->exec("UPDATE usuarios SET email_verificado = 1");
+        }
+        $listo = true;
+    } catch (Throwable $e) { /* sin columnas, la verificacion no aplica */ }
+}
+
+/** true si el usuario ya confirmó su correo (o si la columna no existe todavía). */
+function com_email_verificado($u = null) {
+    if ($u === null) $u = usuario_actual();
+    if ($u === null) return false;
+    if (!array_key_exists('email_verificado', $u)) return true;
+    return (int) $u['email_verificado'] === 1;
+}
+
+/** Genera un token nuevo de verificación y lo guarda (vence en 48 horas). */
+function com_verif_token_nuevo($usuario_id) {
+    com_verif_migrar();
+    $token = bin2hex(random_bytes(32));
+    com_db()->prepare("UPDATE usuarios SET verif_token = ?, verif_expira = DATE_ADD(NOW(), INTERVAL 48 HOUR),
+                       verif_enviado = NOW() WHERE id = ?")
+        ->execute([$token, (int) $usuario_id]);
+    return $token;
+}
+
+/** URL absoluta del enlace de confirmación. */
+function com_verif_url($token) {
+    $esquema = !empty($_SERVER['HTTPS']) ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'printikatools.com';
+    return $esquema . '://' . $host . '/comunidad/verificar.php?t=' . $token;
+}
+
+/**
+ * Manda (o reenvía) el correo de confirmación. Devuelve true si salió.
+ * Espera 2 minutos entre envíos para que no se pueda usar como spam.
+ */
+function com_verif_enviar($usuario, &$error = null) {
+    require_once __DIR__ . '/correo.php';
+    // El token se crea siempre: si el correo falla, el enlace sigue siendo
+    // valido y se puede reintentar sin dejar la cuenta sin salida.
+    $token = com_verif_token_nuevo($usuario['id']);
+    if (!correo_disponible()) { $error = 'El envío de correos no está configurado.'; return false; }
+
+    $url = com_verif_url($token);
+    $nombre = trim($usuario['nombre'] ?? '');
+    $primer = $nombre !== '' ? explode(' ', $nombre)[0] : '';
+
+    $html = correo_plantilla(
+        'Confirmá tu correo',
+        [
+            ($primer !== '' ? '¡Hola, ' . htmlspecialchars($primer, ENT_QUOTES, 'UTF-8') . '! ' : '¡Hola! ') .
+            'Gracias por sumarte a <strong>Printika Tools</strong>, la comunidad con las herramientas ' .
+            'que tu taller de impresión 3D necesita.',
+            'Para activar tu cuenta y empezar a usar la calculadora, la librería STL y los recursos, ' .
+            'confirmá que este correo es tuyo:',
+        ],
+        ['texto' => 'Confirmar mi correo', 'url' => $url],
+        'El enlace vence en 48 horas. Si el botón no funciona, copiá y pegá esta dirección en tu navegador:<br>' .
+        '<span style="color:#3d4759;word-break:break-all">' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '</span>' .
+        '<br><br>Si no creaste ninguna cuenta, podés ignorar este mensaje.'
+    );
+    $texto = "Confirmá tu correo
+
+Gracias por sumarte a Printika Tools.
+"
+           . "Activá tu cuenta entrando a este enlace (vence en 48 horas):
+$url
+
+"
+           . "Si no creaste ninguna cuenta, ignorá este mensaje.";
+
+    return correo_enviar($usuario['email'], $nombre, 'Confirmá tu correo · Printika Tools', $html, $texto, $error);
+}
+
+/** true si se puede reenviar (pasaron al menos 2 minutos del último envío). */
+function com_verif_puede_reenviar($usuario) {
+    if (empty($usuario['verif_enviado'])) return true;
+    return (time() - strtotime($usuario['verif_enviado'])) >= 120;
 }
 
 /**

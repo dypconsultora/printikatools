@@ -12,6 +12,7 @@ if ($u === null) {
     header('Location: login.php');
     exit;
 }
+com_exigir_email_verificado();
 $plan = plan_usuario();
 $hasta = in_array($plan, ['mensual', 'anual'], true) ? suscripcion_hasta((int) $u['id']) : false;
 $elegido = $_GET['plan'] ?? '';

@@ -42,11 +42,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Las contraseñas no coinciden.';
     } else {
         try {
+            com_verif_migrar();
             $stmt = com_db()->prepare(
-                'INSERT INTO usuarios (nombre, email, pass_hash, rol, creado_en) VALUES (?, ?, ?, ?, NOW())'
+                'INSERT INTO usuarios (nombre, email, pass_hash, rol, email_verificado, creado_en)
+                 VALUES (?, ?, ?, ?, 0, NOW())'
             );
             $stmt->execute([$nombre, $email, password_hash($pass, PASSWORD_DEFAULT), 'miembro']);
-            com_login($email, $pass);
+            $nuevo_id = (int) com_db()->lastInsertId();
+
+            // Sesión iniciada pero en espera: solo puede ver confirmar.php
+            com_sesion();
+            session_regenerate_id(true);
+            $_SESSION['uid'] = $nuevo_id;
+
+            // Correo de confirmación con el logo de Printika
+            com_verif_enviar([
+                'id' => $nuevo_id, 'nombre' => $nombre, 'email' => $email,
+            ], $motivo_correo);
             $creado = true;
         } catch (PDOException $e) {
             $error = ($e->errorInfo[1] ?? 0) == 1062
@@ -57,7 +69,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if ($creado) {
-    header('Location: ' . ($plan === 'gratis' ? 'index.php' : 'suscripcion.php?plan=' . $plan));
+    // El plan elegido queda guardado para después de confirmar el correo
+    if ($plan !== 'gratis') $_SESSION['plan_elegido'] = $plan;
+    header('Location: confirmar.php');
     exit;
 }
 
