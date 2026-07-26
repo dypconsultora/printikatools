@@ -28,17 +28,13 @@ function iniciar_sesion() {
     }
 }
 
+/**
+ * El ingreso "PRO" propio del cotizador se retiro el 2026-07-26: nunca se le
+ * fijo contrasena y el acceso pago real vive en /comunidad. Queda en false a
+ * proposito, para que ninguna sesion vieja siga valiendo.
+ */
 function esta_logueado() {
-    iniciar_sesion();
-    return !empty($_SESSION['auth']) && $_SESSION['auth'] === true;
-}
-
-/** Para paginas HTML: si no esta logueado, manda al login. */
-function requerir_login() {
-    if (!esta_logueado()) {
-        header('Location: login.php');
-        exit;
-    }
+    return false;
 }
 
 /** Para la API: si no esta logueado, responde 401 JSON. */
@@ -49,40 +45,6 @@ function requerir_login_api() {
         echo json_encode(['ok' => false, 'error' => 'No autenticado']);
         exit;
     }
-}
-
-function obtener_hash_password() {
-    try {
-        $stmt = db()->prepare('SELECT valor FROM app_config WHERE clave = ? LIMIT 1');
-        $stmt->execute(['password_hash']);
-        $row = $stmt->fetch();
-        return $row ? $row['valor'] : null;
-    } catch (Throwable $e) {
-        return null;
-    }
-}
-
-function verificar_password($password) {
-    $hash = obtener_hash_password();
-    if (!$hash) return false;
-    return password_verify($password, $hash);
-}
-
-/** Usuario PRO: configurable en app_config (clave 'usuario_pro'); por defecto 'printika'. */
-function obtener_usuario_pro() {
-    try {
-        $stmt = db()->prepare('SELECT valor FROM app_config WHERE clave = ? LIMIT 1');
-        $stmt->execute(['usuario_pro']);
-        $row = $stmt->fetch();
-        return $row ? $row['valor'] : 'printika';
-    } catch (Throwable $e) {
-        return 'printika';
-    }
-}
-
-function verificar_credenciales($usuario, $password) {
-    return strcasecmp(trim((string) $usuario), obtener_usuario_pro()) === 0
-        && verificar_password($password);
 }
 
 /**

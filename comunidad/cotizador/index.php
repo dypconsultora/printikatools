@@ -1,10 +1,12 @@
 <?php
-// === Calculadora 3D · doble modo ===
-//  - Sin sesión: versión FREE (abre directo; lo PRO muestra el cartel de suscripción).
-//  - Con sesión (entrando por /login): versión PRO completa, todo desbloqueado.
+// === Calculadora 3D · publica y gratuita ===
+//  - Visitante suelto: version FREE (lo PRO muestra el cartel de suscripcion).
 //  - Prueba por tiempo limitado (PRO_TRIAL_HASTA en auth.php): todo lo PRO
 //    habilitado para cualquiera, con contador regresivo. Al vencer, vuelven
-//    los candados automáticamente.
+//    los candados automaticamente.
+//  - Modo panel (?panel=1): embebida en /comunidad para usuarios logueados.
+// El ingreso PRO propio se retiro el 2026-07-26: el acceso pago vive en la
+// plataforma, no aca.
 require_once __DIR__ . '/auth.php';
 
 // Modo panel: la calculadora embebida dentro de /comunidad para usuarios
@@ -160,22 +162,6 @@ $proHabilitado = $esPro || $enTrial;
   color: var(--accent);
   white-space: nowrap;
 }
-
-/* Indicador de sesion PRO (arriba a la derecha) */
-.pro-session {
-  position: absolute;
-  top: 0.7rem;
-  right: 1rem;
-  font-size: 0.72rem;
-  color: var(--text-muted);
-}
-.pro-session strong { color: var(--accent); }
-.pro-session a {
-  color: var(--text-secondary);
-  text-decoration: none;
-  border-bottom: 1px dotted var(--text-muted);
-}
-.pro-session a:hover { color: var(--accent); }
 
 /* Logo Printika a la izquierda del header */
 .header-logo {
@@ -1369,9 +1355,6 @@ body.en-panel #newsModal { display: none !important; }
     <button type="button" data-idi="es">ESP</button>
     <button type="button" data-idi="en">ENG</button>
   </span>
-  <?php if ($esPro && !$enPanel): ?>
-    <span class="pro-session">Modo <strong>PRO</strong> &middot; <a href="logout.php">Salir</a></span>
-  <?php endif; ?>
   <a class="header-logo" href="https://printikatools.com/" title="Printika Tools">
     <img src="../../assets/img/printika-tools.svg" alt="Printika Tools" class="logo-light">
     <img src="../../assets/img/printika-tools-dark.svg" alt="Printika Tools" class="logo-dark">

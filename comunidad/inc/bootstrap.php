@@ -100,6 +100,35 @@ function cfg_set($clave, $valor) {
         ->execute([$clave, $valor]);
 }
 
+/**
+ * Limpieza unica: borra de la base los restos del acceso "PRO" del cotizador
+ * viejo (el usuario y su contrasena). Ese ingreso se retiro el 2026-07-26;
+ * el acceso pago real vive en la plataforma.
+ *
+ * La llama el panel de administracion, que ya esta conectado a la base, para
+ * no agregarle ni una consulta a la calculadora publica. Corre una sola vez.
+ * Devuelve el texto a mostrarle a la administradora, o '' si no hay nada que
+ * decir (ya se hizo antes, o el cotizador viejo usa otra base).
+ */
+function cot_retirar_acceso_pro() {
+    if (!com_db_ok() || cfg_get('cot_pro_retirado') !== null) return '';
+    try {
+        $db = com_db();
+        if (!$db->query("SHOW TABLES LIKE 'app_config'")->fetch()) {
+            return ''; // el cotizador viejo no vive en esta base: nada que hacer
+        }
+        $stmt = $db->prepare("DELETE FROM app_config WHERE clave IN ('password_hash', 'usuario_pro')");
+        $stmt->execute();
+        $borrados = $stmt->rowCount();
+        cfg_set('cot_pro_retirado', (string) $borrados);
+        return $borrados > 0
+            ? 'Se retiró el acceso PRO viejo del cotizador: se borraron el usuario y la contraseña que habían quedado guardados.'
+            : 'Se revisó el cotizador viejo: no había ningún usuario ni contraseña guardados.';
+    } catch (Throwable $e) {
+        return '';
+    }
+}
+
 /** true si la plataforma puede operar (hay config y la base responde). */
 function com_db_ok() {
     return com_db() !== null;

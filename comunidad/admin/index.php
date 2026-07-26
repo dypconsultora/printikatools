@@ -41,11 +41,20 @@ $emails = $db->query('SELECT email, creado_en FROM novedades_emails ORDER BY cre
 $emails_tot = $tot('SELECT COUNT(*) c FROM novedades_emails');
 $stl_tot = $tot('SELECT COUNT(*) c FROM stl_items WHERE publicado=1');
 
+// Limpieza unica del acceso PRO viejo del cotizador (se avisa una sola vez)
+$limpieza = cot_retirar_acceso_pro();
+
 ui_panel_inicio('Panel', $yo, 'Panel', '../');
 ?>
     <style>.contenido{max-width:none}</style>
     <h1>Panel de administración</h1>
     <p class="bajada">El estado de Printika Tools de un vistazo.</p>
+
+    <?php if ($limpieza): ?>
+      <div class="msg ok" style="margin-bottom:16px">
+        <?php echo ui_icono('check', 16); ?><span><?php echo htmlspecialchars($limpieza); ?></span>
+      </div>
+    <?php endif; ?>
 
     <style>
       .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px}
