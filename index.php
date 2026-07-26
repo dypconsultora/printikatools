@@ -17,6 +17,11 @@ require_once __DIR__ . '/comunidad/inc/idioma.php';
 $idi = landing_idioma();
 $en  = $idi === 'en';
 
+// El logo lleva el lema abajo a la derecha, y ese lema tambien va traducido.
+$logo_oscuro = '/assets/img/printika-tools-dark' . ($en ? '-en' : '') . '.svg';
+$logo_claro  = '/assets/img/printika-tools' . ($en ? '-en' : '') . '.svg';
+$og_imagen   = 'https://printikatools.com/assets/img/og-printika' . ($en ? '-en' : '') . '.png';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     com_preview_activar($_POST['clave'] ?? '');
     header('Location: /');
@@ -110,14 +115,14 @@ $og_alt = $en
   <meta property="og:url" content="<?php echo landing_url($idi); ?>">
   <meta property="og:title" content="<?php echo htmlspecialchars($titulo); ?>">
   <meta property="og:description" content="<?php echo htmlspecialchars($descripcion); ?>">
-  <meta property="og:image" content="https://printikatools.com/assets/img/og-printika.png">
+  <meta property="og:image" content="<?php echo $og_imagen; ?>">
   <meta property="og:image:alt" content="<?php echo htmlspecialchars($og_alt); ?>">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="<?php echo htmlspecialchars($titulo); ?>">
   <meta name="twitter:description" content="<?php echo htmlspecialchars($desc_corta); ?>">
-  <meta name="twitter:image" content="https://printikatools.com/assets/img/og-printika.png">
+  <meta name="twitter:image" content="<?php echo $og_imagen; ?>">
 
 <?php
   // Datos estructurados: lo mismo que ve el visitante, pero para Google y las IA.
@@ -155,7 +160,7 @@ $og_alt = $en
       '@id'   => 'https://printikatools.com/#organizacion',
       'name'  => 'Printika Tools',
       'url'   => 'https://printikatools.com/',
-      'logo'  => 'https://printikatools.com/assets/img/printika-tools-dark.svg',
+      'logo'  => 'https://printikatools.com' . $logo_oscuro,
       'description' => $en
         ? 'Community and management tools for 3D printing workshops.'
         : 'Comunidad y herramientas de gestión para talleres de impresión 3D en español.',
@@ -581,15 +586,15 @@ $og_alt = $en
 </head>
 <body>
   <div id="cargador" aria-hidden="true">
-    <img src="/assets/img/printika-tools-dark.svg" alt="" width="300" height="96" aria-hidden="true">
+    <img src="<?php echo $logo_oscuro; ?>" alt="" width="300" height="96" aria-hidden="true">
     <div class="num">0%</div>
     <div class="barra"><i></i></div>
   </div>
   <header class="nav">
     <div class="cont">
       <a class="marca" href="/">
-        <img class="logo-oscuro" src="/assets/img/printika-tools-dark.svg" alt="Printika Tools">
-        <img class="logo-claro" src="/assets/img/printika-tools.svg" alt="Printika Tools">
+        <img class="logo-oscuro" src="<?php echo $logo_oscuro; ?>" alt="Printika Tools">
+        <img class="logo-claro" src="<?php echo $logo_claro; ?>" alt="Printika Tools">
       </a>
       <nav>
         <a class="link-seccion" href="#herramientas">Herramientas</a>
@@ -884,8 +889,8 @@ $og_alt = $en
     <div class="cont">
       <div class="footer-grilla">
         <div class="footer-marca">
-          <img class="logo-oscuro" src="/assets/img/printika-tools-dark.svg" alt="Printika Tools">
-          <img class="logo-claro" src="/assets/img/printika-tools.svg" alt="Printika Tools">
+          <img class="logo-oscuro" src="<?php echo $logo_oscuro; ?>" alt="Printika Tools">
+          <img class="logo-claro" src="<?php echo $logo_claro; ?>" alt="Printika Tools">
           <p class="desc">Las herramientas y la comunidad para manejar tu taller de impresión 3D como un negocio.</p>
           <a class="btn sec footer-cta" href="/comunidad/registro.php?plan=gratis">Comenzar gratis</a>
         </div>
