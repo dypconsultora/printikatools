@@ -228,7 +228,107 @@ $url
 /** true si se puede reenviar (pasaron al menos 2 minutos del último envío). */
 function com_verif_puede_reenviar($usuario) {
     if (empty($usuario['verif_enviado'])) return true;
-    return (time() - strtotime($usuario['verif_enviado'])) >= 120;
+    $stmt = com_db()->prepare('SELECT verif_enviado <= DATE_SUB(NOW(), INTERVAL 2 MINUTE) FROM usuarios WHERE id = ?');
+    $stmt->execute([(int) $usuario['id']]);
+    return (int) $stmt->fetchColumn() === 1;
+}
+
+/**
+ * Recuperación de contraseña: agrega las columnas la primera vez.
+ */
+function com_reset_migrar() {
+    static $listo = false;
+    if ($listo || !com_db_ok()) return;
+    try {
+        $col = com_db()->query("SELECT COUNT(*) c FROM information_schema.columns
+                                WHERE table_schema = DATABASE() AND table_name = 'usuarios'
+                                  AND column_name = 'reset_token'")->fetch();
+        if ((int) $col['c'] === 0) {
+            com_db()->exec("ALTER TABLE usuarios
+                ADD COLUMN reset_token VARCHAR(64) NOT NULL DEFAULT '',
+                ADD COLUMN reset_expira DATETIME NULL,
+                ADD COLUMN reset_enviado DATETIME NULL");
+        }
+        $listo = true;
+    } catch (Throwable $e) { /* sin columnas, la recuperacion no aplica */ }
+}
+
+/**
+ * Manda el correo para restablecer la contraseña.
+ * Siempre devuelve true hacia afuera (para no revelar qué emails existen);
+ * internamente solo envía si la cuenta existe.
+ */
+function com_reset_enviar($email) {
+    com_reset_migrar();
+    require_once __DIR__ . '/correo.php';
+    if (!com_db_ok()) return;
+
+    $stmt = com_db()->prepare('SELECT * FROM usuarios WHERE email = ? LIMIT 1');
+    $stmt->execute([mb_strtolower(trim($email))]);
+    $u = $stmt->fetch();
+    if (!$u) return;                       // no existe: silencio
+    // No reenviar antes de 2 minutos (comparado en SQL por la zona horaria)
+    if (!empty($u['reset_enviado'])) {
+        $reciente = com_db()->prepare('SELECT reset_enviado > DATE_SUB(NOW(), INTERVAL 2 MINUTE) FROM usuarios WHERE id = ?');
+        $reciente->execute([(int) $u['id']]);
+        if ((int) $reciente->fetchColumn() === 1) return;
+    }
+
+    $token = bin2hex(random_bytes(32));
+    com_db()->prepare("UPDATE usuarios SET reset_token = ?, reset_expira = DATE_ADD(NOW(), INTERVAL 2 HOUR),
+                       reset_enviado = NOW() WHERE id = ?")
+        ->execute([$token, (int) $u['id']]);
+
+    $esquema = !empty($_SERVER['HTTPS']) ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'printikatools.com';
+    $url = $esquema . '://' . $host . '/comunidad/restablecer.php?t=' . $token;
+
+    $nombre = trim($u['nombre'] ?? '');
+    $primer = $nombre !== '' ? explode(' ', $nombre)[0] : '';
+    $html = correo_plantilla(
+        'Restablecé tu contraseña',
+        [
+            ($primer !== '' ? '¡Hola, ' . htmlspecialchars($primer, ENT_QUOTES, 'UTF-8') . '! ' : '¡Hola! ') .
+            'Pediste crear una contraseña nueva para tu cuenta de <strong>Printika Tools</strong>.',
+            'Hacé clic en el botón y elegí la contraseña que quieras:',
+        ],
+        ['texto' => 'Crear contraseña nueva', 'url' => $url],
+        'El enlace vence en 2 horas y sirve una sola vez. Si el botón no funciona, copiá y pegá esta dirección:<br>' .
+        '<span style="color:#3d4759;word-break:break-all">' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '</span>' .
+        '<br><br><strong>¿No pediste esto?</strong> Ignorá el mensaje: tu contraseña actual sigue funcionando y nadie la vio.'
+    );
+    $texto = "Restablecé tu contraseña
+
+Pediste crear una contraseña nueva para Printika Tools.
+"
+           . "Entrá a este enlace (vence en 2 horas y sirve una sola vez):
+$url
+
+"
+           . "Si no lo pediste, ignorá el mensaje: tu contraseña actual sigue funcionando.";
+
+    correo_enviar($u['email'], $nombre, 'Restablecé tu contraseña · Printika Tools', $html, $texto);
+}
+
+/** Devuelve el usuario dueño de un token de reseteo válido, o null. */
+function com_reset_usuario($token) {
+    com_reset_migrar();
+    if (!preg_match('/^[a-f0-9]{64}$/', (string) $token) || !com_db_ok()) return null;
+    // La comparacion va en SQL: PHP y MySQL pueden estar en zonas distintas
+    $stmt = com_db()->prepare('SELECT * FROM usuarios
+                                WHERE reset_token = ? AND reset_expira IS NOT NULL
+                                  AND reset_expira > NOW() LIMIT 1');
+    $stmt->execute([$token]);
+    return $stmt->fetch() ?: null;
+}
+
+/** Guarda la contraseña nueva, quema el token y deja la cuenta verificada. */
+function com_reset_aplicar($usuario_id, $password) {
+    com_db()->prepare("UPDATE usuarios SET pass_hash = ?, reset_token = '', reset_expira = NULL,
+                       email_verificado = 1, verif_token = '' WHERE id = ?")
+        ->execute([password_hash($password, PASSWORD_DEFAULT), (int) $usuario_id]);
+    // Cerrar la puerta a quien estuviera intentando entrar por fuerza bruta
+    com_login_ok_limpiar();
 }
 
 /**

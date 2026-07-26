@@ -6,17 +6,20 @@
 require_once __DIR__ . '/inc/auth.php';
 require_once __DIR__ . '/inc/ui.php';
 
+com_sesion();   // antes de imprimir nada: com_csrf() la necesita
 com_verif_migrar();
 $token = trim($_GET['t'] ?? '');
 $estado = 'invalido';   // invalido | vencido | ok | yaestaba
 
 if (preg_match('/^[a-f0-9]{64}$/', $token) && com_db_ok()) {
-    $stmt = com_db()->prepare('SELECT * FROM usuarios WHERE verif_token = ? LIMIT 1');
+    // 'vencido' se calcula en SQL: PHP y MySQL pueden estar en zonas distintas
+    $stmt = com_db()->prepare('SELECT *, (verif_expira IS NOT NULL AND verif_expira < NOW()) AS vencido
+                                FROM usuarios WHERE verif_token = ? LIMIT 1');
     $stmt->execute([$token]);
     $u = $stmt->fetch();
 
     if ($u) {
-        if (!empty($u['verif_expira']) && strtotime($u['verif_expira']) < time()) {
+        if ((int) $u['vencido'] === 1) {
             $estado = 'vencido';
             $usuario_vencido = $u;
         } else {

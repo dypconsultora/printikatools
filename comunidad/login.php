@@ -48,6 +48,7 @@ ui_tarjeta_inicio('Ingresar');
         <?php ui_campo_password('password', 'password', 'required autocomplete="current-password"'); ?>
         <button class="btn" type="submit">Ingresar</button>
       </form>
-      <p class="pie">¿No tenés cuenta? <a href="registro.php">Registrate</a></p>
+      <p class="pie" style="margin-top:16px"><a href="recuperar.php">¿Olvidaste tu contraseña?</a></p>
+      <p class="pie" style="margin-top:8px">¿No tenés cuenta? <a href="registro.php">Registrate</a></p>
     <?php endif; ?>
 <?php ui_tarjeta_fin(); ?>
