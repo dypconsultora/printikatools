@@ -105,8 +105,9 @@ $og_alt = $en
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
   <meta name="author" content="Printika Tools">
   <meta name="theme-color" content="#0b0f17">
-  <link rel="icon" type="image/svg+xml" href="/assets/img/printika-tools-dark.svg">
-  <link rel="apple-touch-icon" href="/assets/img/printika-tools-dark.svg">
+  <link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
+  <link rel="icon" sizes="any" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/assets/img/favicon-180.png">
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Printika Tools">

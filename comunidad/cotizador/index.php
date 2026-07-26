@@ -49,7 +49,9 @@ $proHabilitado = $esPro || $enTrial;
 <meta name="description" content="Calculadora gratis de costos de impresión 3D: material, electricidad, desgaste de la máquina, mano de obra y ganancia. Precio final en ARS, USD o EUR, sin registro.">
 <link rel="canonical" href="https://printikatools.com/comunidad/cotizador/">
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
-<link rel="icon" type="image/svg+xml" href="../../assets/img/printika-tools-dark.svg">
+<link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
+<link rel="icon" sizes="any" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/img/favicon-180.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Printika Tools">
 <meta property="og:locale" content="es_AR">

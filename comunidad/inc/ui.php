@@ -65,6 +65,9 @@ function ui_campo_password($id, $name, $atributos = '') { ?>
 
 /** Estilos base compartidos por todas las pantallas de la plataforma. */
 function ui_css() { ?>
+<link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
+<link rel="icon" sizes="any" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/img/favicon-180.png">
 <script>(function(){if(localStorage.getItem('ptools_tema')==='light'){document.documentElement.setAttribute('data-theme','light');}})();
 function ptTema(t){document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');localStorage.setItem('ptools_tema',t);}
 function ptIdioma(){try{var v=localStorage.getItem('ptools_idioma');if(v==='es'||v==='en')return v;}catch(e){}
