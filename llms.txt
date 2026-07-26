@@ -34,6 +34,7 @@ Detalle legible por máquina: https://printikatools.com/pricing.md
 
 ## Enlaces
 - Sitio: https://printikatools.com/
+- Sitio en inglés (English): https://printikatools.com/en/
 - Calculadora de costos gratuita: https://printikatools.com/comunidad/cotizador/
 - Planes y precios: https://printikatools.com/#planes
 - Preguntas frecuentes: https://printikatools.com/#faq

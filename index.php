@@ -2,12 +2,20 @@
 /**
  * Portada de printikatools.com.
  *
+ * Sirve los dos idiomas desde este mismo archivo: la raiz en castellano y
+ * /en/ en ingles (ver comunidad/inc/idioma.php). El texto se escribe una sola
+ * vez, en castellano; la version inglesa se arma con el diccionario.
+ *
  * Mientras el sitio esta en acceso anticipado (COM_PREVIEW_ACTIVO en
  * comunidad/inc/bootstrap.php) muestra el "Proximamente"; con la clave de
  * acceso se ve la landing real y se habilita el ingreso a la comunidad.
  */
 require_once __DIR__ . '/comunidad/inc/bootstrap.php';
 require_once __DIR__ . '/comunidad/inc/ui.php';
+require_once __DIR__ . '/comunidad/inc/idioma.php';
+
+$idi = landing_idioma();
+$en  = $idi === 'en';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     com_preview_activar($_POST['clave'] ?? '');
@@ -39,7 +47,7 @@ if (!com_preview_ok()): ?>
 </head>
 <body>
   <main class="contenido">
-    <img src="assets/img/printika-tools-dark.svg" alt="Printika Tools" class="logo">
+    <img src="/assets/img/printika-tools-dark.svg" alt="Printika Tools" class="logo">
     <p class="pronto">Próximamente</p>
   </main>
   <form method="post" id="f-acceso"><input type="hidden" name="clave" id="clave"></form>
@@ -59,107 +67,164 @@ if (!com_preview_ok()): ?>
   </script>
 </body>
 </html>
-<?php exit; endif; ?>
+<?php exit; endif;
+
+// A partir de aca se arma la pagina. En ingles el HTML pasa por el
+// diccionario antes de salir (ver comunidad/inc/idioma.php).
+ob_start();
+
+$titulo = $en
+    ? '3D Printing Cost Calculator and Quoting Software | Printika Tools'
+    : 'Calculadora de costos y presupuestos para impresión 3D | Printika Tools';
+$descripcion = $en
+    ? 'Work out the real cost of every 3D print and build quotes in seconds. Free calculator in ARS, USD and EUR, plus clients, stock and sales for your workshop.'
+    : 'Calculá el costo real de tus impresiones 3D y armá presupuestos en segundos. Calculadora gratis en ARS, USD y EUR, más clientes, stock y ventas para tu taller.';
+$desc_corta = $en
+    ? 'Work out the real cost of every 3D print and build quotes in seconds. Free, in ARS, USD and EUR.'
+    : 'Calculá el costo real de tus impresiones 3D y armá presupuestos en segundos. Gratis, en ARS, USD y EUR.';
+$og_alt = $en
+    ? 'Printika Tools · 3D printing cost and quoting calculator'
+    : 'Printika Tools · Calculadora de costos y presupuestos 3D';
+?>
 <!DOCTYPE html>
-<html lang="es">
+<html lang="<?php echo $idi; ?>">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calculadora de costos y presupuestos para impresión 3D | Printika Tools</title>
-  <meta name="description" content="Calculá el costo real de tus impresiones 3D y armá presupuestos en segundos. Calculadora gratis en ARS, USD y EUR, más clientes, stock y ventas para tu taller.">
-  <link rel="canonical" href="https://printikatools.com/">
+  <title><?php echo htmlspecialchars($titulo); ?></title>
+  <meta name="description" content="<?php echo htmlspecialchars($descripcion); ?>">
+  <link rel="canonical" href="<?php echo landing_url($idi); ?>">
+  <link rel="alternate" hreflang="es" href="https://printikatools.com/">
+  <link rel="alternate" hreflang="en" href="https://printikatools.com/en/">
+  <link rel="alternate" hreflang="x-default" href="https://printikatools.com/">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
   <meta name="author" content="Printika Tools">
   <meta name="theme-color" content="#0b0f17">
-  <link rel="icon" type="image/svg+xml" href="assets/img/printika-tools-dark.svg">
-  <link rel="apple-touch-icon" href="assets/img/printika-tools-dark.svg">
+  <link rel="icon" type="image/svg+xml" href="/assets/img/printika-tools-dark.svg">
+  <link rel="apple-touch-icon" href="/assets/img/printika-tools-dark.svg">
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Printika Tools">
-  <meta property="og:locale" content="es_AR">
-  <meta property="og:url" content="https://printikatools.com/">
-  <meta property="og:title" content="Calculadora de costos y presupuestos para impresión 3D | Printika Tools">
-  <meta property="og:description" content="Calculá el costo real de tus impresiones 3D y armá presupuestos en segundos. Calculadora gratis en ARS, USD y EUR, más clientes, stock y ventas para tu taller.">
+  <meta property="og:locale" content="<?php echo $en ? 'en_US' : 'es_AR'; ?>">
+  <meta property="og:locale:alternate" content="<?php echo $en ? 'es_AR' : 'en_US'; ?>">
+  <meta property="og:url" content="<?php echo landing_url($idi); ?>">
+  <meta property="og:title" content="<?php echo htmlspecialchars($titulo); ?>">
+  <meta property="og:description" content="<?php echo htmlspecialchars($descripcion); ?>">
   <meta property="og:image" content="https://printikatools.com/assets/img/og-printika.png">
-  <meta property="og:image:alt" content="Printika Tools · Calculadora de costos y presupuestos 3D">
+  <meta property="og:image:alt" content="<?php echo htmlspecialchars($og_alt); ?>">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Calculadora de costos y presupuestos para impresión 3D | Printika Tools">
-  <meta name="twitter:description" content="Calculá el costo real de tus impresiones 3D y armá presupuestos en segundos. Gratis, en ARS, USD y EUR.">
+  <meta name="twitter:title" content="<?php echo htmlspecialchars($titulo); ?>">
+  <meta name="twitter:description" content="<?php echo htmlspecialchars($desc_corta); ?>">
   <meta name="twitter:image" content="https://printikatools.com/assets/img/og-printika.png">
 
+<?php
+  // Datos estructurados: lo mismo que ve el visitante, pero para Google y las IA.
+  $faq = $en ? [
+      ['How do I join the community?',
+       'Create your free account with the Sign up button and then activate your subscription. You get access to every tool in minutes.'],
+      ['Is billing monthly or yearly?',
+       'Whichever you prefer: the monthly plan renews month to month with no lock-in, and the yearly plan gives you 2 months at no cost with the price locked for the whole year.'],
+      ['Can I cancel anytime?',
+       'Yes. If you cancel, you keep access until your subscription expires and you are never charged again.'],
+      ['What does the free plan include?',
+       'The full online cost calculator, the STL model library and the video and PDF resources, at no cost.'],
+      ['Is my data saved?',
+       'Yes. Every subscriber has their own account: your quotes, clients and stock are stored and available from any device.'],
+      ['Will you add more tools?',
+       'We ship improvements and new tools for the 3D printing workshop every month.'],
+  ] : [
+      ['¿Cómo me uno a la comunidad?',
+       'Creás tu cuenta gratis con el botón Registrarse y después activás tu suscripción. En minutos tenés acceso a todas las herramientas.'],
+      ['¿El pago es mensual o anual?',
+       'Como prefieras: el plan mensual cuesta $18.000 y se renueva mes a mes sin permanencia; el plan anual cuesta $180.000, ahorrás $36.000 (2 meses gratis) y el precio queda congelado todo el año.'],
+      ['¿Puedo cancelar cuando quiera?',
+       'Sí. Si cancelás, mantenés el acceso hasta el vencimiento de tu suscripción y no se te cobra nada más.'],
+      ['¿Qué incluye el plan gratuito?',
+       'La calculadora de costos online completa, la librería de modelos STL y los recursos en videos y PDF, sin costo.'],
+      ['¿Mis datos quedan guardados?',
+       'Sí. Cada suscriptor tiene su propia cuenta: tus presupuestos, clientes y stock se guardan y podés consultarlos desde cualquier dispositivo.'],
+      ['¿Van a agregar más herramientas?',
+       'Todos los meses sumamos mejoras y herramientas nuevas para el taller de impresión 3D.'],
+  ];
+
+  $grafo = [
+    [
+      '@type' => 'Organization',
+      '@id'   => 'https://printikatools.com/#organizacion',
+      'name'  => 'Printika Tools',
+      'url'   => 'https://printikatools.com/',
+      'logo'  => 'https://printikatools.com/assets/img/printika-tools-dark.svg',
+      'description' => $en
+        ? 'Community and management tools for 3D printing workshops.'
+        : 'Comunidad y herramientas de gestión para talleres de impresión 3D en español.',
+      'areaServed' => 'AR',
+      'sameAs' => ['https://printika3d.com', 'https://t.me/+N5f7IcWPXihhMWQx'],
+    ],
+    [
+      '@type' => 'WebSite',
+      '@id'   => 'https://printikatools.com/#sitio',
+      'url'   => 'https://printikatools.com/',
+      'name'  => 'Printika Tools',
+      'inLanguage' => $en ? 'en' : 'es-AR',
+      'publisher'  => ['@id' => 'https://printikatools.com/#organizacion'],
+    ],
+    [
+      '@type' => 'SoftwareApplication',
+      '@id'   => 'https://printikatools.com/#app',
+      'name'  => 'Printika Tools',
+      'applicationCategory'    => 'BusinessApplication',
+      'applicationSubCategory' => $en ? '3D printing cost calculator' : 'Calculadora de costos de impresión 3D',
+      'operatingSystem' => 'Web',
+      'url' => landing_url($idi),
+      'inLanguage' => ['es-AR', 'en'],
+      'description' => $en
+        ? '3D printing cost calculator, quotes, clients, filament stock, sales and statistics for 3D printing workshops.'
+        : 'Calculadora de costos de impresión 3D, presupuestos, clientes, stock de filamento, ventas y estadísticas para talleres de impresión 3D.',
+      'featureList' => $en ? [
+        '3D printing cost calculator in ARS, USD and EUR',
+        'Professional PDF quotes',
+        'Client management',
+        'Filament stock with automatic deduction',
+        'Workshop sales and statistics',
+        'STL model library',
+      ] : [
+        'Calculadora de costos de impresión 3D en ARS, USD y EUR',
+        'Presupuestos profesionales en PDF',
+        'Gestión de clientes',
+        'Stock de filamento con descuento automático',
+        'Ventas y estadísticas del taller',
+        'Librería de modelos STL',
+      ],
+      'publisher' => ['@id' => 'https://printikatools.com/#organizacion'],
+      'offers' => [
+        ['@type' => 'Offer', 'name' => 'Printika Free', 'price' => '0', 'priceCurrency' => 'ARS',
+         'description' => $en ? 'Cost calculator, STL library and video and PDF resources.'
+                              : 'Calculadora de costos, librería STL y recursos en videos y PDF.'],
+        ['@type' => 'Offer', 'name' => 'Printika Pro', 'price' => '18000', 'priceCurrency' => 'ARS',
+         'description' => $en ? 'Every workshop tool, renewed monthly.'
+                              : 'Todas las herramientas del taller, renovación mensual.'],
+        ['@type' => 'Offer', 'name' => $en ? 'Printika Pro Annual' : 'Printika Pro Anual', 'price' => '180000', 'priceCurrency' => 'ARS',
+         'description' => $en ? 'Every workshop tool with 2 months at no cost.'
+                              : 'Todas las herramientas del taller con 2 meses sin cargo.'],
+      ],
+    ],
+    [
+      '@type' => 'FAQPage',
+      '@id'   => landing_url($idi) . '#faq',
+      'inLanguage' => $en ? 'en' : 'es-AR',
+      'mainEntity' => array_map(fn($f) => [
+          '@type' => 'Question',
+          'name'  => $f[0],
+          'acceptedAnswer' => ['@type' => 'Answer', 'text' => $f[1]],
+      ], $faq),
+    ],
+  ];
+  ?>
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Organization",
-        "@id": "https://printikatools.com/#organizacion",
-        "name": "Printika Tools",
-        "url": "https://printikatools.com/",
-        "logo": "https://printikatools.com/assets/img/printika-tools-dark.svg",
-        "description": "Comunidad y herramientas de gestión para talleres de impresión 3D en español.",
-        "areaServed": "AR",
-        "sameAs": ["https://printika3d.com", "https://t.me/+N5f7IcWPXihhMWQx"]
-      },
-      {
-        "@type": "WebSite",
-        "@id": "https://printikatools.com/#sitio",
-        "url": "https://printikatools.com/",
-        "name": "Printika Tools",
-        "inLanguage": "es-AR",
-        "publisher": {"@id": "https://printikatools.com/#organizacion"}
-      },
-      {
-        "@type": "SoftwareApplication",
-        "@id": "https://printikatools.com/#app",
-        "name": "Printika Tools",
-        "applicationCategory": "BusinessApplication",
-        "applicationSubCategory": "Calculadora de costos de impresión 3D",
-        "operatingSystem": "Web",
-        "url": "https://printikatools.com/",
-        "inLanguage": ["es-AR", "en"],
-        "description": "Calculadora de costos de impresión 3D, presupuestos, clientes, stock de filamento, ventas y estadísticas para talleres de impresión 3D.",
-        "featureList": [
-          "Calculadora de costos de impresión 3D en ARS, USD y EUR",
-          "Presupuestos profesionales en PDF",
-          "Gestión de clientes",
-          "Stock de filamento con descuento automático",
-          "Ventas y estadísticas del taller",
-          "Librería de modelos STL"
-        ],
-        "publisher": {"@id": "https://printikatools.com/#organizacion"},
-        "offers": [
-          {"@type": "Offer", "name": "Printika Free", "price": "0", "priceCurrency": "ARS",
-           "description": "Calculadora de costos, librería STL y recursos en videos y PDF."},
-          {"@type": "Offer", "name": "Printika Pro", "price": "18000", "priceCurrency": "ARS",
-           "description": "Todas las herramientas del taller, renovación mensual."},
-          {"@type": "Offer", "name": "Printika Pro Anual", "price": "180000", "priceCurrency": "ARS",
-           "description": "Todas las herramientas del taller con 2 meses sin cargo."}
-        ]
-      },
-      {
-        "@type": "FAQPage",
-        "@id": "https://printikatools.com/#faq",
-        "inLanguage": "es-AR",
-        "mainEntity": [
-          {"@type": "Question", "name": "¿Cómo me uno a la comunidad?",
-           "acceptedAnswer": {"@type": "Answer", "text": "Creás tu cuenta gratis con el botón Registrarse y después activás tu suscripción. En minutos tenés acceso a todas las herramientas."}},
-          {"@type": "Question", "name": "¿El pago es mensual o anual?",
-           "acceptedAnswer": {"@type": "Answer", "text": "Como prefieras: el plan mensual cuesta $18.000 y se renueva mes a mes sin permanencia; el plan anual cuesta $180.000, ahorrás $36.000 (2 meses gratis) y el precio queda congelado todo el año."}},
-          {"@type": "Question", "name": "¿Puedo cancelar cuando quiera?",
-           "acceptedAnswer": {"@type": "Answer", "text": "Sí. Si cancelás, mantenés el acceso hasta el vencimiento de tu suscripción y no se te cobra nada más."}},
-          {"@type": "Question", "name": "¿Qué incluye el plan gratuito?",
-           "acceptedAnswer": {"@type": "Answer", "text": "La calculadora de costos online completa, la librería de modelos STL y los recursos en videos y PDF, sin costo."}},
-          {"@type": "Question", "name": "¿Mis datos quedan guardados?",
-           "acceptedAnswer": {"@type": "Answer", "text": "Sí. Cada suscriptor tiene su propia cuenta: tus presupuestos, clientes y stock se guardan y podés consultarlos desde cualquier dispositivo."}},
-          {"@type": "Question", "name": "¿Van a agregar más herramientas?",
-           "acceptedAnswer": {"@type": "Answer", "text": "Todos los meses sumamos mejoras y herramientas nuevas para el taller de impresión 3D."}}
-        ]
-      }
-    ]
-  }
+<?php echo json_encode(['@context' => 'https://schema.org', '@graph' => $grafo],
+      JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT); ?>
   </script>
   <script>(function(){if(localStorage.getItem('ptools_tema')==='light'){document.documentElement.setAttribute('data-theme','light');}})();
   function ptTema(t){document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');localStorage.setItem('ptools_tema',t);}</script>
@@ -167,7 +232,6 @@ if (!com_preview_ok()): ?>
   <link rel="preload" href="/assets/fonts/SpaceGrotesk-700-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/fonts/fuentes.css">
   <style>.idioma button.activo{opacity:1 !important;background:var(--surface,rgba(255,255,255,.12)) !important}</style>
-  <script src="assets/js/landing-en.js" defer></script>
   <script src="/assets/js/lib/gsap.min.js" defer></script>
   <style>
     #cargador{position:fixed;inset:0;z-index:200;background:var(--bg,#0b0f17);display:flex;
@@ -517,34 +581,43 @@ if (!com_preview_ok()): ?>
 </head>
 <body>
   <div id="cargador" aria-hidden="true">
-    <img src="assets/img/printika-tools-dark.svg" alt="" width="300" height="96" aria-hidden="true">
+    <img src="/assets/img/printika-tools-dark.svg" alt="" width="300" height="96" aria-hidden="true">
     <div class="num">0%</div>
     <div class="barra"><i></i></div>
   </div>
   <header class="nav">
     <div class="cont">
       <a class="marca" href="/">
-        <img class="logo-oscuro" src="assets/img/printika-tools-dark.svg" alt="Printika Tools">
-        <img class="logo-claro" src="assets/img/printika-tools.svg" alt="Printika Tools">
+        <img class="logo-oscuro" src="/assets/img/printika-tools-dark.svg" alt="Printika Tools">
+        <img class="logo-claro" src="/assets/img/printika-tools.svg" alt="Printika Tools">
       </a>
       <nav>
         <a class="link-seccion" href="#herramientas">Herramientas</a>
         <a class="link-seccion" href="#comunidad">Comunidad</a>
         <a class="link-seccion" href="#planes">Precios</a>
         <a class="link-seccion" href="#faq">FAQ</a>
-        <a class="link-seccion" href="comunidad/cotizador/" target="_blank" rel="noopener">Calculadora</a>
+        <a class="link-seccion" href="/comunidad/cotizador/" target="_blank" rel="noopener">Calculadora</a>
         <span class="tema" role="group" aria-label="Tema de la página">
           <span class="idioma" role="group" aria-label="Idioma / Language" style="display:inline-flex;align-items:center;gap:2px;background:var(--surface-2,rgba(255,255,255,.06));border:1px solid var(--bd,rgba(255,255,255,.12));border-radius:999px;padding:2px;margin-right:10px">
             <span style="font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--txt-3,#8a95a8);padding:0 6px 0 10px">IDIOMA</span>
-            <button type="button" data-idi="es" style="background:none;border:none;border-radius:999px;padding:3px 10px;font-family:inherit;font-size:11px;font-weight:700;color:inherit;cursor:pointer;opacity:.55">ESP</button>
-            <button type="button" data-idi="en" style="background:none;border:none;border-radius:999px;padding:3px 10px;font-family:inherit;font-size:11px;font-weight:700;color:inherit;cursor:pointer;opacity:.55">ENG</button>
+<?php
+            // Son enlaces, no botones: cada idioma tiene su propia direccion y
+            // asi Google entiende que son dos versiones de la misma pagina.
+            $est = 'display:inline-block;text-decoration:none;border-radius:999px;padding:3px 10px;'
+                 . 'font-family:inherit;font-size:11px;font-weight:700;color:inherit;';
+            $act = 'opacity:1;background:var(--surface,rgba(255,255,255,.12))';
+            ?>
+            <a href="/" hreflang="es" style="<?php echo $est . ($en ? 'opacity:.55' : $act); ?>"
+               <?php if (!$en) echo 'aria-current="true"'; ?>>ESP</a>
+            <a href="/en/" hreflang="en" style="<?php echo $est . ($en ? $act : 'opacity:.55'); ?>"
+               <?php if ($en) echo 'aria-current="true"'; ?>>ENG</a>
           </span>
           <button type="button" class="tema-btn" data-tema="light" onclick="ptTema('light')"
                   title="Modo día" aria-label="Modo día"><?php echo ui_icono('sol', 15); ?></button>
           <button type="button" class="tema-btn" data-tema="dark" onclick="ptTema('dark')"
                   title="Modo noche" aria-label="Modo noche"><?php echo ui_icono('luna', 15); ?></button>
         </span>
-        <a class="entrar" href="comunidad/login.php">Iniciar sesión</a>
+        <a class="entrar" href="/comunidad/login.php">Iniciar sesión</a>
         <a class="btn" href="#planes">Registrarse</a>
       </nav>
     </div>
@@ -572,11 +645,11 @@ if (!com_preview_ok()): ?>
       <div class="cont">
         <div>
           <span class="insignia"><span class="punto"></span>Comunidad 3D en español</span>
-          <h1 class="h1-serena"><span class="palabra" data-delay="0">Manejá</span> <span class="palabra" data-delay="120">tu</span> <span class="palabra" data-delay="240">taller</span> <span class="palabra" data-delay="360">de</span> <span class="palabra" data-delay="480">impresión</span> <span class="palabra" data-delay="600">3D</span> <em><span class="palabra" data-delay="780">como</span> <span class="palabra" data-delay="900">un</span> <span class="palabra" data-delay="1020">negocio</span></em></h1>
+          <h1 class="h1-serena"><?php echo landing_hero_h1(); ?></h1>
           <p class="sub">Calculadora de costos, presupuestos, clientes y stock de materiales.
              Las herramientas de una comunidad de makers, en un mismo lugar.</p>
           <div class="ctas">
-            <a class="btn" href="comunidad/registro.php?plan=gratis">Comenzar gratis</a>
+            <a class="btn" href="/comunidad/registro.php?plan=gratis">Comenzar gratis</a>
             <a class="btn sec" href="#planes">Ver planes</a>
           </div>
           <div class="stats">
@@ -586,7 +659,7 @@ if (!com_preview_ok()): ?>
           </div>
         </div>
         <div class="hero-visual">
-          <img src="assets/img/landing/hero-impresora.webp" alt="Impresora 3D imprimiendo una pieza en un taller" decoding="async" fetchpriority="high"
+          <img src="/assets/img/landing/hero-impresora.webp" alt="Impresora 3D imprimiendo una pieza en un taller" decoding="async" fetchpriority="high"
                width="1376" height="768" fetchpriority="high">
         </div>
       </div>
@@ -641,7 +714,7 @@ if (!com_preview_ok()): ?>
           </div>
         </div>
         <div style="text-align:center;margin-top:36px">
-          <a class="btn sec" href="comunidad/cotizador/">Probar la calculadora</a>
+          <a class="btn sec" href="/comunidad/cotizador/">Probar la calculadora</a>
         </div>
       </div>
     </section>
@@ -655,7 +728,7 @@ if (!com_preview_ok()): ?>
         </div>
         <div class="dos">
           <div class="foto-taller">
-            <img src="assets/img/landing/taller-maker.webp" alt="Taller de impresión 3D con piezas impresas y rollos de filamento" decoding="async"
+            <img src="/assets/img/landing/taller-maker.webp" alt="Taller de impresión 3D con piezas impresas y rollos de filamento" decoding="async"
                  width="1376" height="768" loading="lazy">
             <div class="flotante" aria-hidden="true"><span class="punto"></span><span>Comunidad activa</span></div>
           </div>
@@ -691,8 +764,13 @@ if (!com_preview_ok()): ?>
           <p>Empezá gratis y pasate a la suscripción cuando tu taller lo pida.</p>
           <div class="moneda-sel" role="group" aria-label="Moneda de pago" style="display:inline-flex;align-items:center;gap:2px;margin-top:18px;background:var(--surface-2,rgba(255,255,255,.06));border:1px solid var(--bd,rgba(255,255,255,.12));border-radius:999px;padding:3px">
             <span style="font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--txt-3,#8a95a8);padding:0 8px 0 12px">MONEDA</span>
-            <button type="button" data-mon="ars" class="activo" style="background:none;border:none;border-radius:999px;padding:5px 14px;font-family:inherit;font-size:12px;font-weight:700;color:inherit;cursor:pointer;opacity:.55">ARS</button>
-            <button type="button" data-mon="usd" style="background:none;border:none;border-radius:999px;padding:5px 14px;font-family:inherit;font-size:12px;font-weight:700;color:inherit;cursor:pointer;opacity:.55">USD</button>
+<?php
+            // La landing en ingles arranca en dolares, que es como paga ese publico.
+            $estMon = 'background:none;border:none;border-radius:999px;padding:5px 14px;font-family:inherit;'
+                    . 'font-size:12px;font-weight:700;color:inherit;cursor:pointer;opacity:.55';
+            ?>
+            <button type="button" data-mon="ars" class="<?php echo $en ? '' : 'activo'; ?>" style="<?php echo $estMon; ?>">ARS</button>
+            <button type="button" data-mon="usd" class="<?php echo $en ? 'activo' : ''; ?>" style="<?php echo $estMon; ?>">USD</button>
           </div>
         </div>
         <div class="planes-grilla">
@@ -705,11 +783,11 @@ if (!com_preview_ok()): ?>
               <li><?php echo ui_icono('check', 15); ?>Cálculo en ARS, USD y EUR</li>
               <li><?php echo ui_icono('check', 15); ?>Recursos en videos y PDF</li>
             </ul>
-            <a class="btn sec" href="comunidad/registro.php?plan=gratis">Empezar gratis</a>
+            <a class="btn sec" href="/comunidad/registro.php?plan=gratis">Empezar gratis</a>
           </div>
           <div class="plan">
             <h3>Printika Pro</h3>
-            <p class="precio"><span class="monto" data-ars="$18.000" data-usd="US$15">$18.000</span> <small>/mes</small></p>
+            <p class="precio"><span class="monto" data-ars="$18.000" data-usd="US$15"><?php echo $en ? 'US$15' : '$18.000'; ?></span> <small>/mes</small></p>
             <p class="nota">Renovación mes a mes, sin permanencia</p>
             <ul>
               <li><?php echo ui_icono('check', 15); ?>Calculadora completa (versión PRO)</li>
@@ -722,24 +800,24 @@ if (!com_preview_ok()): ?>
             </ul>
             <a class="btn sec btn-pago" target="_blank" rel="noopener"
                data-mp="https://mpago.la/118mn81" data-pp="https://www.paypal.com/CAMBIAR-mensual"
-               href="https://mpago.la/118mn81">Suscribirme</a>
+               href="<?php echo $en ? 'https://www.paypal.com/CAMBIAR-mensual' : 'https://mpago.la/118mn81'; ?>">Suscribirme</a>
           </div>
           <div class="plan destacado">
             <span class="etiqueta swap-mon" data-ars="2 meses gratis" data-usd="2 meses gratis">2 meses gratis</span>
             <h3>Printika Pro Anual</h3>
-            <p class="precio"><span class="monto" data-ars="$180.000" data-usd="US$150">$180.000</span> <small>/año</small></p>
-            <span class="ahorro" data-ars="Equivale a $15.000 por mes · ahorrás $36.000" data-usd="Equivale a US$12,50 por mes · ahorrás US$30">Equivale a $15.000 por mes · ahorrás $36.000</span>
+            <p class="precio"><span class="monto" data-ars="$180.000" data-usd="US$150"><?php echo $en ? 'US$150' : '$180.000'; ?></span> <small>/año</small></p>
+            <span class="ahorro" data-ars="Equivale a $15.000 por mes · ahorrás $36.000" data-usd="Equivale a US$12,50 por mes · ahorrás US$30"><?php echo $en ? 'Equivale a US$12,50 por mes · ahorrás US$30' : 'Equivale a $15.000 por mes · ahorrás $36.000'; ?></span>
             <p class="nota" style="margin-top:12px">Un solo pago y te olvidás todo el año</p>
             <ul>
               <li><?php echo ui_icono('check', 15); ?>Todo lo del plan mensual</li>
-              <li><?php echo ui_icono('check', 15); ?><span class="swap-mon" data-ars="2 meses sin cargo ($36.000 de ahorro)" data-usd="2 meses sin cargo (US$30 de ahorro)">2 meses sin cargo ($36.000 de ahorro)</span></li>
+              <li><?php echo ui_icono('check', 15); ?><span class="swap-mon" data-ars="2 meses sin cargo ($36.000 de ahorro)" data-usd="2 meses sin cargo (US$30 de ahorro)"><?php echo $en ? '2 meses sin cargo (US$30 de ahorro)' : '2 meses sin cargo ($36.000 de ahorro)'; ?></span></li>
               <li><?php echo ui_icono('check', 15); ?>Precio congelado por 12 meses</li>
               <li><?php echo ui_icono('check', 15); ?>Recursos en videos y PDF</li>
               <li><?php echo ui_icono('check', 15); ?>Acceso anticipado a herramientas nuevas</li>
             </ul>
             <a class="btn btn-pago" target="_blank" rel="noopener"
                data-mp="https://mpago.la/1vNcghS" data-pp="https://www.paypal.com/CAMBIAR-anual"
-               href="https://mpago.la/1vNcghS">Suscribirme</a>
+               href="<?php echo $en ? 'https://www.paypal.com/CAMBIAR-anual' : 'https://mpago.la/1vNcghS'; ?>">Suscribirme</a>
           </div>
         </div>
       </div>
@@ -754,8 +832,8 @@ if (!com_preview_ok()): ?>
         <div class="faq">
           <details>
             <summary>¿Cómo me uno a la comunidad?</summary>
-            <p class="resp">Creás tu cuenta gratis con el botón "Registrarse" y después activás tu suscripción
-            escribiéndonos por WhatsApp. En minutos tenés acceso a todas las herramientas.</p>
+            <p class="resp">Creás tu cuenta gratis con el botón "Registrarse" y después activás tu suscripción.
+            En minutos tenés acceso a todas las herramientas.</p>
           </details>
           <details>
             <summary>¿El pago es mensual o anual?</summary>
@@ -769,8 +847,8 @@ if (!com_preview_ok()): ?>
           </details>
           <details>
             <summary>¿Qué incluye el plan gratuito?</summary>
-            <p class="resp">La calculadora de costos online completa, sin necesidad de registrarte,
-            y una cuenta gratuita para conocer la plataforma por dentro.</p>
+            <p class="resp">La calculadora de costos online completa, la librería de modelos STL
+            y los recursos en videos y PDF, sin costo.</p>
           </details>
           <details>
             <summary>¿Mis datos quedan guardados?</summary>
@@ -795,7 +873,7 @@ if (!com_preview_ok()): ?>
         <p>Creá tu cuenta, probá la calculadora y descubrí por qué cada vez más makers
            manejan su taller con Printika Tools.</p>
         <span class="cta-borde">
-          <a class="cta-btn" href="comunidad/registro.php?plan=gratis">Crear mi cuenta
+          <a class="cta-btn" href="/comunidad/registro.php?plan=gratis">Crear mi cuenta
             <span class="flecha-cta">→</span></a>
         </span>
       </div>
@@ -806,15 +884,15 @@ if (!com_preview_ok()): ?>
     <div class="cont">
       <div class="footer-grilla">
         <div class="footer-marca">
-          <img class="logo-oscuro" src="assets/img/printika-tools-dark.svg" alt="Printika Tools">
-          <img class="logo-claro" src="assets/img/printika-tools.svg" alt="Printika Tools">
+          <img class="logo-oscuro" src="/assets/img/printika-tools-dark.svg" alt="Printika Tools">
+          <img class="logo-claro" src="/assets/img/printika-tools.svg" alt="Printika Tools">
           <p class="desc">Las herramientas y la comunidad para manejar tu taller de impresión 3D como un negocio.</p>
-          <a class="btn sec footer-cta" href="comunidad/registro.php?plan=gratis">Comenzar gratis</a>
+          <a class="btn sec footer-cta" href="/comunidad/registro.php?plan=gratis">Comenzar gratis</a>
         </div>
         <div>
           <h4>Plataforma</h4>
           <ul>
-            <li><a href="comunidad/cotizador/">Calculadora</a></li>
+            <li><a href="/comunidad/cotizador/">Calculadora</a></li>
             <li><a href="#herramientas">Herramientas</a></li>
             <li><a href="#planes">Precios</a></li>
             <li><a href="#faq">FAQ</a></li>
@@ -823,9 +901,9 @@ if (!com_preview_ok()): ?>
         <div>
           <h4>Tu cuenta</h4>
           <ul>
-            <li><a href="comunidad/login.php">Iniciar sesión</a></li>
-            <li><a href="comunidad/registro.php?plan=gratis">Registrarse</a></li>
-            <li><a href="comunidad/suscripcion.php">Planes</a></li>
+            <li><a href="/comunidad/login.php">Iniciar sesión</a></li>
+            <li><a href="/comunidad/registro.php?plan=gratis">Registrarse</a></li>
+            <li><a href="/comunidad/suscripcion.php">Planes</a></li>
           </ul>
         </div>
         <div>
@@ -838,8 +916,8 @@ if (!com_preview_ok()): ?>
         </div>
       </div>
       <div class="footer-pie">
-        <p>© <?php echo date('Y'); ?> Printika Tools. Todos los derechos reservados.</p>
-        <p>Hecho con impresoras 3D en Argentina · <span>Actualizado el <time datetime="<?php echo date('Y-m-d'); ?>"><?php echo date('d/m/Y'); ?></time></span></p>
+        <p>© <?php echo date('Y'); ?> Printika Tools. <?php echo t('Todos los derechos reservados.'); ?></p>
+        <p><?php echo t('Hecho con impresoras 3D en Argentina'); ?> · <span><?php echo t('Actualizado el'); ?> <time datetime="<?php echo date('Y-m-d'); ?>"><?php echo date($en ? 'm/d/Y' : 'd/m/Y'); ?></time></span></p>
       </div>
     </div>
   </footer>
@@ -999,11 +1077,10 @@ document.addEventListener('DOMContentLoaded', function () {
     dots[actual].classList.add('on');
   }, 10000);
 
-  // Titulo letra por letra al entrar en pantalla (despues de la traduccion)
+  // Titulo letra por letra al entrar en pantalla. El texto ya viene en el
+  // idioma que corresponde desde el servidor, asi que se parte tal cual esta.
   var h2 = document.getElementById('tituloCierre');
   var texto = h2.textContent;
-  // Si la pagina esta en ingles, traducir antes de partir en letras
-  if (window.__ptEN && window.__ptEN[texto.trim()]) texto = window.__ptEN[texto.trim()];
   h2.textContent = '';
   texto.split('').forEach(function (ch, idx) {
     var sp = document.createElement('span');
@@ -1019,5 +1096,38 @@ document.addEventListener('DOMContentLoaded', function () {
   }, { rootMargin: '0px 0px -80px 0px' }).observe(h2);
 });
 </script>
+<?php if (!$en): ?>
+<!-- Aviso para quien navega en ingles. No redirige solo: Google desaconseja los
+     saltos automaticos por idioma, y ademas es molesto para el visitante. -->
+<div id="avisoIdioma" hidden style="position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:150;
+     display:flex;align-items:center;gap:12px;background:var(--surface,#141a24);color:var(--txt,#e8edf5);
+     border:1px solid var(--bd,rgba(255,255,255,.14));border-radius:999px;padding:9px 10px 9px 18px;
+     font-size:13px;box-shadow:0 8px 30px rgba(0,0,0,.35)">
+  <span>This page is also available in English</span>
+  <a href="/en/" hreflang="en" style="background:var(--accent,#2db7fa);color:#04121a;text-decoration:none;
+     font-weight:700;border-radius:999px;padding:6px 14px">View in English</a>
+  <button type="button" onclick="cerrarAvisoIdioma()" aria-label="Close" style="background:none;border:none;
+     color:inherit;opacity:.5;cursor:pointer;font-size:16px;line-height:1;padding:4px 8px">&times;</button>
+</div>
+<script>
+  function cerrarAvisoIdioma(){
+    document.getElementById('avisoIdioma').hidden = true;
+    try { localStorage.setItem('ptools_idioma_aviso', '1'); } catch (e) {}
+  }
+  (function () {
+    var idi = (navigator.language || 'es').toLowerCase();
+    if (idi.indexOf('es') === 0) return;             // ya esta en su idioma
+    try { if (localStorage.getItem('ptools_idioma_aviso')) return; } catch (e) {}
+    document.addEventListener('DOMContentLoaded', function () {
+      var a = document.getElementById('avisoIdioma');
+      if (a) a.hidden = false;
+    });
+  })();
+</script>
+<?php endif; ?>
 </body>
 </html>
+<?php
+// Salida final: en ingles el HTML pasa por el diccionario. Todo lo que ve
+// Google ya viene traducido del servidor, no depende de JavaScript.
+echo landing_traducir(ob_get_clean());
