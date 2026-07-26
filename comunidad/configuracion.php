@@ -15,6 +15,30 @@ $uid = (int) $u['id'];
 $aviso = '';
 $error = '';
 
+com_2fa_migrar();
+
+// Doble factor por correo
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'dosfa') {
+    if (!com_csrf_ok($_POST['csrf'] ?? '')) {
+        $error = 'La sesión expiró, probá de nuevo.';
+    } else {
+        $activar = !empty($_POST['dosfa_activo']);
+        $correo  = mb_strtolower(trim($_POST['dosfa_email'] ?? ''));
+        if ($activar && $correo !== '' && !filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+            $error = 'El correo para el código no es válido.';
+        } else {
+            com_db()->prepare('UPDATE usuarios SET dosfa_activo = ?, dosfa_email = ? WHERE id = ?')
+                ->execute([$activar ? 1 : 0, $correo, $uid]);
+            $stmt = com_db()->prepare('SELECT * FROM usuarios WHERE id=?');
+            $stmt->execute([$uid]);
+            $u = $stmt->fetch();
+            $aviso = $activar
+                ? 'Doble factor activado. La próxima vez que entres te vamos a pedir un código.'
+                : 'Doble factor desactivado.';
+        }
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'moneda') {
     if (com_csrf_ok($_POST['csrf'] ?? '')) {
         taller_guardar_moneda($uid, $_POST['moneda'] ?? '');
@@ -23,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'moned
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === '') {
     if (!com_csrf_ok($_POST['csrf'] ?? '')) {
         $error = 'La sesión expiró, probá de nuevo.';
     } else {
@@ -156,5 +180,27 @@ ui_panel_inicio('Configuración', $u, 'Configuración');
       </div>
       <div class="pie-form"><button class="btn" type="submit">Guardar configuración</button></div>
     </form>
+
+    <div class="tarjeta-s" style="margin-top:20px;max-width:720px">
+      <h2>Doble factor por correo</h2>
+      <p class="nota">Con esto activado, además de tu contraseña te pedimos un código de 6 dígitos
+         que te llega por correo cada vez que entrás. Es la mejor protección para tu cuenta.</p>
+      <form method="post">
+        <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
+        <input type="hidden" name="accion" value="dosfa">
+        <label class="check-linea" for="dosfaActivo" style="margin-bottom:12px">
+          <input id="dosfaActivo" type="checkbox" name="dosfa_activo" value="1"
+                 <?php echo com_2fa_activo($u) ? 'checked' : ''; ?>>
+          Pedirme un código por correo al entrar
+        </label>
+        <label for="dosfaEmail">¿A qué correo te mandamos el código?</label>
+        <input id="dosfaEmail" type="email" name="dosfa_email" maxlength="190"
+               placeholder="<?php echo htmlspecialchars($u['email']); ?> (el de tu cuenta)"
+               value="<?php echo htmlspecialchars($u['dosfa_email'] ?? ''); ?>">
+        <p class="nota" style="margin-top:6px">Dejalo vacío para usar el correo de tu cuenta.
+           Podés poner otro si preferís recibir los códigos en una casilla distinta.</p>
+        <div class="pie-form"><button class="btn" type="submit">Guardar</button></div>
+      </form>
+    </div>
     <?php taller_popup_moneda(); ?>
 <?php ui_panel_fin(); ?>

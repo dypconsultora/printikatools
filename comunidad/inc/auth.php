@@ -234,6 +234,94 @@ function com_verif_puede_reenviar($usuario) {
 }
 
 /**
+ * Doble factor por correo (2FA) para las cuentas de administración.
+ * Al entrar se manda un codigo de 6 digitos al correo elegido.
+ */
+function com_2fa_migrar() {
+    static $listo = false;
+    if ($listo || !com_db_ok()) return;
+    try {
+        $col = com_db()->query("SELECT COUNT(*) c FROM information_schema.columns
+                                WHERE table_schema = DATABASE() AND table_name = 'usuarios'
+                                  AND column_name = 'dosfa_activo'")->fetch();
+        if ((int) $col['c'] === 0) {
+            com_db()->exec("ALTER TABLE usuarios
+                ADD COLUMN dosfa_activo TINYINT(1) NOT NULL DEFAULT 0,
+                ADD COLUMN dosfa_email VARCHAR(190) NOT NULL DEFAULT '',
+                ADD COLUMN dosfa_codigo VARCHAR(255) NOT NULL DEFAULT '',
+                ADD COLUMN dosfa_expira DATETIME NULL,
+                ADD COLUMN dosfa_intentos TINYINT UNSIGNED NOT NULL DEFAULT 0");
+        }
+        $listo = true;
+    } catch (Throwable $e) { /* sin columnas, el 2FA no aplica */ }
+}
+
+/** true si el usuario tiene el doble factor activado. */
+function com_2fa_activo($u) {
+    return !empty($u['dosfa_activo']) && (int) $u['dosfa_activo'] === 1;
+}
+
+/** Correo al que se manda el código (el elegido, o el de la cuenta). */
+function com_2fa_destino($u) {
+    $e = trim($u['dosfa_email'] ?? '');
+    return $e !== '' ? $e : $u['email'];
+}
+
+/** Genera el código de 6 dígitos, lo guarda cifrado y lo manda por correo. */
+function com_2fa_enviar($u, &$error = null) {
+    com_2fa_migrar();
+    require_once __DIR__ . '/correo.php';
+    $codigo = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+    com_db()->prepare("UPDATE usuarios SET dosfa_codigo = ?, dosfa_expira = DATE_ADD(NOW(), INTERVAL 10 MINUTE),
+                       dosfa_intentos = 0 WHERE id = ?")
+        ->execute([password_hash($codigo, PASSWORD_DEFAULT), (int) $u['id']]);
+
+    $destino = com_2fa_destino($u);
+    $nombre = trim($u['nombre'] ?? '');
+    $html = correo_plantilla(
+        'Tu código para entrar',
+        [
+            'Alguien está entrando a la administración de <strong>Printika Tools</strong>. ' .
+            'Si sos vos, usá este código:',
+            '<div style="margin:8px 0 4px;padding:18px 24px;background:#f2f7fd;border:1px solid #d5e4f5;' .
+            'border-radius:12px;text-align:center;font-size:34px;font-weight:bold;letter-spacing:10px;' .
+            'color:#131a27">' . $codigo . '</div>',
+        ],
+        null,
+        'El código vence en 10 minutos.<br><br><strong>¿No fuiste vos?</strong> Alguien tiene tu contraseña: ' .
+        'cambiala cuanto antes desde "¿Olvidaste tu contraseña?".'
+    );
+    $texto = "Tu código para entrar a Printika Tools: $codigo
+
+Vence en 10 minutos.
+"
+           . "Si no fuiste vos, cambiá tu contraseña cuanto antes.";
+    return correo_enviar($destino, $nombre, 'Código de acceso: ' . $codigo . ' · Printika Tools', $html, $texto, $error);
+}
+
+/** Valida el código escrito. Devuelve 'ok', 'malo', 'vencido' o 'bloqueado'. */
+function com_2fa_validar($usuario_id, $codigo) {
+    com_2fa_migrar();
+    $stmt = com_db()->prepare('SELECT dosfa_codigo, dosfa_intentos,
+                                      (dosfa_expira IS NOT NULL AND dosfa_expira > NOW()) AS vigente
+                               FROM usuarios WHERE id = ?');
+    $stmt->execute([(int) $usuario_id]);
+    $f = $stmt->fetch();
+    if (!$f || $f['dosfa_codigo'] === '') return 'vencido';
+    if ((int) $f['dosfa_intentos'] >= 5) return 'bloqueado';
+    if ((int) $f['vigente'] !== 1) return 'vencido';
+
+    if (password_verify(trim($codigo), $f['dosfa_codigo'])) {
+        com_db()->prepare("UPDATE usuarios SET dosfa_codigo = '', dosfa_expira = NULL, dosfa_intentos = 0
+                           WHERE id = ?")->execute([(int) $usuario_id]);
+        return 'ok';
+    }
+    com_db()->prepare('UPDATE usuarios SET dosfa_intentos = dosfa_intentos + 1 WHERE id = ?')
+        ->execute([(int) $usuario_id]);
+    return 'malo';
+}
+
+/**
  * Recuperación de contraseña: agrega las columnas la primera vez.
  */
 function com_reset_migrar() {
@@ -405,6 +493,17 @@ function com_login($email, $password) {
     if (!$u || !password_verify($password, $u['pass_hash'])) return false;
     com_sesion();
     session_regenerate_id(true);
+
+    // Con doble factor: la sesion queda a la espera del codigo
+    com_2fa_migrar();
+    if (com_2fa_activo($u)) {
+        $_SESSION['2fa_pendiente'] = (int) $u['id'];
+        unset($_SESSION['uid']);
+        com_2fa_enviar($u);
+        com_login_ok_limpiar();
+        return '2fa';
+    }
+
     $_SESSION['uid'] = (int) $u['id'];
     com_db()->prepare('UPDATE usuarios SET ultimo_login = NOW() WHERE id = ?')->execute([(int) $u['id']]);
     com_login_ok_limpiar();
