@@ -32,6 +32,25 @@ function com_cabeceras_seguridad() {
     if (!empty($_SERVER['HTTPS'])) {
         header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
     }
+    // Politica de contenido: define de donde puede cargar cosas la pagina.
+    // Todo lo nuestro es local (fuentes, GSAP, jsPDF), asi que solo hay que
+    // permitir ademas las miniaturas y los videos de YouTube.
+    // 'unsafe-inline' sigue siendo necesario porque el sitio usa scripts y
+    // estilos escritos dentro del HTML; aun asi, esto bloquea que alguien
+    // inyecte un script de otro dominio, que es el ataque que importa.
+    header("Content-Security-Policy: "
+        . "default-src 'self'; "
+        . "script-src 'self' 'unsafe-inline'; "
+        . "style-src 'self' 'unsafe-inline'; "
+        . "img-src 'self' data: blob: https://img.youtube.com https://i.ytimg.com; "
+        . "font-src 'self'; "
+        . "connect-src 'self'; "
+        . "frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com; "
+        . "media-src 'self' blob:; "
+        . "object-src 'none'; "
+        . "base-uri 'self'; "
+        . "form-action 'self'; "
+        . "frame-ancestors 'self'");
 }
 com_cabeceras_seguridad();
 

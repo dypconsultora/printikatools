@@ -14,6 +14,10 @@ function cot_cabeceras_seguridad() {
     if (!empty($_SERVER['HTTPS'])) {
         header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
     }
+    header("Content-Security-Policy: "
+        . "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
+        . "img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; "
+        . "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'");
 }
 cot_cabeceras_seguridad();
 

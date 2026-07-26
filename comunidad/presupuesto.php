@@ -805,7 +805,7 @@ ui_panel_inicio($presupuesto ? 'Editar presupuesto' : 'Nuevo presupuesto', $u, '
     if (window.jspdf) return Promise.resolve();
     return new Promise((res, rej) => {
       const sc = document.createElement('script');
-      sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      sc.src = '../assets/js/lib/jspdf.umd.min.js';
       sc.onload = res; sc.onerror = rej;
       document.head.appendChild(sc);
     });

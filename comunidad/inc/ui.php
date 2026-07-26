@@ -83,9 +83,8 @@ document.addEventListener('click',function(e){
   b.classList.toggle('visible',ver);
   b.setAttribute('aria-label',ver?'Ocultar contraseña':'Mostrar contraseña');
 });</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="<?php echo ui_base(); ?>/assets/fonts/Inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="<?php echo ui_base(); ?>/assets/fonts/fuentes.css">
 <script src="<?php echo ui_base(); ?>/assets/js/ptools-en.js" defer></script>
 <style>
   :root{

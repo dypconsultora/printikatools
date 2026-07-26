@@ -54,7 +54,7 @@ $proHabilitado = $esPro || $enTrial;
 <meta property="og:url" content="https://printikatools.com/comunidad/cotizador/">
 <meta property="og:title" content="Calculadora de costos de impresión 3D gratis | Printika Tools">
 <meta property="og:description" content="Calculá el precio justo de cada impresión 3D: material, luz, desgaste, mano de obra y ganancia. Gratis y sin registro, en ARS, USD o EUR.">
-<meta property="og:image" content="https://printikatools.com/assets/img/landing/hero-impresora.webp">
+<meta property="og:image" content="https://printikatools.com/assets/img/og-printika.png">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -81,9 +81,8 @@ $proHabilitado = $esPro || $enTrial;
 }
 </script>
 <?php endif; ?>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="preload" href="../../assets/fonts/Inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../assets/fonts/fuentes.css">
 <style>
 :root {
   --bg-primary: #0a0a0f;

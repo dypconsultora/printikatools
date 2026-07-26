@@ -80,12 +80,14 @@ if (!com_preview_ok()): ?>
   <meta property="og:url" content="https://printikatools.com/">
   <meta property="og:title" content="Calculadora de costos y presupuestos para impresión 3D | Printika Tools">
   <meta property="og:description" content="Calculá el costo real de tus impresiones 3D y armá presupuestos en segundos. Calculadora gratis en ARS, USD y EUR, más clientes, stock y ventas para tu taller.">
-  <meta property="og:image" content="https://printikatools.com/assets/img/landing/hero-impresora.webp">
-  <meta property="og:image:alt" content="Impresora 3D imprimiendo una pieza en un taller">
+  <meta property="og:image" content="https://printikatools.com/assets/img/og-printika.png">
+  <meta property="og:image:alt" content="Printika Tools · Calculadora de costos y presupuestos 3D">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Calculadora de costos y presupuestos para impresión 3D | Printika Tools">
   <meta name="twitter:description" content="Calculá el costo real de tus impresiones 3D y armá presupuestos en segundos. Gratis, en ARS, USD y EUR.">
-  <meta name="twitter:image" content="https://printikatools.com/assets/img/landing/hero-impresora.webp">
+  <meta name="twitter:image" content="https://printikatools.com/assets/img/og-printika.png">
 
   <script type="application/ld+json">
   {
@@ -161,12 +163,12 @@ if (!com_preview_ok()): ?>
   </script>
   <script>(function(){if(localStorage.getItem('ptools_tema')==='light'){document.documentElement.setAttribute('data-theme','light');}})();
   function ptTema(t){document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');localStorage.setItem('ptools_tema',t);}</script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="/assets/fonts/Inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/SpaceGrotesk-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/fonts/fuentes.css">
   <style>.idioma button.activo{opacity:1 !important;background:var(--surface,rgba(255,255,255,.12)) !important}</style>
   <script src="assets/js/landing-en.js" defer></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+  <script src="/assets/js/lib/gsap.min.js" defer></script>
   <style>
     #cargador{position:fixed;inset:0;z-index:200;background:var(--bg,#0b0f17);display:flex;
       flex-direction:column;align-items:center;justify-content:center;gap:26px}
