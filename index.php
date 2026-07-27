@@ -476,14 +476,14 @@ $og_alt = $en
     .foto-taller .flotante .punto{width:8px;height:8px;border-radius:99px;background:var(--ok);
         box-shadow:0 0 8px rgba(62,207,142,.8)}
     .foto-taller .flotante span{font-size:12.5px;font-weight:600}
-    .beneficios{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-content:stretch;height:100%}
-    .beneficio{display:flex;gap:12px;align-items:flex-start;background:var(--vidrio);
-        border:1px solid var(--bd-suave);border-radius:var(--radio-g);padding:16px;
+    .beneficios{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-content:stretch;height:100%}
+    .beneficio{display:flex;gap:14px;align-items:flex-start;background:var(--vidrio);
+        border:1px solid var(--bd-suave);border-radius:var(--radio-g);padding:22px;
         transition:border-color .15s ease,background-color .15s ease}
     .beneficio:hover{border-color:var(--bd);background:var(--surface)}
     .beneficio .ico{color:var(--accent);margin-top:2px}
-    .beneficio h3{font-size:14px;font-weight:700;letter-spacing:-.01em}
-    .beneficio p{font-size:12.5px;color:var(--txt-2);margin-top:2px}
+    .beneficio h3{font-size:16.5px;font-weight:700;letter-spacing:-.01em}
+    .beneficio p{font-size:14.5px;line-height:1.55;color:var(--txt-2);margin-top:5px}
 
     /* ---- Planes ---- */
     .planes-grilla{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,340px));
@@ -529,6 +529,7 @@ $og_alt = $en
     .cierre{text-align:center;position:relative;overflow:hidden;background:var(--surface);
         border-top:1px solid var(--bd-suave);border-bottom:1px solid var(--bd-suave);
         padding:104px 0}
+
     .cierre::before{content:'';position:absolute;inset:0;pointer-events:none;
         background:radial-gradient(55% 90% at 50% 0%, rgba(45,183,250,.14), transparent 70%)}
     .cierre .cont{position:relative;z-index:2}
@@ -570,10 +571,10 @@ $og_alt = $en
     .cierre p{color:var(--txt-2);font-size:15.5px;max-width:520px;margin:0 auto 30px}
 
     /* ---- Footer ---- */
-    footer{border-top:1px solid var(--bd-suave);padding:52px 0 32px;background:var(--fondo)}
+    footer{border-top:1px solid var(--bd-suave);padding:0 0 32px;background:var(--fondo)}
     footer .cont{max-width:none;padding:0 36px}
     .footer-grilla{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;
-      padding:56px 0 40px;border-top:1px solid var(--bd-suave)}
+      padding:52px 0 40px}
     .footer-marca img{height:92px;width:auto}
     .footer-cta{margin-top:18px;display:inline-flex}
     footer h4{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
@@ -970,7 +971,6 @@ $og_alt = $en
           <h4>Comunidad</h4>
           <ul>
             <li><a href="https://t.me/+N5f7IcWPXihhMWQx" target="_blank" rel="noopener">Telegram</a></li>
-            <li><a href="<?php echo COMUNIDAD_WHATSAPP; ?>" target="_blank" rel="noopener">WhatsApp</a></li>
             <li><a href="https://printika3d.com" target="_blank" rel="noopener">Printika 3D</a></li>
           </ul>
         </div>

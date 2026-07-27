@@ -76,17 +76,25 @@ function guia_inicio(array $d) {
         <img class="logo-claro" src="<?php echo $logoClaro; ?>" alt="Printika Tools">
       </a>
       <nav>
-        <a class="link-seccion" href="/guias/">Guías</a>
         <a class="link-seccion" href="/#herramientas">Herramientas</a>
+        <a class="link-seccion" href="/#comunidad">Comunidad</a>
         <a class="link-seccion" href="/#planes">Precios</a>
+        <a class="link-seccion" href="/guias/">Guías</a>
+        <a class="link-seccion" href="/#faq">FAQ</a>
         <a class="link-seccion" href="/comunidad/cotizador/" target="_blank" rel="noopener">Calculadora</a>
         <span class="tema" role="group" aria-label="Tema de la página">
+          <span class="idioma" role="group" aria-label="Idioma / Language">
+            <span class="idioma-tit">IDIOMA</span>
+            <a href="/" hreflang="es" class="activo" aria-current="true">ESP</a>
+            <a href="/en/" hreflang="en">ENG</a>
+          </span>
           <button type="button" class="tema-btn" data-tema="light" onclick="ptTema('light')"
                   title="Modo día" aria-label="Modo día"><?php echo ui_icono('sol', 15); ?></button>
           <button type="button" class="tema-btn" data-tema="dark" onclick="ptTema('dark')"
                   title="Modo noche" aria-label="Modo noche"><?php echo ui_icono('luna', 15); ?></button>
         </span>
-        <a class="btn" href="/comunidad/registro.php?plan=gratis">Comenzar gratis</a>
+        <a class="entrar" href="/comunidad/login.php">Iniciar sesión</a>
+        <a class="btn" href="/#planes">Registrarse</a>
       </nav>
     </div>
   </header>
@@ -115,6 +123,7 @@ function guia_fin() { ?>
           <img class="logo-claro" src="/assets/img/printika-tools.svg" alt="Printika Tools">
           <p class="desc">Las herramientas y la comunidad para manejar tu taller de impresión 3D
              como un negocio.</p>
+          <a class="btn sec footer-cta" href="/comunidad/registro.php?plan=gratis">Comenzar gratis</a>
         </div>
         <div>
           <h4>Plataforma</h4>
@@ -123,6 +132,7 @@ function guia_fin() { ?>
             <li><a href="/guias/">Guías</a></li>
             <li><a href="/#herramientas">Herramientas</a></li>
             <li><a href="/#planes">Precios</a></li>
+            <li><a href="/#faq">FAQ</a></li>
           </ul>
         </div>
         <div>
@@ -130,7 +140,14 @@ function guia_fin() { ?>
           <ul>
             <li><a href="/comunidad/login.php">Iniciar sesión</a></li>
             <li><a href="/comunidad/registro.php?plan=gratis">Registrarse</a></li>
+            <li><a href="/comunidad/suscripcion.php">Planes</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Comunidad</h4>
+          <ul>
             <li><a href="https://t.me/+N5f7IcWPXihhMWQx" target="_blank" rel="noopener">Telegram</a></li>
+            <li><a href="https://printika3d.com" target="_blank" rel="noopener">Printika 3D</a></li>
           </ul>
         </div>
       </div>

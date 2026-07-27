@@ -187,14 +187,20 @@ function ui_tarjeta_inicio($titulo) { ?>
 <title><?php echo htmlspecialchars($titulo); ?> · Printika Tools</title>
 <?php ui_css(); ?>
 <style>
-  body{display:flex;align-items:center;justify-content:center;padding:96px 24px 24px;background:var(--bg)}
-  .volver-nav{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;
+  /* La pagina tiene encabezado, tarjeta y pie, uno abajo del otro. La tarjeta
+     se queda con el espacio sobrante y por eso siempre se ve centrada. */
+  body{display:flex;flex-direction:column;min-height:100dvh;background:var(--bg)}
+  .tarjeta-zona{flex:1;display:flex;align-items:center;justify-content:center;padding:56px 24px}
+  .volver-nav{display:flex;align-items:center;
       justify-content:space-between;gap:14px;padding:14px clamp(16px,4vw,40px);
       border-bottom:1px solid var(--bd-suave);background:var(--surface)}
   .volver-nav .marca-mini img{height:44px;width:auto;display:block}
   .volver-nav nav{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
   .volver-nav nav a{font-size:13.5px;font-weight:500;color:var(--txt-2)}
   .volver-nav nav a:hover{color:var(--accent)}
+  /* El boton perdia su color: .volver-nav nav a le gana a .btn */
+  .volver-nav nav a.btn{color:var(--accent-ink)}
+  .volver-nav nav a.btn:hover{color:var(--accent-ink)}
   .volver-nav .tema-mini{display:inline-flex;gap:2px;background:var(--surface-2);
       border:1px solid var(--bd-suave);border-radius:999px;padding:2px}
   .volver-nav .tema-mini button{display:flex;align-items:center;justify-content:center;width:30px;height:26px;
@@ -213,6 +219,23 @@ function ui_tarjeta_inicio($titulo) { ?>
   .pie{font-size:13px;color:var(--txt-2);text-align:center;margin-top:24px}
   form .btn{width:100%;margin-top:24px}
   @media (max-width:480px){ .tarjeta{padding:32px 24px} }
+
+  .pie-sitio{border-top:1px solid var(--bd-suave);background:var(--fondo);
+      padding:34px clamp(16px,4vw,40px) 24px}
+  .pie-sitio .grilla{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:34px;
+      max-width:1180px;margin:0 auto}
+  .pie-sitio img{height:72px;width:auto;margin-bottom:12px}
+  .pie-sitio .desc{font-size:13px;color:var(--txt-2);max-width:280px}
+  .pie-sitio h4{font-family:var(--titulos);font-size:12px;font-weight:700;letter-spacing:.1em;
+      text-transform:uppercase;color:var(--txt-3);margin-bottom:12px}
+  .pie-sitio ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+  .pie-sitio a{font-size:13.5px;color:var(--txt-2)}
+  .pie-sitio a:hover{color:var(--accent)}
+  .pie-sitio .abajo{border-top:1px solid var(--bd-suave);margin:26px auto 0;padding-top:18px;
+      max-width:1180px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;
+      font-size:12.5px;color:var(--txt-3)}
+  @media (max-width:900px){ .pie-sitio .grilla{grid-template-columns:1fr 1fr} }
+  @media (max-width:600px){ .pie-sitio .grilla{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -240,18 +263,53 @@ function ui_tarjeta_inicio($titulo) { ?>
       <a class="btn btn-nav" href="<?php echo ui_base(); ?>/#planes">Registrarse</a>
     </nav>
   </header>
+  <div class="tarjeta-zona">
   <main class="tarjeta">
     <img class="logo logo-oscuro" src="<?php echo ui_base(); ?>/assets/img/printika-tools-dark.svg" alt="Printika Tools">
     <img class="logo logo-claro" src="<?php echo ui_base(); ?>/assets/img/printika-tools.svg" alt="Printika Tools">
-    <div class="idioma" style="margin:-10px auto 20px;width:max-content;display:flex" role="group" aria-label="Idioma / Language">
-      <span class="idioma-tit">Idioma</span>
-      <button type="button" data-idi="es">ESP</button>
-      <button type="button" data-idi="en">ENG</button>
-    </div>
 <?php }
 
 function ui_tarjeta_fin() { ?>
   </main>
+  </div>
+  <footer class="pie-sitio">
+    <div class="grilla">
+      <div>
+        <img class="logo-oscuro" src="<?php echo ui_base(); ?>/assets/img/printika-tools-dark.svg" alt="Printika Tools">
+        <img class="logo-claro" src="<?php echo ui_base(); ?>/assets/img/printika-tools.svg" alt="Printika Tools">
+        <p class="desc">Las herramientas y la comunidad para manejar tu taller de impresión 3D
+           como un negocio.</p>
+      </div>
+      <div>
+        <h4>Plataforma</h4>
+        <ul>
+          <li><a href="<?php echo ui_base(); ?>/comunidad/cotizador/">Calculadora</a></li>
+          <li><a href="<?php echo ui_base(); ?>/guias/">Guías</a></li>
+          <li><a href="<?php echo ui_base(); ?>/#herramientas">Herramientas</a></li>
+          <li><a href="<?php echo ui_base(); ?>/#planes">Precios</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Tu cuenta</h4>
+        <ul>
+          <li><a href="<?php echo ui_base(); ?>/comunidad/login.php">Iniciar sesión</a></li>
+          <li><a href="<?php echo ui_base(); ?>/comunidad/registro.php?plan=gratis">Registrarse</a></li>
+          <li><a href="<?php echo ui_base(); ?>/#faq">Preguntas frecuentes</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Comunidad</h4>
+        <ul>
+          <li><a href="https://t.me/+N5f7IcWPXihhMWQx" target="_blank" rel="noopener">Telegram</a></li>
+          <li><a href="https://printika3d.com" target="_blank" rel="noopener">Printika 3D</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="abajo">
+      <p>© <?php echo date('Y'); ?> Printika Tools. Todos los derechos reservados.</p>
+      <p>Hecho con impresoras 3D en Argentina</p>
+    </div>
+  </footer>
 </body>
 </html>
 <?php }

@@ -1304,6 +1304,20 @@ input[type="range"]::-moz-range-thumb {
 }
 .pro-modal__cta:hover { filter: brightness(1.1); transform: translateY(-1px); }
 .pro-modal__cta:disabled { opacity: 0.6; cursor: default; transform: none; }
+/* Salida hacia los planes: el que no quiere dejar el mail igual puede seguir */
+.pro-modal__planes {
+  display: block;
+  margin-top: 0.7rem;
+  padding: 11px 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: border-color 0.2s, background 0.2s;
+}
+.pro-modal__planes:hover { border-color: var(--accent); background: var(--accent-dim); }
 </style>
 <script>
   window.APP = { api: <?php echo json_encode($enPanel ? '../calculadora_api.php' : 'api.php'); ?>, csrf: <?php echo json_encode($enPanel ? $panelCsrf : $csrf); ?>, panel: <?php echo $enPanel ? 'true' : 'false'; ?>, moneda: <?php echo json_encode($panelMoneda); ?>, pro: <?php echo $proHabilitado ? 'true' : 'false'; ?>, sesion: <?php echo $esPro ? 'true' : 'false'; ?>, trial: <?php echo $enTrial ? 'true' : 'false'; ?>, trialEnd: <?php echo PRO_TRIAL_HASTA * 1000; ?> };
@@ -1886,6 +1900,7 @@ body.en-panel #newsModal { display: none !important; }
     <input class="news-input" type="email" id="newsEmail" name="email" placeholder="tu@email.com" autocomplete="email" required>
     <input type="text" id="newsHoney" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" aria-hidden="true">
     <button class="pro-modal__cta" id="newsSubmit" type="submit">Quiero enterarme</button>
+    <a class="pro-modal__planes" href="/#planes" target="_blank" rel="noopener">Ver planes y crear mi cuenta</a>
     <button class="pro-modal__close" id="newsClose" type="button">Ahora no</button>
   </form>
 </div>
