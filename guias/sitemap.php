@@ -26,6 +26,11 @@ foreach (guias_publicadas() as $g) {
     ];
 }
 
+// Las que tienen version inglesa van tambien con su direccion /en/
+$urls[] = ['loc' => $base . '/en/guias/', 'mod' => date('Y-m-d'), 'freq' => 'weekly', 'pri' => '0.7'];
+$urls[] = ['loc' => $base . '/en/guias/cuanto-cobrar-impresion-3d/', 'mod' => '2026-07-27',
+           'freq' => 'monthly', 'pri' => '0.7'];
+
 echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
 echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 foreach ($urls as $u) {
