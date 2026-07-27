@@ -652,6 +652,7 @@ $og_alt = $en
         <a class="link-seccion" href="#herramientas">Herramientas</a>
         <a class="link-seccion" href="#comunidad">Comunidad</a>
         <a class="link-seccion" href="#planes">Precios</a>
+        <a class="link-seccion" href="/guias/">Guías</a>
         <a class="link-seccion" href="#faq">FAQ</a>
         <a class="link-seccion" href="/comunidad/cotizador/" target="_blank" rel="noopener">Calculadora</a>
         <span class="tema" role="group" aria-label="Tema de la página">
@@ -951,6 +952,7 @@ $og_alt = $en
           <h4>Plataforma</h4>
           <ul>
             <li><a href="/comunidad/cotizador/">Calculadora</a></li>
+            <li><a href="/guias/">Guías</a></li>
             <li><a href="#herramientas">Herramientas</a></li>
             <li><a href="#planes">Precios</a></li>
             <li><a href="#faq">FAQ</a></li>

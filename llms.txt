@@ -36,6 +36,8 @@ Detalle legible por máquina: https://printikatools.com/pricing.md
 - Sitio: https://printikatools.com/
 - Sitio en inglés (English): https://printikatools.com/en/
 - Calculadora de costos gratuita: https://printikatools.com/comunidad/cotizador/
+- Guías: https://printikatools.com/guias/
+- Cuánto cobrar por una impresión 3D: https://printikatools.com/guias/cuanto-cobrar-impresion-3d/
 - Planes y precios: https://printikatools.com/#planes
 - Preguntas frecuentes: https://printikatools.com/#faq
 - Comunidad en Telegram: https://t.me/+N5f7IcWPXihhMWQx
