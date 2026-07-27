@@ -65,8 +65,15 @@ function guias_traducir($html) {
     }, $html);
 
     $html = preg_replace_callback('#>([^<]+)<#', function ($m) use ($dic) {
-        $limpio = trim(preg_replace('/\s+/u', ' ', $m[1]));
-        return ($limpio !== '' && isset($dic[$limpio])) ? '>' . $dic[$limpio] . '<' : $m[0];
+        $bruto  = $m[1];
+        $limpio = trim(preg_replace('/\s+/u', ' ', $bruto));
+        if ($limpio === '' || !isset($dic[$limpio])) return $m[0];
+        // Los espacios de los bordes se conservan: sin esto, un texto que
+        // termina antes de un <strong> se pega con lo que sigue
+        // ("Updated on26/07/2026", "betweenARS 15,000").
+        $izq = preg_match('/^\s/u', $bruto) ? ' ' : '';
+        $der = preg_match('/\s$/u', $bruto) ? ' ' : '';
+        return '>' . $izq . $dic[$limpio] . $der . '<';
     }, $html);
 
     $attrs = ['alt', 'title', 'aria-label'];

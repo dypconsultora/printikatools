@@ -64,12 +64,16 @@ a{color:var(--accent)}
 :root:not([data-theme="light"]) .tema-btn[data-tema="dark"],
 :root[data-theme="light"] .tema-btn[data-tema="light"]{
   background:var(--surface);color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.25)}
-.idioma{display:inline-flex;align-items:center;gap:2px;background:var(--surface-2);
+/* Va con .nav nav delante porque `.nav nav a` (mas especifico) le ganaba a
+   `.idioma a` y le pisaba color y tamano: la pastilla salia sin estilo. */
+.nav nav .idioma{display:inline-flex;align-items:center;gap:2px;background:var(--surface-2);
   border:1px solid var(--bd);border-radius:999px;padding:2px;margin-right:10px}
-.idioma-tit{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--txt-3);padding:0 6px 0 10px}
-.idioma a{display:inline-block;text-decoration:none;border-radius:999px;padding:3px 10px;
-  font-size:11px;font-weight:700;color:inherit;opacity:.55}
-.idioma a.activo{opacity:1;background:var(--surface)}
+.nav nav .idioma-tit{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--txt-3);
+  padding:0 6px 0 10px;white-space:nowrap}
+.nav nav .idioma a{display:inline-block;text-decoration:none;border-radius:999px;padding:3px 10px;
+  font-family:inherit;font-size:11px;font-weight:700;color:var(--txt);opacity:.55}
+.nav nav .idioma a:hover{opacity:.8;color:var(--txt)}
+.nav nav .idioma a.activo{opacity:1;background:var(--surface)}
 
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--accent);
   color:var(--accent-ink);text-decoration:none;font-weight:600;font-size:14.5px;height:42px;

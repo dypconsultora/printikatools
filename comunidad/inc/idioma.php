@@ -61,9 +61,15 @@ function landing_traducir($html) {
 
     // 2) Texto entre etiquetas
     $html = preg_replace_callback('#>([^<]+)<#', function ($m) use ($dic) {
-        $limpio = trim(preg_replace('/\s+/u', ' ', $m[1]));
+        $bruto  = $m[1];
+        $limpio = trim(preg_replace('/\s+/u', ' ', $bruto));
         if ($limpio === '' || !isset($dic[$limpio])) return $m[0];
-        return '>' . $dic[$limpio] . '<';
+        // Los espacios de los bordes se conservan: sin esto, un texto que
+        // termina antes de un <strong> se pega con lo que sigue
+        // ("Updated on26/07/2026", "betweenARS 15,000").
+        $izq = preg_match('/^\s/u', $bruto) ? ' ' : '';
+        $der = preg_match('/\s$/u', $bruto) ? ' ' : '';
+        return '>' . $izq . $dic[$limpio] . $der . '<';
     }, $html);
 
     // 3) Atributos visibles (incluye los data- que usa el selector de moneda)
