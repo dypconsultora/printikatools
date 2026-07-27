@@ -1,0 +1,20 @@
+# Direcciones limpias para las guias cargadas desde el administrador:
+#   /guias/mi-nota/  ->  /guias/nota.php?slug=mi-nota
+#
+# Las dos condiciones de arriba son las que importan: si lo pedido existe como
+# archivo o como carpeta (por ejemplo /guias/cuanto-cobrar-impresion-3d/, que
+# es una carpeta de verdad), no se reescribe nada y se sirve tal cual.
+#
+# OJO: este .htaccess vive en una SUBCARPETA. Nunca poner uno en la raiz del
+# sitio: ahi el hosting traba el despliegue automatico desde GitHub.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /guias/
+
+  # El mapa del sitio de las guias se arma solo
+  RewriteRule ^sitemap\.xml$ sitemap.php [L]
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^([a-z0-9][a-z0-9-]*)/?$ nota.php?slug=$1 [L,QSA]
+</IfModule>

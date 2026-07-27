@@ -295,6 +295,7 @@ function ui_menu_admin() {
         ['admin',        'Suscripciones','admin/suscripciones.php', true, false],
         ['nube',         'Cargar STL',   'admin/stl.php', true, false],
         ['recursos',     'Cargar recursos', 'admin/recursos.php', true, false],
+        ['cursos',       'Guías',        'admin/guias.php', true, false],
         ['ventas',       'Mercado Pago', 'admin/mercadopago.php', true, false],
         ['descargar',    'Backups',      'admin/backups.php', true, false],
     ];

@@ -51,11 +51,11 @@ function guia_inicio(array $d) {
   <meta property="og:url" content="<?php echo $url; ?>">
   <meta property="og:title" content="<?php echo htmlspecialchars($titulo); ?>">
   <meta property="og:description" content="<?php echo htmlspecialchars($desc); ?>">
-  <meta property="og:image" content="<?php echo $base; ?>/assets/img/og-printika.png">
+  <meta property="og:image" content="<?php echo htmlspecialchars($d['imagen'] ?? $base . '/assets/img/og-printika.png'); ?>">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="<?php echo htmlspecialchars($titulo); ?>">
   <meta name="twitter:description" content="<?php echo htmlspecialchars($desc); ?>">
-  <meta name="twitter:image" content="<?php echo $base; ?>/assets/img/og-printika.png">
+  <meta name="twitter:image" content="<?php echo htmlspecialchars($d['imagen'] ?? $base . '/assets/img/og-printika.png'); ?>">
 
   <script type="application/ld+json">
 <?php echo json_encode(['@context' => 'https://schema.org', '@graph' => $grafo],

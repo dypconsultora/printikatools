@@ -7,6 +7,7 @@
  * agregarla al array de abajo y crear su carpeta.
  */
 require_once __DIR__ . '/inc/marco.php';
+require_once dirname(__DIR__) . '/comunidad/inc/guias.php';
 
 $base = 'https://printikatools.com';
 
@@ -19,6 +20,17 @@ $guias = [
                   . 'las impresiones fallidas y la ganancia. Con precios reales de filamento en Argentina.',
     ],
 ];
+
+// Las que carga la administradora desde el panel, arriba de la escrita a mano
+foreach (guias_publicadas() as $g) {
+    array_unshift($guias, [
+        'url'    => '/guias/' . $g['slug'] . '/',
+        'ceja'   => $g['ceja'],
+        'titulo' => $g['titulo'],
+        'bajada' => $g['bajada'] !== '' ? $g['bajada'] : guia_extracto($g),
+        'imagen' => $g['imagen_ext'] !== '' ? guia_img_url($g['id'], 'portada', $g['imagen_ext']) : '',
+    ]);
+}
 
 guia_inicio([
     'titulo'      => 'Guías para talleres de impresión 3D | Printika Tools',
@@ -51,6 +63,9 @@ guia_inicio([
     <div class="hub-grilla">
       <?php foreach ($guias as $g): ?>
         <a class="tarjeta-guia" href="<?php echo $g['url']; ?>">
+          <?php if (!empty($g['imagen'])): ?>
+            <img class="tapa" src="<?php echo htmlspecialchars($g['imagen']); ?>" alt="" loading="lazy" decoding="async">
+          <?php endif; ?>
           <span class="ceja"><?php echo htmlspecialchars($g['ceja']); ?></span>
           <h2><?php echo htmlspecialchars($g['titulo']); ?></h2>
           <p><?php echo htmlspecialchars($g['bajada']); ?></p>

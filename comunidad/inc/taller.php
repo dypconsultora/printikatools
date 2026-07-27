@@ -211,6 +211,24 @@ function taller_migrar() {
         PRIMARY KEY (id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+    $db->exec("CREATE TABLE IF NOT EXISTS guias (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        slug VARCHAR(120) NOT NULL,
+        titulo VARCHAR(180) NOT NULL,
+        ceja VARCHAR(40) NOT NULL DEFAULT 'Guía',
+        bajada VARCHAR(300) NOT NULL DEFAULT '',
+        resumen TEXT,
+        cuerpo_json MEDIUMTEXT,
+        imagen_ext VARCHAR(10) NOT NULL DEFAULT '',
+        youtube VARCHAR(20) NOT NULL DEFAULT '',
+        minutos TINYINT UNSIGNED NOT NULL DEFAULT 5,
+        publicado TINYINT(1) NOT NULL DEFAULT 1,
+        creado_en DATETIME NOT NULL,
+        actualizado_en DATETIME NOT NULL,
+        PRIMARY KEY (id),
+        UNIQUE KEY uq_slug (slug)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
     $db->exec("CREATE TABLE IF NOT EXISTS config (
         clave VARCHAR(60) NOT NULL,
         valor TEXT,

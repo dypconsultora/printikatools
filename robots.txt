@@ -46,3 +46,4 @@ User-agent: Applebot-Extended
 Allow: /
 
 Sitemap: https://printikatools.com/sitemap.xml
+Sitemap: https://printikatools.com/guias/sitemap.xml
