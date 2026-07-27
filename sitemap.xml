@@ -1,40 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
-  <url>
-    <loc>https://printikatools.com/</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://printikatools.com/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://printikatools.com/en/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://printikatools.com/"/>
+<!--
+  Indice de mapas del sitio.
+
+  Este es el UNICO que hay que darle a Google. De el cuelgan los demas, asi que
+  cuando se suma contenido nuevo no hay que volver a Search Console:
+
+    sitemap-paginas.xml   paginas fijas (portada, ingles, calculadora)
+    guias/sitemap.xml     las guias, armado solo con lo que hay publicado
+
+  Para sumar una seccion nueva que se cargue desde el panel, alcanza con
+  agregar aca su mapa.
+-->
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://printikatools.com/sitemap-paginas.xml</loc>
     <lastmod>2026-07-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://printikatools.com/en/</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://printikatools.com/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://printikatools.com/en/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://printikatools.com/"/>
-    <lastmod>2026-07-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://printikatools.com/guias/</loc>
-    <lastmod>2026-07-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://printikatools.com/guias/cuanto-cobrar-impresion-3d/</loc>
-    <lastmod>2026-07-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://printikatools.com/comunidad/cotizador/</loc>
-    <lastmod>2026-07-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-</urlset>
+  </sitemap>
+  <sitemap>
+    <loc>https://printikatools.com/guias/sitemap.xml</loc>
+  </sitemap>
+</sitemapindex>
