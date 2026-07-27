@@ -53,13 +53,17 @@ a{color:var(--accent)}
 .nav nav a.btn{color:var(--accent-ink)}
 .nav nav a.btn:hover{color:var(--accent-ink)}
 .nav nav a.entrar{color:var(--txt)}
+/* Exactamente las mismas medidas que en la portada: el boton tenia relleno
+   en vez de tamano fijo y la pastilla salia mas alta. */
 .tema{display:inline-flex;gap:3px;background:var(--surface-2);border:1px solid var(--bd-suave);
-  border-radius:999px;padding:3px;align-items:center}
-.tema-btn{background:none;border:none;border-radius:999px;padding:5px 9px;color:var(--txt-3);
-  cursor:pointer;display:inline-flex;line-height:0}
-.tema-btn:hover{color:var(--txt)}
-:root[data-theme="light"] .tema-btn[data-tema="light"],
-:root:not([data-theme="light"]) .tema-btn[data-tema="dark"]{background:var(--raised);color:var(--accent)}
+  border-radius:99px;padding:3px;align-items:center}
+.tema-btn{display:flex;align-items:center;justify-content:center;width:32px;height:28px;
+  background:none;border:none;border-radius:99px;color:var(--txt-3);cursor:pointer;
+  transition:background-color .15s ease,color .15s ease}
+.tema-btn:hover{color:var(--txt-2)}
+:root:not([data-theme="light"]) .tema-btn[data-tema="dark"],
+:root[data-theme="light"] .tema-btn[data-tema="light"]{
+  background:var(--surface);color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.25)}
 .idioma{display:inline-flex;align-items:center;gap:2px;background:var(--surface-2);
   border:1px solid var(--bd);border-radius:999px;padding:2px;margin-right:10px}
 .idioma-tit{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--txt-3);padding:0 6px 0 10px}

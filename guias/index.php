@@ -13,7 +13,7 @@ $base = 'https://printikatools.com';
 
 $guias = [
     [
-        'url'   => '/guias/cuanto-cobrar-impresion-3d/',
+        'url'   => (guias_en() ? '/en' : '') . '/guias/cuanto-cobrar-impresion-3d/',
         'ceja'  => 'Precios',
         'titulo' => '¿Cuánto cobrar por una impresión 3D?',
         'bajada' => 'Los seis costos que forman el precio: material, luz, desgaste, tu tiempo, '
@@ -24,7 +24,7 @@ $guias = [
 // Las que carga la administradora desde el panel, arriba de la escrita a mano
 foreach (guias_publicadas() as $g) {
     array_unshift($guias, [
-        'url'    => '/guias/' . $g['slug'] . '/',
+        'url'    => (guias_en() ? '/en' : '') . '/guias/' . $g['slug'] . '/',
         'ceja'   => $g['ceja'],
         'titulo' => $g['titulo'],
         'bajada' => $g['bajada'] !== '' ? $g['bajada'] : guia_extracto($g),
@@ -38,6 +38,7 @@ guia_inicio([
                    . 'cuánto cobrar, cómo calcular el costo real y qué errores evitar.',
     'url'         => '/guias/',
     'tipo'        => 'listado',
+    'tiene_ingles' => true,
     'migas'       => [['Inicio', $base . '/'], ['Guías', $base . '/guias/']],
     'jsonld'      => [[
         '@type'      => 'CollectionPage',

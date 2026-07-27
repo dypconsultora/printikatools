@@ -1376,7 +1376,8 @@ body.en-panel #newsModal { display: none !important; }
     <img src="../../assets/img/printika-tools-dark.svg" alt="Printika Tools" class="logo-dark">
   </a>
   <?php if (!$enPanel): ?>
-  <a class="ir-web" href="https://printikatools.com/">Ir a la web &rarr;</a>
+  <a class="ir-web" href="https://printikatools.com/" data-es="https://printikatools.com/"
+     data-en="https://printikatools.com/en/">Ir a la web &rarr;</a>
   <?php endif; ?>
   <div class="theme-switch" role="group" aria-label="Elegir tema">
     <button type="button" class="theme-opt" data-theme-opt="light" aria-label="Modo dia" title="Modo dia">
@@ -1900,7 +1901,8 @@ body.en-panel #newsModal { display: none !important; }
     <input class="news-input" type="email" id="newsEmail" name="email" placeholder="tu@email.com" autocomplete="email" required>
     <input type="text" id="newsHoney" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" aria-hidden="true">
     <button class="pro-modal__cta" id="newsSubmit" type="submit">Quiero enterarme</button>
-    <a class="pro-modal__planes" href="/#planes" target="_blank" rel="noopener">Ver planes y crear mi cuenta</a>
+    <a class="pro-modal__planes" href="/#planes" data-es="/#planes" data-en="/en/#planes"
+       target="_blank" rel="noopener">Ver planes y crear mi cuenta</a>
     <button class="pro-modal__close" id="newsClose" type="button">Ahora no</button>
   </form>
 </div>
@@ -2633,6 +2635,14 @@ PRECIO FINAL: ${price}${meliInfo}
     });
   }
 
+  // Los enlaces que salen del cotizador apuntan a la version del idioma activo
+  (function () {
+    var en = typeof ptIdioma === 'function' && ptIdioma() === 'en';
+    document.querySelectorAll('[data-es][data-en]').forEach(function (a) {
+      a.href = en ? a.dataset.en : a.dataset.es;
+    });
+  })();
+
   // === Contador regresivo de la prueba PRO ===
   const trialCount = $('trialCount');
   if (trialCount && window.APP.trialEnd) {
@@ -2645,7 +2655,13 @@ PRECIO FINAL: ${price}${meliInfo}
       const h = Math.floor(ms / 3600000) % 24;
       const m = Math.floor(ms / 60000) % 60;
       const s = Math.floor(ms / 1000) % 60;
-      trialCount.textContent = 'Quedan ' + d + (d === 1 ? ' dia ' : ' dias ') + pad(h) + ':' + pad(m) + ':' + pad(s);
+      // Se arma por JavaScript, asi que el diccionario no lo alcanza:
+      // hay que escribirlo directamente en el idioma activo.
+      var enIngles = typeof ptIdioma === 'function' && ptIdioma() === 'en';
+      var reloj = pad(h) + ':' + pad(m) + ':' + pad(s);
+      trialCount.textContent = enIngles
+        ? d + (d === 1 ? ' day ' : ' days ') + reloj + ' left'
+        : 'Quedan ' + d + (d === 1 ? ' día ' : ' días ') + reloj;
     }
     tickTrial();
     setInterval(tickTrial, 1000);

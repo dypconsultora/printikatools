@@ -28,6 +28,7 @@ guia_inicio([
     'descripcion' => 'Los seis costos que forman el precio de una impresión 3D: material, luz, desgaste, mano de obra, fallos y ganancia. Con precios de filamento en Argentina y un ejemplo completo.',
     'url'         => $url,
     'tipo'        => 'articulo',
+    'tiene_ingles' => true,
     'migas'       => [
         ['Inicio', $base . '/'],
         ['Guías', $base . '/guias/'],

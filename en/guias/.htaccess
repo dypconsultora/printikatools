@@ -1,0 +1,10 @@
+# Direcciones limpias de las guias en ingles:
+#   /en/guias/mi-nota/  ->  /en/guias/nota.php?slug=mi-nota
+# Igual que en /guias/: si existe como archivo o carpeta, no se reescribe.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /en/guias/
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^([a-z0-9][a-z0-9-]*)/?$ nota.php?slug=$1 [L,QSA]
+</IfModule>

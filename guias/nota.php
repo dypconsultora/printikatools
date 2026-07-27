@@ -53,6 +53,7 @@ guia_inicio([
     'descripcion' => $desc,
     'url'         => $url,
     'tipo'        => 'articulo',
+    'tiene_ingles' => false,   // el cuerpo lo escribe la administradora
     'imagen'      => $img,
     'migas'       => [
         ['Inicio', $base . '/'],

@@ -373,7 +373,7 @@ $og_alt = $en
     .aurora i:nth-child(2){width:44vw;height:44vw;right:-6%;top:2%;
         background:radial-gradient(circle,rgba(111,124,245,.9),rgba(111,124,245,.26) 45%,transparent 72%)}
     .aurora i:nth-child(3){width:40vw;height:40vw;left:26%;bottom:-14%;
-        background:radial-gradient(circle,rgba(0,214,190,.75),rgba(0,214,190,.2) 45%,transparent 72%)}
+        background:radial-gradient(circle,rgba(45,183,250,.6),rgba(111,124,245,.18) 45%,transparent 72%)}
     [data-theme="light"] .aurora{opacity:.4}
     [data-theme="light"] .aurora i{mix-blend-mode:multiply}
     .hero .cont,.hero-visual{position:relative;z-index:1}
@@ -1397,49 +1397,33 @@ document.addEventListener('DOMContentLoaded', function () {
   }, { rootMargin: '0px 0px -80px 0px' }).observe(h2);
 });
 </script>
-<?php if (!$en): ?>
-<!-- Aviso para quien navega en ingles. No redirige solo: Google desaconseja los
-     saltos automaticos por idioma, y ademas es molesto para el visitante. -->
-<style>
-  /* Centrado con left/right y margin auto, no con left:50%: asi puede usar
-     todo el ancho de la pantalla en vez de la mitad. */
-  #avisoIdioma{position:fixed;left:12px;right:12px;bottom:16px;margin:0 auto;z-index:150;
-    width:fit-content;max-width:calc(100vw - 24px);box-sizing:border-box;
-    display:flex;align-items:center;gap:12px;background:var(--surface,#141a24);color:var(--txt,#e8edf5);
-    border:1px solid var(--bd,rgba(255,255,255,.14));border-radius:999px;padding:9px 10px 9px 18px;
-    font-size:13px;line-height:1.3;box-shadow:0 8px 30px rgba(0,0,0,.35)}
-  #avisoIdioma[hidden]{display:none}
-  #avisoIdioma .texto{flex:1 1 auto;min-width:0}
-  #avisoIdioma .ver{flex:0 0 auto;white-space:nowrap;background:var(--accent,#2db7fa);color:#04121a;
-    text-decoration:none;font-weight:700;border-radius:999px;padding:6px 14px}
-  #avisoIdioma .cerrar{flex:0 0 auto;background:none;border:none;color:inherit;opacity:.5;cursor:pointer;
-    font-size:16px;line-height:1;padding:4px 8px}
-  @media (max-width:560px){
-    /* En pantallas angostas el texto no entra en una linea: deja de ser pastilla */
-    #avisoIdioma{border-radius:16px;padding:12px 12px 12px 16px;font-size:12.5px;gap:10px}
-  }
-</style>
-<div id="avisoIdioma" hidden>
-  <span class="texto">This page is also available in English</span>
-  <a class="ver" href="/en/" hreflang="en">View in English</a>
-  <button class="cerrar" type="button" onclick="cerrarAvisoIdioma()" aria-label="Close">&times;</button>
-</div>
 <script>
-  function cerrarAvisoIdioma(){
-    document.getElementById('avisoIdioma').hidden = true;
-    try { localStorage.setItem('ptools_idioma_aviso', '1'); } catch (e) {}
-  }
-  (function () {
-    var idi = (navigator.language || 'es').toLowerCase();
-    if (idi.indexOf('es') === 0) return;             // ya esta en su idioma
-    try { if (localStorage.getItem('ptools_idioma_aviso')) return; } catch (e) {}
-    document.addEventListener('DOMContentLoaded', function () {
-      var a = document.getElementById('avisoIdioma');
-      if (a) a.hidden = false;
+// Idioma automatico segun el navegador.
+//
+// Solo la PRIMERA vez: apenas la persona toca ESP o ENG queda su eleccion
+// guardada y no se la vuelve a mover. El salto se hace apenas se lee el
+// documento, antes de pintar, para que no llegue a verse la pagina equivocada.
+(function () {
+  var elegido = null;
+  try { elegido = localStorage.getItem('ptools_idioma'); } catch (e) {}
+  if (elegido === 'es' || elegido === 'en') return;      // ya decidio: se respeta
+
+  var hablaEspanol = (navigator.language || 'es').toLowerCase().indexOf('es') === 0;
+  var estoyEnIngles = <?php echo $en ? 'true' : 'false'; ?>;
+
+  if (!hablaEspanol && !estoyEnIngles) { location.replace('/en/' + location.hash); return; }
+  if (hablaEspanol && estoyEnIngles)   { location.replace('/' + location.hash); }
+})();
+
+// Al elegir un idioma a mano queda guardado, y no se vuelve a saltar solo
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.idioma a[hreflang]').forEach(function (a) {
+    a.addEventListener('click', function () {
+      try { localStorage.setItem('ptools_idioma', a.getAttribute('hreflang')); } catch (e) {}
     });
-  })();
+  });
+});
 </script>
-<?php endif; ?>
 </body>
 </html>
 <?php

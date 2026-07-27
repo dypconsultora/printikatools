@@ -13,6 +13,15 @@ taller_migrar();
 $db = com_db();
 
 $dir = dirname(__DIR__) . '/uploads/stl';
+
+/**
+ * Mueve un archivo subido a su lugar definitivo.
+ * Los que llegaron por pedazos ya estan en el disco: van con rename().
+ */
+function stl_mover(array $a, $destino) {
+    return isset($a['movido']) ? @rename($a['tmp'], $destino)
+                               : move_uploaded_file($a['tmp'], $destino);
+}
 $aviso = '';
 $error = '';
 
@@ -23,9 +32,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nombre = mb_substr(trim($_POST['nombre'] ?? ''), 0, 150);
         $cat    = mb_substr(trim($_POST['categoria'] ?? ''), 0, 80);
 
-        // Hasta 4 archivos por modelo (piezas de un mismo diseño)
+        // Camino nuevo: el archivo llego por pedazos y ya esta rearmado en
+        // uploads/tmp. Es lo que evita el "Request Timeout" con archivos grandes.
         $archivos = [];
-        for ($k = 0; $k < 4 && $error === ''; $k++) {
+        $sid = strtolower((string) ($_POST['subida_id'] ?? ''));
+        $nombreOrig = (string) ($_POST['subida_nombre'] ?? '');
+        if (preg_match('/^[a-f0-9]{16,40}$/', $sid)) {
+            $parte = dirname(__DIR__) . "/uploads/tmp/sub-$sid.part";
+            $extS  = strtolower(pathinfo($nombreOrig, PATHINFO_EXTENSION));
+            if (!is_file($parte)) {
+                $error = 'La subida se cortó. Probá de nuevo.';
+            } elseif (!in_array($extS, ['stl', 'zip', '3mf', 'obj'], true)) {
+                $error = 'El archivo tiene que ser STL, 3MF, OBJ o ZIP.';
+            } else {
+                $archivos[] = ['tmp' => $parte, 'ext' => $extS,
+                               'tam' => (int) filesize($parte), 'movido' => false];
+            }
+        }
+
+        // Camino viejo (por si el navegador no pudo con los pedazos)
+        for ($k = 0; $k < 4 && $error === '' && !$archivos; $k++) {
             if (empty($_FILES['archivos']['tmp_name'][$k]) || !is_uploaded_file($_FILES['archivos']['tmp_name'][$k])) continue;
             $extK = strtolower(pathinfo($_FILES['archivos']['name'][$k], PATHINFO_EXTENSION));
             if (!in_array($extK, ['stl', 'zip', '3mf', 'obj'], true)) {
@@ -62,10 +88,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                               VALUES (?, ?, ?, ?, ?, NOW())')
                    ->execute([$nombre, $cat, $archivos[0]['ext'], $img_ext, $tam_total]);
                 $id = (int) $db->lastInsertId();
-                $ok = move_uploaded_file($archivos[0]['tmp'], "$dir/stl-$id." . $archivos[0]['ext']);
+                $ok = stl_mover($archivos[0], "$dir/stl-$id." . $archivos[0]['ext']);
                 foreach (array_slice($archivos, 1) as $n => $a) {
                     $orden = $n + 2;
-                    if (move_uploaded_file($a['tmp'], "$dir/stl-$id-$orden." . $a['ext'])) {
+                    if (stl_mover($a, "$dir/stl-$id-$orden." . $a['ext'])) {
                         $db->prepare('INSERT INTO stl_archivos (stl_id, orden, ext, tam_bytes) VALUES (?,?,?,?)')
                            ->execute([$id, $orden, $a['ext'], $a['tam']]);
                     } else {
@@ -114,7 +140,7 @@ ui_panel_inicio('Cargar STL', $yo, 'Cargar STL', '../');
 
     <style>
       .alta{background:var(--surface);border:1px solid var(--bd-suave);border-radius:var(--radio-g);
-            padding:20px;margin-bottom:18px;max-width:860px}
+            padding:20px;margin-bottom:18px}
       .alta h2{font-size:15px;font-weight:600;margin-bottom:10px}
       .alta .fila{display:grid;grid-template-columns:1.2fr 1fr;gap:12px}
       .alta .fila2{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;margin-top:10px}
@@ -132,10 +158,12 @@ ui_panel_inicio('Cargar STL', $yo, 'Cargar STL', '../');
       td form{margin:0}
     </style>
 
-    <form class="alta" method="post" enctype="multipart/form-data">
+    <form class="alta" method="post" enctype="multipart/form-data" id="f-stl">
       <h2>Nuevo modelo</h2>
       <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
       <input type="hidden" name="accion" value="subir">
+      <input type="hidden" name="subida_id" id="subidaId">
+      <input type="hidden" name="subida_nombre" id="subidaNombre">
       <div class="fila">
         <span><label for="s-nombre">Nombre *</label>
           <input id="s-nombre" type="text" name="nombre" maxlength="150" required placeholder="Soporte para auriculares"></span>
@@ -153,9 +181,92 @@ ui_panel_inicio('Cargar STL', $yo, 'Cargar STL', '../');
             Límite del servidor: <?php echo htmlspecialchars(ini_get('upload_max_filesize')); ?> por archivo.</p></span>
         <span><label for="s-img">Foto de vista previa (PNG/JPG/WebP)</label>
           <input id="s-img" type="file" name="imagen" accept="image/png,image/jpeg,image/webp"></span>
-        <button class="btn" type="submit"><?php echo ui_icono('nube', 16); ?> Cargar STL</button>
+        <button class="btn" type="submit" id="btnSTL"><?php echo ui_icono('nube', 16); ?> Cargar STL</button>
+      </div>
+      <div id="barraSTL" hidden style="margin-top:14px">
+        <div style="height:6px;border-radius:99px;background:var(--surface-2);overflow:hidden">
+          <i id="barraSTLi" style="display:block;height:100%;width:0;background:var(--accent);
+             transition:width .2s ease"></i>
+        </div>
+        <p id="barraSTLtxt" style="font-size:12.5px;color:var(--txt-3);margin-top:6px"></p>
       </div>
     </form>
+
+<script>
+/**
+ * El archivo se manda por pedazos, no de una.
+ *
+ * El servidor corta las subidas largas: un STL grande por una conexion casera
+ * tarda mas de lo que el hosting espera y devuelve "Request Timeout". Partido
+ * en pedazos de 2 MB, cada pedido tarda segundos y no lo corta nadie.
+ * Cuando termina, el formulario viaja livianito con la referencia al archivo
+ * ya rearmado en el servidor.
+ */
+(function () {
+  var form = document.getElementById('f-stl');
+  var campo = document.getElementById('s-arch');
+  var boton = document.getElementById('btnSTL');
+  var barra = document.getElementById('barraSTL');
+  var barraI = document.getElementById('barraSTLi');
+  var barraT = document.getElementById('barraSTLtxt');
+  var listo = false;
+  var TROZO = 2 * 1024 * 1024;
+
+  function id() {
+    var s = '';
+    for (var i = 0; i < 20; i++) s += Math.floor(Math.random() * 16).toString(16);
+    return s;
+  }
+
+  form.addEventListener('submit', function (e) {
+    var f = campo.files && campo.files[0];
+    if (listo || !f || !window.FormData || !f.slice) return;   // sin soporte: camino de siempre
+
+    e.preventDefault();
+    boton.disabled = true;
+    barra.hidden = false;
+    var sid = id(), partes = Math.ceil(f.size / TROZO), i = 0;
+
+    function pintar() {
+      var pct = Math.round((i / partes) * 100);
+      barraI.style.width = pct + '%';
+      barraT.textContent = 'Subiendo ' + f.name + ' — ' + pct + '%';
+    }
+
+    function mandar() {
+      if (i >= partes) {
+        document.getElementById('subidaId').value = sid;
+        document.getElementById('subidaNombre').value = f.name;
+        campo.value = '';                       // ya viajo por pedazos
+        campo.removeAttribute('required');
+        barraT.textContent = 'Guardando…';
+        listo = true;
+        form.submit();
+        return;
+      }
+      var fd = new FormData();
+      fd.append('csrf', form.querySelector('[name=csrf]').value);
+      fd.append('sid', sid);
+      fd.append('i', i);
+      fd.append('trozo', f.slice(i * TROZO, (i + 1) * TROZO));
+
+      fetch('stl_trozo.php', { method: 'POST', body: fd, credentials: 'same-origin' })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!d.ok) throw new Error(d.error || 'Falló la subida');
+          i++; pintar(); mandar();
+        })
+        .catch(function (err) {
+          boton.disabled = false;
+          barraT.textContent = 'No se pudo subir: ' + err.message + '. Probá de nuevo.';
+          barraI.style.background = 'var(--mal, #ff6b6b)';
+        });
+    }
+    pintar();
+    mandar();
+  });
+})();
+</script>
 
     <?php if ($items): ?>
     <div class="lista">
