@@ -239,6 +239,7 @@ $og_alt = $en
   <link rel="stylesheet" href="/assets/fonts/fuentes.css">
   <style>.idioma button.activo{opacity:1 !important;background:var(--surface,rgba(255,255,255,.12)) !important}</style>
   <script src="/assets/js/lib/gsap.min.js" defer></script>
+  <script src="/assets/js/lib/ScrollTrigger.min.js" defer></script>
   <style>
     #cargador{position:fixed;inset:0;z-index:200;background:var(--bg,#0b0f17);display:flex;
       flex-direction:column;align-items:center;justify-content:center;gap:26px}
@@ -980,6 +981,7 @@ $og_alt = $en
   </footer>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+  if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
   var reducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var cargador = document.getElementById('cargador');
   if (reducido || !window.gsap) {
@@ -1006,7 +1008,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   })
   .to(cargador, { yPercent: -100, duration: 0.65, ease: 'power3.inOut' }, '+=0.15')
-  .add(function () { cargador.remove(); }, '-=0.2')
+  .add(function () {
+    cargador.remove();
+    // El alto de la pagina cambio: hay que recalcular donde arranca cada cosa
+    if (window.ScrollTrigger) ScrollTrigger.refresh();
+  }, '-=0.2')
   .to(heroEls, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: 0.09 }, '-=0.35')
   .add(function () {
     document.querySelectorAll('.h1-serena .palabra').forEach(function (w) {
@@ -1014,6 +1020,15 @@ document.addEventListener('DOMContentLoaded', function () {
         parseInt(w.dataset.delay || 0, 10));
     });
   }, '-=0.55');
+
+  // Las imagenes y las fuentes pueden cambiar el alto de la pagina despues
+  // de todo esto: hay que volver a medir o las animaciones quedan corridas.
+  if (window.ScrollTrigger) {
+    window.addEventListener('load', function () { ScrollTrigger.refresh(); });
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () { ScrollTrigger.refresh(); });
+    }
+  }
 
   window.__tlCarga = tl;
   // Seguro: si la pestaña estuvo en segundo plano, terminar la carga igual
@@ -1029,19 +1044,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // ---- Barra de lectura ----
+  // ---- Barra de lectura, atada al scroll ----
   var barraLeer = document.getElementById('progreso');
-  if (barraLeer) {
-    var esperando = false;
-    function avance() {
-      esperando = false;
-      var alto = document.documentElement.scrollHeight - window.innerHeight;
-      gsap.set(barraLeer, { scaleX: alto > 0 ? Math.min(1, window.scrollY / alto) : 0 });
-    }
-    window.addEventListener('scroll', function () {
-      if (!esperando) { esperando = true; requestAnimationFrame(avance); }
-    }, { passive: true });
-    avance();
+  if (barraLeer && window.ScrollTrigger) {
+    gsap.to(barraLeer, {
+      scaleX: 1, ease: 'none',
+      scrollTrigger: { trigger: document.body, start: 'top top', end: 'bottom bottom', scrub: 0.3 }
+    });
   }
 
   // ---- Titulos: cada palabra sube desde atras de una linea ----
@@ -1081,16 +1090,15 @@ document.addEventListener('DOMContentLoaded', function () {
     gsap.set(el.querySelectorAll('.cabeza .ceja, .cabeza p'), { opacity: 0, y: 18 });
     esconder(el);
 
-    new IntersectionObserver(function (entradas, o) {
-      if (!entradas[0].isIntersecting) return;
-      o.disconnect();
-      var tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-      tl.to(el.querySelectorAll('.cabeza .ceja'), { opacity: 1, y: 0, duration: 0.5 }, 0)
-        .to(el.querySelectorAll('.cabeza h2 .palabra-mask > i'),
-            { yPercent: 0, duration: 0.95, ease: 'power4.out', stagger: 0.055 }, 0.05)
-        .to(el.querySelectorAll('.cabeza p'), { opacity: 1, y: 0, duration: 0.6 }, 0.35);
-      mostrar(tl, el);
-    }, { rootMargin: '0px 0px -12% 0px' }).observe(el);
+    var tl = gsap.timeline({
+      defaults: { ease: 'power3.out' },
+      scrollTrigger: { trigger: el, start: 'top 78%', once: true }
+    });
+    tl.to(el.querySelectorAll('.cabeza .ceja'), { opacity: 1, y: 0, duration: 0.5 }, 0)
+      .to(el.querySelectorAll('.cabeza h2 .palabra-mask > i'),
+          { yPercent: 0, duration: 0.95, ease: 'power4.out', stagger: 0.055 }, 0.05)
+      .to(el.querySelectorAll('.cabeza p'), { opacity: 1, y: 0, duration: 0.6 }, 0.35);
+    mostrar(tl, el);
   }
 
   // Herramientas: las tarjetas llegan girando desde abajo
@@ -1147,11 +1155,10 @@ document.addEventListener('DOMContentLoaded', function () {
     var el = document.querySelector('.cierre .cont');
     if (!el) return;
     gsap.set(el, { opacity: 0, y: 50, scale: 0.96 });
-    new IntersectionObserver(function (e, o) {
-      if (!e[0].isIntersecting) return;
-      o.disconnect();
-      gsap.to(el, { opacity: 1, y: 0, scale: 1, duration: 1, ease: 'power3.out' });
-    }, { rootMargin: '0px 0px -12% 0px' }).observe(el);
+    gsap.to(el, {
+      opacity: 1, y: 0, scale: 1, duration: 1, ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 82%', once: true }
+    });
   })();
 
   // ---- Los numeros del hero cuentan hasta su valor ----
@@ -1173,31 +1180,49 @@ document.addEventListener('DOMContentLoaded', function () {
   var mm = gsap.matchMedia();
 
   mm.add('(prefers-reduced-motion: no-preference)', function () {
-    var capas = gsap.utils.toArray('.marco img').map(function (el) { return { el: el, fuerza: 0.045 }; });
-    if (!capas.length) return;
-    // Un poco mas grande que el marco, para que al moverse no se vea el borde
-    gsap.set(capas.map(function (c) { return c.el; }), { scale: 1.14 });
+    if (!window.ScrollTrigger) return;
 
-    var pendiente = false;
-    function pintar() {
-      pendiente = false;
-      var alto = window.innerHeight;
-      capas.forEach(function (c) {
-        var caja = c.el.getBoundingClientRect();
-        if (caja.bottom < -200 || caja.top > alto + 200) return;  // fuera de pantalla: no gastamos
-        var centro = (caja.top + caja.height / 2 - alto / 2) / alto;
-        gsap.set(c.el, { y: -centro * alto * c.fuerza, scale: 1.14 });
+    // Las fotos se desplazan dentro de su marco siguiendo el scroll.
+    // Van un poco mas grandes para que al moverse no se vea el borde.
+    gsap.utils.toArray('.marco img').forEach(function (img) {
+      gsap.set(img, { scale: 1.14 });
+      gsap.fromTo(img, { yPercent: -5 }, {
+        yPercent: 5, ease: 'none',
+        scrollTrigger: { trigger: img.closest('.marco'), start: 'top bottom', end: 'bottom top',
+                         scrub: 0.6, invalidateOnRefresh: true }
       });
-    }
-    function pedir() { if (!pendiente) { pendiente = true; requestAnimationFrame(pintar); } }
-    window.addEventListener('scroll', pedir, { passive: true });
-    window.addEventListener('resize', pedir, { passive: true });
-    pintar();
-    return function () {
-      window.removeEventListener('scroll', pedir);
-      window.removeEventListener('resize', pedir);
-      capas.forEach(function (c) { gsap.set(c.el, { clearProps: 'transform' }); });
+    });
+
+    // El hero se despide: mientras te vas, el texto sube y se desvanece
+    // y la foto se achica un poco. Da sensacion de profundidad al salir.
+    //
+    // Arranca en 'top top' a proposito: asi, arriba de todo, el avance es
+    // cero por definicion y el hero NUNCA puede verse desvanecido al entrar,
+    // aunque las medidas se calculen mal por una fuente o una imagen que
+    // tardo. El grueso del desvanecido se corre al final con el ease.
+    var salida = {
+      trigger: '.hero', start: 'top top', end: 'bottom top',
+      scrub: 0.5, invalidateOnRefresh: true
     };
+    var heroTexto = document.querySelector('.hero .cont > div:first-child');
+    // Ojo: la salida se aplica al MARCO, no a .hero-visual. Ese lo anima la
+    // entrada de la carga, y si los dos tocan la opacidad el que se crea
+    // primero se queda con el valor de arranque y la foto no aparece nunca.
+    var heroFoto = document.querySelector('.hero-visual .marco');
+    if (heroTexto) {
+      gsap.to(heroTexto, { yPercent: -18, opacity: 0.15, ease: 'power2.in', scrollTrigger: salida });
+    }
+    if (heroFoto) {
+      gsap.to(heroFoto, { scale: 0.88, opacity: 0.2, ease: 'power2.in', scrollTrigger: salida });
+    }
+
+    // La aurora se corre despacio: el fondo no viaja a la misma velocidad
+    // que el contenido, que es lo que da la sensacion de que hay capas.
+    gsap.to('.aurora', {
+      yPercent: 22, ease: 'none',
+      scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top',
+                       scrub: 0.8, invalidateOnRefresh: true }
+    });
   });
 
   // ---- Cosas que solo tienen sentido con mouse (en el celular no van) ----
