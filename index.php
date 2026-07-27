@@ -269,7 +269,7 @@ $og_alt = $en
     .insignia .punto,.foto-taller .flotante .punto{animation:latido 2.6s ease-in-out infinite}
     @keyframes latido{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(45,183,250,.35)}
       50%{transform:scale(1.12);box-shadow:0 0 0 5px rgba(45,183,250,0)}}
-    @media (prefers-reduced-motion: reduce){ .h1-serena .palabra{opacity:1}
+    @media (prefers-reduced-motion: reduce){ .h1-serena .palabra{opacity:1} .cinta-pista{transform:none !important}
       .linea-fx,.punto-fx,.flota-fx,.insignia .punto,.foto-taller .flotante .punto{animation:none} }
     @media (prefers-reduced-motion: reduce){ #cargador{display:none} .anim-oculto{opacity:1} }
   </style>
@@ -361,6 +361,41 @@ $og_alt = $en
 
     /* ---- Hero ---- */
     .hero{position:relative;padding:88px 0 72px;overflow:hidden}
+
+    /* Aurora: manchas de color que se mueven despacio detras del hero.
+       El desenfoque se aplica una vez y despues solo se mueven con transform,
+       que es lo unico que la placa de video hace gratis. */
+    .aurora{position:absolute;inset:-20%;pointer-events:none;z-index:0;filter:blur(38px)}
+    .aurora i{position:absolute;display:block;border-radius:50%;will-change:transform;mix-blend-mode:screen}
+    .aurora i:nth-child(1){width:52vw;height:52vw;left:-8%;top:-16%;
+        background:radial-gradient(circle,rgba(45,183,250,1),rgba(45,183,250,.3) 45%,transparent 72%)}
+    .aurora i:nth-child(2){width:44vw;height:44vw;right:-6%;top:2%;
+        background:radial-gradient(circle,rgba(111,124,245,.9),rgba(111,124,245,.26) 45%,transparent 72%)}
+    .aurora i:nth-child(3){width:40vw;height:40vw;left:26%;bottom:-14%;
+        background:radial-gradient(circle,rgba(0,214,190,.75),rgba(0,214,190,.2) 45%,transparent 72%)}
+    [data-theme="light"] .aurora{opacity:.4}
+    [data-theme="light"] .aurora i{mix-blend-mode:multiply}
+    .hero .cont,.hero-visual{position:relative;z-index:1}
+
+    /* Cinta de materiales: se desliza sin parar de derecha a izquierda */
+    .cinta{position:relative;overflow:hidden;padding:20px 0;
+        border-top:1px solid var(--bd-suave);border-bottom:1px solid var(--bd-suave);
+        background:var(--surface);
+        -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
+        mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+    .cinta-pista{display:flex;align-items:center;gap:0;width:max-content;will-change:transform}
+    .cinta-pista span{font-family:var(--titulos);font-size:15px;font-weight:700;letter-spacing:.14em;
+        color:var(--txt-3);padding:0 26px;white-space:nowrap;transition:color .25s ease}
+    .cinta:hover .cinta-pista span{color:var(--txt-2)}
+    .cinta-pista em{width:5px;height:5px;border-radius:50%;background:var(--accent);opacity:.5;flex:0 0 auto}
+
+    /* Cuanto llevas leido de la pagina */
+    #progreso{position:fixed;top:0;left:0;height:2px;width:100%;transform:scaleX(0);transform-origin:0 50%;
+        background:linear-gradient(90deg,var(--accent),#6f7cf5);z-index:120;pointer-events:none}
+
+    /* La foto del hero se inclina siguiendo al mouse */
+    .hero-visual{perspective:1100px}
+    .hero-visual .marco{transform-style:preserve-3d;will-change:transform}
     .hero::before{content:'';position:absolute;inset:0;pointer-events:none;
         background:
           radial-gradient(52% 42% at 16% 8%, rgba(45,183,250,.13), transparent 60%),
@@ -609,6 +644,7 @@ $og_alt = $en
     <div class="num">0%</div>
     <div class="barra"><i></i></div>
   </div>
+  <div id="progreso" aria-hidden="true"></div>
   <header class="nav">
     <div class="cont">
       <a class="marca" href="/">
@@ -649,6 +685,7 @@ $og_alt = $en
 
   <main>
     <div class="hero" style="position:relative;overflow:hidden">
+      <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
       <svg class="hero-fx" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" aria-hidden="true">
         <defs><pattern id="grillaPt" width="60" height="60" patternUnits="userSpaceOnUse">
           <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(100,116,139,.09)" stroke-width="0.5"/></pattern></defs>
@@ -686,6 +723,21 @@ $og_alt = $en
           <div class="marco"><img src="/assets/img/landing/hero-impresora.webp" alt="Impresora 3D imprimiendo una pieza en un taller" decoding="async" fetchpriority="high"
                width="1376" height="768"></div>
         </div>
+      </div>
+    </div>
+
+    <div class="cinta" aria-hidden="true">
+      <div class="cinta-pista">
+        <?php
+        // Se repite dos veces para que el bucle no tenga costura
+        $materiales = ['PLA', 'PETG', 'ABS', 'TPU', 'ASA', 'PC', 'NYLON', 'PLA+', 'PLA SILK', 'PETG CF',
+                       'RESINA', 'HIPS', 'PVA', 'WOOD FILL', 'CARBON'];
+        for ($vuelta = 0; $vuelta < 2; $vuelta++) {
+            foreach ($materiales as $m) {
+                echo '<span>' . $m . '</span><em></em>';
+            }
+        }
+        ?>
       </div>
     </div>
 
@@ -986,6 +1038,44 @@ document.addEventListener('DOMContentLoaded', function () {
   // Seguro: si la pestaña estuvo en segundo plano, terminar la carga igual
   setTimeout(function () { if (document.getElementById('cargador')) tl.progress(1); }, 7000);
 
+  // ---- La aurora del hero nunca se queda quieta ----
+  gsap.utils.toArray('.aurora i').forEach(function (b, i) {
+    gsap.to(b, {
+      xPercent: gsap.utils.random(-18, 18), yPercent: gsap.utils.random(-16, 16),
+      scale: gsap.utils.random(0.85, 1.25),
+      duration: gsap.utils.random(9, 14), ease: 'sine.inOut',
+      repeat: -1, yoyo: true, delay: i * 0.8
+    });
+  });
+
+  // ---- La cinta de materiales, en bucle infinito y sin costura ----
+  // La pista tiene la lista dos veces: al llegar a la mitad vuelve a cero y no se nota.
+  var pista = document.querySelector('.cinta-pista');
+  if (pista) {
+    var cinta = gsap.to(pista, {
+      xPercent: -50, duration: 38, ease: 'none', repeat: -1
+    });
+    // Al pasar el mouse frena, para que se pueda leer
+    var caja = pista.parentElement;
+    caja.addEventListener('pointerenter', function () { gsap.to(cinta, { timeScale: 0.25, duration: 0.5 }); });
+    caja.addEventListener('pointerleave', function () { gsap.to(cinta, { timeScale: 1, duration: 0.6 }); });
+  }
+
+  // ---- Barra de lectura ----
+  var barraLeer = document.getElementById('progreso');
+  if (barraLeer) {
+    var esperando = false;
+    function avance() {
+      esperando = false;
+      var alto = document.documentElement.scrollHeight - window.innerHeight;
+      gsap.set(barraLeer, { scaleX: alto > 0 ? Math.min(1, window.scrollY / alto) : 0 });
+    }
+    window.addEventListener('scroll', function () {
+      if (!esperando) { esperando = true; requestAnimationFrame(avance); }
+    }, { passive: true });
+    avance();
+  }
+
   // ---- Aparicion por secciones, no de a una tarjeta suelta ----
   // Cada grupo entra junto y escalonado: se lee como una sola idea que llega,
   // en vez de seis cajas apareciendo cada una por su cuenta.
@@ -1073,6 +1163,24 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     cajas.forEach(function (c) { c.addEventListener('pointermove', luz); });
 
+    // La foto del hero se inclina siguiendo al cursor
+    var visual = document.querySelector('.hero-visual'), marco = visual && visual.querySelector('.marco');
+    function inclinar(e) {
+      var c = visual.getBoundingClientRect();
+      gsap.to(marco, {
+        rotationY: ((e.clientX - (c.left + c.width / 2)) / c.width) * 13,
+        rotationX: -((e.clientY - (c.top + c.height / 2)) / c.height) * 11,
+        duration: 0.6, ease: 'power3.out', transformPerspective: 1100
+      });
+    }
+    function enderezar() {
+      gsap.to(marco, { rotationY: 0, rotationX: 0, duration: 1.1, ease: 'elastic.out(1, 0.5)' });
+    }
+    if (marco) {
+      visual.addEventListener('pointermove', inclinar);
+      visual.addEventListener('pointerleave', enderezar);
+    }
+
     // Los botones principales se acercan un poco al cursor
     var imanes = gsap.utils.toArray('.hero .ctas .btn, .cierre .btn');
     function acercar(e) {
@@ -1092,6 +1200,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     return function () {
+      if (marco) {
+        visual.removeEventListener('pointermove', inclinar);
+        visual.removeEventListener('pointerleave', enderezar);
+        gsap.set(marco, { clearProps: 'transform' });
+      }
       cajas.forEach(function (c) { c.removeEventListener('pointermove', luz); });
       imanes.forEach(function (b) {
         b.removeEventListener('pointermove', acercar);
