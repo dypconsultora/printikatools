@@ -265,13 +265,12 @@ $og_alt = $en
       opacity:0;animation:flota 5s ease-in-out infinite}
     @keyframes flota{0%,100%{transform:none;opacity:.15}25%{transform:translate(5px,-10px);opacity:.6}
       50%{transform:translate(-3px,-5px);opacity:.35}75%{transform:translate(7px,-15px);opacity:.7}}
-    #halo-mouse{position:fixed;width:380px;height:380px;border-radius:50%;pointer-events:none;z-index:5;
-      background:radial-gradient(circle,rgba(45,183,250,.06),rgba(45,183,250,.03),transparent 70%);
-      transform:translate(-50%,-50%);filter:blur(30px);opacity:0;
-      transition:left 70ms linear,top 70ms linear,opacity .3s ease-out}
-    .onda-fx{position:fixed;width:5px;height:5px;background:rgba(45,183,250,.55);border-radius:50%;
-      transform:translate(-50%,-50%);pointer-events:none;z-index:9999;animation:brilla-fx 1s ease-out forwards}
-    @media (prefers-reduced-motion: reduce){ .h1-serena .palabra{opacity:1} .linea-fx,.punto-fx,.flota-fx{animation:none} }
+    /* Latido suave de los puntitos de estado: la pagina no queda muerta */
+    .insignia .punto,.foto-taller .flotante .punto{animation:latido 2.6s ease-in-out infinite}
+    @keyframes latido{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(45,183,250,.35)}
+      50%{transform:scale(1.12);box-shadow:0 0 0 5px rgba(45,183,250,0)}}
+    @media (prefers-reduced-motion: reduce){ .h1-serena .palabra{opacity:1}
+      .linea-fx,.punto-fx,.flota-fx,.insignia .punto,.foto-taller .flotante .punto{animation:none} }
     @media (prefers-reduced-motion: reduce){ #cargador{display:none} .anim-oculto{opacity:1} }
   </style>
   <style>
@@ -394,14 +393,27 @@ $og_alt = $en
     .hero-visual{position:relative}
     .hero-visual::before{content:'';position:absolute;inset:-10%;pointer-events:none;
         background:radial-gradient(50% 50% at 50% 50%, rgba(45,183,250,.18), transparent 70%)}
-    .hero-visual img{position:relative;width:100%;height:auto;display:block;border-radius:18px;
+    .hero-visual img{position:relative;width:100%;height:auto;display:block}
+    /* El marco es el que lleva el borde y la sombra; la foto se mueve adentro
+       (por eso va un poco mas grande y con overflow oculto). */
+    .marco{position:relative;border-radius:18px;overflow:hidden;
         border:1px solid var(--raised);box-shadow:var(--sombra-img)}
+    .marco img{border-radius:0;border:0;box-shadow:none}
 
     /* ---- Bento herramientas ---- */
     .bento{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
     .caja{background:var(--surface);border:1px solid var(--bd-suave);border-radius:var(--radio-g);
-        padding:26px;position:relative;overflow:hidden;transition:border-color .15s ease}
-    .caja:hover{border-color:var(--bd)}
+        padding:26px;position:relative;overflow:hidden;
+        transition:border-color .25s ease,transform .25s cubic-bezier(.16,1,.3,1),box-shadow .25s ease}
+    .caja:hover{border-color:var(--bd);transform:translateY(-3px);
+        box-shadow:0 18px 40px -22px rgba(10,20,35,.55)}
+    /* La luz sigue al cursor dentro de cada tarjeta (--mx/--my las escribe el JS) */
+    .caja::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:0;
+        transition:opacity .3s ease;
+        background:radial-gradient(320px circle at var(--mx,50%) var(--my,50%),
+                   rgba(45,183,250,.09), transparent 65%)}
+    .caja:hover::before{opacity:1}
+    .caja > *{position:relative}
     .caja.grande{grid-column:span 2;grid-row:span 2;display:flex;flex-direction:column}
     .caja.grande::after{content:'';position:absolute;right:-30%;top:-40%;width:80%;height:90%;
         background:radial-gradient(50% 50% at 50% 50%, rgba(45,183,250,.10), transparent 70%);
@@ -424,9 +436,8 @@ $og_alt = $en
         border-top:1px solid var(--bd-suave);border-bottom:1px solid var(--bd-suave)}
     .comunidad .dos{display:grid;grid-template-columns:.95fr 1.05fr;gap:48px;align-items:stretch}
     .foto-taller{position:relative;min-height:360px}
-    .foto-taller > img{width:100%;height:100%;object-fit:cover}
-    .foto-taller img{width:100%;height:auto;display:block;border-radius:18px;
-        border:1px solid var(--raised);box-shadow:var(--sombra-img)}
+    .foto-taller .marco img{width:100%;height:100%;object-fit:cover}
+    .foto-taller img{width:100%;height:auto;display:block}
     .foto-taller .flotante{position:absolute;right:-14px;top:26px;display:flex;align-items:center;
         gap:10px;background:var(--surface);border:1px solid var(--bd);border-radius:12px;
         padding:11px 15px;box-shadow:0 12px 40px -12px rgba(0,0,0,.6)}
@@ -573,6 +584,13 @@ $og_alt = $en
       .bento{grid-template-columns:1fr}
       .caja.grande{grid-column:auto}
       .beneficios{grid-template-columns:1fr}
+      /* El encabezado no entraba en el celular: se va lo prescindible */
+      .nav .marca img{height:38px}
+      .nav .cont{gap:10px}
+      .nav nav{gap:8px}
+      .nav .idioma-tit{display:none}
+      .nav .tema .tema-btn{display:none}
+      .nav .entrar{display:none}
       .stat{padding:0 12px}
       .stat b{font-size:19px}
       .stat span{font-size:11px}
@@ -605,7 +623,7 @@ $og_alt = $en
         <a class="link-seccion" href="/comunidad/cotizador/" target="_blank" rel="noopener">Calculadora</a>
         <span class="tema" role="group" aria-label="Tema de la página">
           <span class="idioma" role="group" aria-label="Idioma / Language" style="display:inline-flex;align-items:center;gap:2px;background:var(--surface-2,rgba(255,255,255,.06));border:1px solid var(--bd,rgba(255,255,255,.12));border-radius:999px;padding:2px;margin-right:10px">
-            <span style="font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--txt-3,#8a95a8);padding:0 6px 0 10px">IDIOMA</span>
+            <span class="idioma-tit" style="font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--txt-3,#8a95a8);padding:0 6px 0 10px">IDIOMA</span>
 <?php
             // Son enlaces, no botones: cada idioma tiene su propia direccion y
             // asi Google entiende que son dos versiones de la misma pagina.
@@ -665,8 +683,8 @@ $og_alt = $en
           </div>
         </div>
         <div class="hero-visual">
-          <img src="/assets/img/landing/hero-impresora.webp" alt="Impresora 3D imprimiendo una pieza en un taller" decoding="async" fetchpriority="high"
-               width="1376" height="768" fetchpriority="high">
+          <div class="marco"><img src="/assets/img/landing/hero-impresora.webp" alt="Impresora 3D imprimiendo una pieza en un taller" decoding="async" fetchpriority="high"
+               width="1376" height="768"></div>
         </div>
       </div>
     </div>
@@ -734,8 +752,8 @@ $og_alt = $en
         </div>
         <div class="dos">
           <div class="foto-taller">
-            <img src="/assets/img/landing/taller-maker.webp" alt="Taller de impresión 3D con piezas impresas y rollos de filamento" decoding="async"
-                 width="1376" height="768" loading="lazy">
+            <div class="marco"><img src="/assets/img/landing/taller-maker.webp" alt="Taller de impresión 3D con piezas impresas y rollos de filamento" decoding="async"
+                 width="1376" height="768" loading="lazy"></div>
             <div class="flotante" aria-hidden="true"><span class="punto"></span><span>Comunidad activa</span></div>
           </div>
           <div class="beneficios">
@@ -964,35 +982,124 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }, '-=0.55');
 
-  // Halo que sigue al mouse + ondas al hacer click
-  var halo = document.createElement('div');
-  halo.id = 'halo-mouse';
-  document.body.appendChild(halo);
-  document.addEventListener('mousemove', function (e) {
-    halo.style.left = e.clientX + 'px'; halo.style.top = e.clientY + 'px'; halo.style.opacity = 1;
-  });
-  document.addEventListener('mouseleave', function () { halo.style.opacity = 0; });
-  document.addEventListener('click', function (e) {
-    var o = document.createElement('div');
-    o.className = 'onda-fx'; o.style.left = e.clientX + 'px'; o.style.top = e.clientY + 'px';
-    document.body.appendChild(o);
-    setTimeout(function () { o.remove(); }, 1000);
-  });
   window.__tlCarga = tl;
   // Seguro: si la pestaña estuvo en segundo plano, terminar la carga igual
   setTimeout(function () { if (document.getElementById('cargador')) tl.progress(1); }, 7000);
 
-  // Aparicion al scrollear: tarjetas, planes, faq y titulos de seccion
-  var reveal = document.querySelectorAll('.caja, .plan, .faq details, .cabeza, .vent, .cierre .cont');
-  reveal.forEach(function (el) { gsap.set(el, { opacity: 0, y: 30 }); });
-  var io = new IntersectionObserver(function (entradas) {
-    entradas.forEach(function (e) {
-      if (!e.isIntersecting) return;
-      gsap.to(e.target, { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' });
-      io.unobserve(e.target);
+  // ---- Aparicion por secciones, no de a una tarjeta suelta ----
+  // Cada grupo entra junto y escalonado: se lee como una sola idea que llega,
+  // en vez de seis cajas apareciendo cada una por su cuenta.
+  var grupos = [
+    ['#herramientas .cabeza', '#herramientas .bento .caja', '#herramientas .cont > div:last-child'],
+    ['.comunidad .cabeza', '.comunidad .foto-taller', '.comunidad .beneficio'],
+    ['#planes .cabeza', '#planes .moneda-sel', '#planes .plan'],
+    ['#faq .cabeza', '#faq details'],
+    ['.cierre .cont']
+  ];
+
+  grupos.forEach(function (selectores) {
+    var partes = selectores.map(function (q) { return gsap.utils.toArray(q); }).filter(function (a) { return a.length; });
+    if (!partes.length) return;
+    var todos = partes.reduce(function (a, b) { return a.concat(b); }, []);
+    gsap.set(todos, { opacity: 0, y: 34 });
+
+    var obs = new IntersectionObserver(function (entradas, o) {
+      entradas.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        o.disconnect();
+        var tlg = gsap.timeline({ defaults: { duration: 0.7, ease: 'power3.out' } });
+        partes.forEach(function (grupo, i) {
+          tlg.to(grupo, { opacity: 1, y: 0, stagger: { each: 0.07, from: 'start' } }, i === 0 ? 0 : '-=0.45');
+        });
+      });
+    }, { rootMargin: '0px 0px -80px 0px' });
+    obs.observe(todos[0].closest('section') || todos[0]);
+  });
+
+  // ---- Los numeros del hero cuentan hasta su valor ----
+  gsap.utils.toArray('.hero .stat b').forEach(function (b) {
+    var texto = b.textContent.trim();
+    var destino = parseInt(texto.replace(/\D/g, ''), 10);
+    if (!destino) return;
+    var prefijo = texto.replace(/[\d].*/, '');
+    var n = { v: 0 };
+    tl.to(n, {
+      v: destino, duration: 1.1, ease: 'power2.out',
+      onUpdate: function () { b.textContent = prefijo + Math.round(n.v); }
+    }, '-=0.5');
+  });
+
+  // ---- Movimientos que dependen del scroll ----
+  // Un solo bucle por cuadro, leyendo la posicion una vez y moviendo solo con
+  // transform: no se engancha al evento scroll ni fuerza recalculos.
+  var mm = gsap.matchMedia();
+
+  mm.add('(prefers-reduced-motion: no-preference)', function () {
+    var capas = gsap.utils.toArray('.marco img').map(function (el) { return { el: el, fuerza: 0.045 }; });
+    if (!capas.length) return;
+    // Un poco mas grande que el marco, para que al moverse no se vea el borde
+    gsap.set(capas.map(function (c) { return c.el; }), { scale: 1.14 });
+
+    var pendiente = false;
+    function pintar() {
+      pendiente = false;
+      var alto = window.innerHeight;
+      capas.forEach(function (c) {
+        var caja = c.el.getBoundingClientRect();
+        if (caja.bottom < -200 || caja.top > alto + 200) return;  // fuera de pantalla: no gastamos
+        var centro = (caja.top + caja.height / 2 - alto / 2) / alto;
+        gsap.set(c.el, { y: -centro * alto * c.fuerza, scale: 1.14 });
+      });
+    }
+    function pedir() { if (!pendiente) { pendiente = true; requestAnimationFrame(pintar); } }
+    window.addEventListener('scroll', pedir, { passive: true });
+    window.addEventListener('resize', pedir, { passive: true });
+    pintar();
+    return function () {
+      window.removeEventListener('scroll', pedir);
+      window.removeEventListener('resize', pedir);
+      capas.forEach(function (c) { gsap.set(c.el, { clearProps: 'transform' }); });
+    };
+  });
+
+  // ---- Cosas que solo tienen sentido con mouse (en el celular no van) ----
+  mm.add('(hover: hover) and (pointer: fine)', function () {
+    // La luz de cada tarjeta sigue al cursor
+    var cajas = gsap.utils.toArray('.caja');
+    function luz(e) {
+      var c = e.currentTarget.getBoundingClientRect();
+      e.currentTarget.style.setProperty('--mx', (e.clientX - c.left) + 'px');
+      e.currentTarget.style.setProperty('--my', (e.clientY - c.top) + 'px');
+    }
+    cajas.forEach(function (c) { c.addEventListener('pointermove', luz); });
+
+    // Los botones principales se acercan un poco al cursor
+    var imanes = gsap.utils.toArray('.hero .ctas .btn, .cierre .btn');
+    function acercar(e) {
+      var b = e.currentTarget, c = b.getBoundingClientRect();
+      gsap.to(b, {
+        x: (e.clientX - (c.left + c.width / 2)) * 0.22,
+        y: (e.clientY - (c.top + c.height / 2)) * 0.32,
+        duration: 0.4, ease: 'power3.out'
+      });
+    }
+    function soltar(e) {
+      gsap.to(e.currentTarget, { x: 0, y: 0, duration: 0.6, ease: 'elastic.out(1, 0.45)' });
+    }
+    imanes.forEach(function (b) {
+      b.addEventListener('pointermove', acercar);
+      b.addEventListener('pointerleave', soltar);
     });
-  }, { rootMargin: '0px 0px -60px 0px' });
-  reveal.forEach(function (el) { io.observe(el); });
+
+    return function () {
+      cajas.forEach(function (c) { c.removeEventListener('pointermove', luz); });
+      imanes.forEach(function (b) {
+        b.removeEventListener('pointermove', acercar);
+        b.removeEventListener('pointerleave', soltar);
+        gsap.set(b, { clearProps: 'transform' });
+      });
+    };
+  });
 
   // Micro-interaccion en los botones principales
   document.querySelectorAll('.btn').forEach(function (b) {
@@ -1105,15 +1212,29 @@ document.addEventListener('DOMContentLoaded', function () {
 <?php if (!$en): ?>
 <!-- Aviso para quien navega en ingles. No redirige solo: Google desaconseja los
      saltos automaticos por idioma, y ademas es molesto para el visitante. -->
-<div id="avisoIdioma" hidden style="position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:150;
-     display:flex;align-items:center;gap:12px;background:var(--surface,#141a24);color:var(--txt,#e8edf5);
-     border:1px solid var(--bd,rgba(255,255,255,.14));border-radius:999px;padding:9px 10px 9px 18px;
-     font-size:13px;box-shadow:0 8px 30px rgba(0,0,0,.35)">
-  <span>This page is also available in English</span>
-  <a href="/en/" hreflang="en" style="background:var(--accent,#2db7fa);color:#04121a;text-decoration:none;
-     font-weight:700;border-radius:999px;padding:6px 14px">View in English</a>
-  <button type="button" onclick="cerrarAvisoIdioma()" aria-label="Close" style="background:none;border:none;
-     color:inherit;opacity:.5;cursor:pointer;font-size:16px;line-height:1;padding:4px 8px">&times;</button>
+<style>
+  /* Centrado con left/right y margin auto, no con left:50%: asi puede usar
+     todo el ancho de la pantalla en vez de la mitad. */
+  #avisoIdioma{position:fixed;left:12px;right:12px;bottom:16px;margin:0 auto;z-index:150;
+    width:fit-content;max-width:calc(100vw - 24px);box-sizing:border-box;
+    display:flex;align-items:center;gap:12px;background:var(--surface,#141a24);color:var(--txt,#e8edf5);
+    border:1px solid var(--bd,rgba(255,255,255,.14));border-radius:999px;padding:9px 10px 9px 18px;
+    font-size:13px;line-height:1.3;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+  #avisoIdioma[hidden]{display:none}
+  #avisoIdioma .texto{flex:1 1 auto;min-width:0}
+  #avisoIdioma .ver{flex:0 0 auto;white-space:nowrap;background:var(--accent,#2db7fa);color:#04121a;
+    text-decoration:none;font-weight:700;border-radius:999px;padding:6px 14px}
+  #avisoIdioma .cerrar{flex:0 0 auto;background:none;border:none;color:inherit;opacity:.5;cursor:pointer;
+    font-size:16px;line-height:1;padding:4px 8px}
+  @media (max-width:560px){
+    /* En pantallas angostas el texto no entra en una linea: deja de ser pastilla */
+    #avisoIdioma{border-radius:16px;padding:12px 12px 12px 16px;font-size:12.5px;gap:10px}
+  }
+</style>
+<div id="avisoIdioma" hidden>
+  <span class="texto">This page is also available in English</span>
+  <a class="ver" href="/en/" hreflang="en">View in English</a>
+  <button class="cerrar" type="button" onclick="cerrarAvisoIdioma()" aria-label="Close">&times;</button>
 </div>
 <script>
   function cerrarAvisoIdioma(){
