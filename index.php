@@ -269,7 +269,7 @@ $og_alt = $en
     .insignia .punto,.foto-taller .flotante .punto{animation:latido 2.6s ease-in-out infinite}
     @keyframes latido{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(45,183,250,.35)}
       50%{transform:scale(1.12);box-shadow:0 0 0 5px rgba(45,183,250,0)}}
-    @media (prefers-reduced-motion: reduce){ .h1-serena .palabra{opacity:1} .cinta-pista{transform:none !important}
+    @media (prefers-reduced-motion: reduce){ .h1-serena .palabra{opacity:1}
       .linea-fx,.punto-fx,.flota-fx,.insignia .punto,.foto-taller .flotante .punto{animation:none} }
     @media (prefers-reduced-motion: reduce){ #cargador{display:none} .anim-oculto{opacity:1} }
   </style>
@@ -377,17 +377,13 @@ $og_alt = $en
     [data-theme="light"] .aurora i{mix-blend-mode:multiply}
     .hero .cont,.hero-visual{position:relative;z-index:1}
 
-    /* Cinta de materiales: se desliza sin parar de derecha a izquierda */
-    .cinta{position:relative;overflow:hidden;padding:20px 0;
-        border-top:1px solid var(--bd-suave);border-bottom:1px solid var(--bd-suave);
-        background:var(--surface);
-        -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
-        mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
-    .cinta-pista{display:flex;align-items:center;gap:0;width:max-content;will-change:transform}
-    .cinta-pista span{font-family:var(--titulos);font-size:15px;font-weight:700;letter-spacing:.14em;
-        color:var(--txt-3);padding:0 26px;white-space:nowrap;transition:color .25s ease}
-    .cinta:hover .cinta-pista span{color:var(--txt-2)}
-    .cinta-pista em{width:5px;height:5px;border-radius:50%;background:var(--accent);opacity:.5;flex:0 0 auto}
+    /* Titulos que suben desde atras de una linea invisible */
+    .palabra-mask{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.08em}
+    .palabra-mask > i{display:inline-block;font-style:inherit;will-change:transform}
+
+    /* Perspectiva para que las tarjetas entren girando */
+    .bento,.planes-grilla,.beneficios{perspective:1400px}
+    .caja,.plan,.beneficio,.faq details{will-change:transform,opacity}
 
     /* Cuanto llevas leido de la pagina */
     #progreso{position:fixed;top:0;left:0;height:2px;width:100%;transform:scaleX(0);transform-origin:0 50%;
@@ -726,21 +722,6 @@ $og_alt = $en
       </div>
     </div>
 
-    <div class="cinta" aria-hidden="true">
-      <div class="cinta-pista">
-        <?php
-        // Se repite dos veces para que el bucle no tenga costura
-        $materiales = ['PLA', 'PETG', 'ABS', 'TPU', 'ASA', 'PC', 'NYLON', 'PLA+', 'PLA SILK', 'PETG CF',
-                       'RESINA', 'HIPS', 'PVA', 'WOOD FILL', 'CARBON'];
-        for ($vuelta = 0; $vuelta < 2; $vuelta++) {
-            foreach ($materiales as $m) {
-                echo '<span>' . $m . '</span><em></em>';
-            }
-        }
-        ?>
-      </div>
-    </div>
-
     <section id="herramientas">
       <div class="cont">
         <div class="cabeza">
@@ -1048,19 +1029,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // ---- La cinta de materiales, en bucle infinito y sin costura ----
-  // La pista tiene la lista dos veces: al llegar a la mitad vuelve a cero y no se nota.
-  var pista = document.querySelector('.cinta-pista');
-  if (pista) {
-    var cinta = gsap.to(pista, {
-      xPercent: -50, duration: 38, ease: 'none', repeat: -1
-    });
-    // Al pasar el mouse frena, para que se pueda leer
-    var caja = pista.parentElement;
-    caja.addEventListener('pointerenter', function () { gsap.to(cinta, { timeScale: 0.25, duration: 0.5 }); });
-    caja.addEventListener('pointerleave', function () { gsap.to(cinta, { timeScale: 1, duration: 0.6 }); });
-  }
-
   // ---- Barra de lectura ----
   var barraLeer = document.getElementById('progreso');
   if (barraLeer) {
@@ -1076,35 +1044,115 @@ document.addEventListener('DOMContentLoaded', function () {
     avance();
   }
 
-  // ---- Aparicion por secciones, no de a una tarjeta suelta ----
-  // Cada grupo entra junto y escalonado: se lee como una sola idea que llega,
-  // en vez de seis cajas apareciendo cada una por su cuenta.
-  var grupos = [
-    ['#herramientas .cabeza', '#herramientas .bento .caja', '#herramientas .cont > div:last-child'],
-    ['.comunidad .cabeza', '.comunidad .foto-taller', '.comunidad .beneficio'],
-    ['#planes .cabeza', '#planes .moneda-sel', '#planes .plan'],
-    ['#faq .cabeza', '#faq details'],
-    ['.cierre .cont']
-  ];
+  // ---- Titulos: cada palabra sube desde atras de una linea ----
+  function partirEnPalabras(el) {
+    if (!el || el.dataset.partido) return [];
+    var palabras = el.textContent.trim().split(/\s+/);
+    el.textContent = '';
+    var piezas = palabras.map(function (p, i) {
+      var caja = document.createElement('span');
+      caja.className = 'palabra-mask';
+      var dentro = document.createElement('i');
+      dentro.textContent = p;
+      caja.appendChild(dentro);
+      el.appendChild(caja);
+      if (i < palabras.length - 1) el.appendChild(document.createTextNode(' '));
+      return dentro;
+    });
+    el.dataset.partido = '1';
+    return piezas;
+  }
 
-  grupos.forEach(function (selectores) {
-    var partes = selectores.map(function (q) { return gsap.utils.toArray(q); }).filter(function (a) { return a.length; });
-    if (!partes.length) return;
-    var todos = partes.reduce(function (a, b) { return a.concat(b); }, []);
-    gsap.set(todos, { opacity: 0, y: 34 });
+  /**
+   * Cada seccion entra con su propia coreografia.
+   *
+   * Importante: el estado inicial se deja puesto de entrada (esconder), y
+   * recien cuando la seccion asoma se anima hacia el estado final. Si se
+   * hiciera al reves (from()), las tarjetas estarian visibles hasta que les
+   * toca el turno y se veria un parpadeo.
+   */
+  function coreografia(selector, esconder, mostrar) {
+    var el = document.querySelector(selector);
+    if (!el) return;
 
-    var obs = new IntersectionObserver(function (entradas, o) {
-      entradas.forEach(function (e) {
-        if (!e.isIntersecting) return;
-        o.disconnect();
-        var tlg = gsap.timeline({ defaults: { duration: 0.7, ease: 'power3.out' } });
-        partes.forEach(function (grupo, i) {
-          tlg.to(grupo, { opacity: 1, y: 0, stagger: { each: 0.07, from: 'start' } }, i === 0 ? 0 : '-=0.45');
-        });
-      });
-    }, { rootMargin: '0px 0px -80px 0px' });
-    obs.observe(todos[0].closest('section') || todos[0]);
-  });
+    var titulo = el.querySelector('.cabeza h2');
+    var palabras = partirEnPalabras(titulo);
+    if (palabras.length) gsap.set(palabras, { yPercent: 115 });
+    gsap.set(el.querySelectorAll('.cabeza .ceja, .cabeza p'), { opacity: 0, y: 18 });
+    esconder(el);
+
+    new IntersectionObserver(function (entradas, o) {
+      if (!entradas[0].isIntersecting) return;
+      o.disconnect();
+      var tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      tl.to(el.querySelectorAll('.cabeza .ceja'), { opacity: 1, y: 0, duration: 0.5 }, 0)
+        .to(el.querySelectorAll('.cabeza h2 .palabra-mask > i'),
+            { yPercent: 0, duration: 0.95, ease: 'power4.out', stagger: 0.055 }, 0.05)
+        .to(el.querySelectorAll('.cabeza p'), { opacity: 1, y: 0, duration: 0.6 }, 0.35);
+      mostrar(tl, el);
+    }, { rootMargin: '0px 0px -12% 0px' }).observe(el);
+  }
+
+  // Herramientas: las tarjetas llegan girando desde abajo
+  coreografia('#herramientas',
+    function (el) {
+      gsap.set(el.querySelectorAll('.bento .caja'),
+        { opacity: 0, y: 90, rotationX: -22, scale: 0.94, transformOrigin: '50% 100%' });
+      gsap.set(el.querySelector('.cont > div:last-child'), { opacity: 0, y: 24 });
+    },
+    function (tl, el) {
+      tl.to(el.querySelectorAll('.bento .caja'), {
+        opacity: 1, y: 0, rotationX: 0, scale: 1, duration: 1, stagger: 0.09
+      }, 0.3)
+        .to(el.querySelector('.cont > div:last-child'), { opacity: 1, y: 0, duration: 0.6 }, '-=0.4');
+    });
+
+  // Comunidad: la foto entra desde la izquierda y los beneficios desde la derecha
+  coreografia('.comunidad',
+    function (el) {
+      gsap.set(el.querySelector('.foto-taller'), { opacity: 0, x: -70, rotationY: 10 });
+      gsap.set(el.querySelectorAll('.beneficio'), { opacity: 0, x: 60 });
+      gsap.set(el.querySelector('.foto-taller .flotante'), { opacity: 0, scale: 0.6 });
+    },
+    function (tl, el) {
+      tl.to(el.querySelector('.foto-taller'), { opacity: 1, x: 0, rotationY: 0, duration: 1.05 }, 0.25)
+        .to(el.querySelectorAll('.beneficio'), { opacity: 1, x: 0, duration: 0.75, stagger: 0.08 }, 0.4)
+        .to(el.querySelector('.foto-taller .flotante'),
+            { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(2)' }, 0.9);
+    });
+
+  // Planes: rebotan al llegar, desde el centro hacia los costados
+  coreografia('#planes',
+    function (el) {
+      gsap.set(el.querySelector('.moneda-sel'), { opacity: 0, y: 18 });
+      gsap.set(el.querySelectorAll('.plan'), { opacity: 0, y: 80, scale: 0.9 });
+    },
+    function (tl, el) {
+      tl.to(el.querySelector('.moneda-sel'), { opacity: 1, y: 0, duration: 0.5 }, 0.3)
+        .to(el.querySelectorAll('.plan'), {
+          opacity: 1, y: 0, scale: 1, duration: 0.9, ease: 'back.out(1.5)',
+          stagger: { each: 0.11, from: 'center' }
+        }, 0.4);
+    });
+
+  // FAQ: las preguntas entran una atras de otra desde la izquierda
+  coreografia('#faq',
+    function (el) { gsap.set(el.querySelectorAll('details'), { opacity: 0, x: -45 }); },
+    function (tl, el) {
+      tl.to(el.querySelectorAll('details'), { opacity: 1, x: 0, duration: 0.6, stagger: 0.07 }, 0.3);
+    });
+
+  // Cierre: el bloque final crece desde el centro
+  (function () {
+    var el = document.querySelector('.cierre .cont');
+    if (!el) return;
+    gsap.set(el, { opacity: 0, y: 50, scale: 0.96 });
+    new IntersectionObserver(function (e, o) {
+      if (!e[0].isIntersecting) return;
+      o.disconnect();
+      gsap.to(el, { opacity: 1, y: 0, scale: 1, duration: 1, ease: 'power3.out' });
+    }, { rootMargin: '0px 0px -12% 0px' }).observe(el);
+  })();
 
   // ---- Los numeros del hero cuentan hasta su valor ----
   gsap.utils.toArray('.hero .stat b').forEach(function (b) {
