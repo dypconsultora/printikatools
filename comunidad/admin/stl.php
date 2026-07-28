@@ -56,8 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $extK = strtolower(pathinfo($_FILES['archivos']['name'][$k], PATHINFO_EXTENSION));
             if (!in_array($extK, ['stl', 'zip', '3mf', 'obj'], true)) {
                 $error = 'El archivo ' . ($k + 1) . ' tiene que ser STL, 3MF, OBJ o ZIP.';
-            } elseif ($_FILES['archivos']['size'][$k] > 60 * 1024 * 1024) {
-                $error = 'El archivo ' . ($k + 1) . ' no puede superar los 60 MB.';
+            } elseif ($_FILES['archivos']['size'][$k] > 200 * 1024 * 1024) {
+                $error = 'El archivo ' . ($k + 1) . ' no puede superar los 200 MB.';
             } else {
                 $archivos[] = ['tmp' => $_FILES['archivos']['tmp_name'][$k],
                                'ext' => $extK, 'tam' => (int) $_FILES['archivos']['size'][$k]];
@@ -175,7 +175,7 @@ ui_panel_inicio('Cargar STL', $yo, 'Cargar STL', '../');
         <option>Juguetes</option><option>Repuestos</option>
       </datalist>
       <div class="fila2">
-        <span><label for="s-arch">Archivo STL / 3MF / OBJ / ZIP * (máx. 60 MB)</label>
+        <span><label for="s-arch">Archivo STL / 3MF / OBJ / ZIP * (máx. 200 MB)</label>
           <input id="s-arch" type="file" name="archivos[]" accept=".stl,.zip,.3mf,.obj" required>
           <p style="font-size:12px;color:var(--txt-3);margin-top:4px">Si el modelo tiene varias piezas, subilas juntas en un ZIP.
             Límite del servidor: <?php echo htmlspecialchars(ini_get('upload_max_filesize')); ?> por archivo.</p></span>

@@ -72,7 +72,26 @@ function ui_css() { ?>
 function ptTema(t){document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');localStorage.setItem('ptools_tema',t);}
 function ptIdioma(){try{var v=localStorage.getItem('ptools_idioma');if(v==='es'||v==='en')return v;}catch(e){}
   return ((navigator.language||'es').toLowerCase().indexOf('es')===0)?'es':'en';}
-function ptIdiomaSet(v){try{localStorage.setItem('ptools_idioma',v);}catch(e){}location.reload();}
+function ptIdiomaGuardar(v){
+  try{localStorage.setItem('ptools_idioma',v);}catch(e){}
+  // La cookie es para el servidor: los nombres de los meses los arma PHP y
+  // localStorage no viaja en el pedido.
+  document.cookie='ptools_idioma='+v+';path=/;max-age=31536000;samesite=Lax';
+}
+function ptIdiomaSet(v){ptIdiomaGuardar(v);location.reload();}
+// Al entrar, si ya habia una preferencia guardada pero todavia no hay cookie
+// (o quedo vieja), se sincroniza y se recarga una unica vez.
+(function(){
+  var v=null; try{v=localStorage.getItem('ptools_idioma');}catch(e){}
+  if(v!=='es'&&v!=='en') v=((navigator.language||'es').toLowerCase().indexOf('es')===0)?'es':'en';
+  if(document.cookie.indexOf('ptools_idioma='+v)===-1){
+    ptIdiomaGuardar(v);
+    if(!sessionStorage.getItem('pt_idioma_sync')){
+      sessionStorage.setItem('pt_idioma_sync','1');
+      location.reload();
+    }
+  }
+})();
 document.addEventListener('DOMContentLoaded',function(){
   document.querySelectorAll('.idioma button').forEach(function(b){
     b.classList.toggle('activo',b.dataset.idi===ptIdioma());

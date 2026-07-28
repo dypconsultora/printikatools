@@ -37,7 +37,7 @@ if (isset($_GET['csv'])) {
     for ($i = 11; $i >= 0; $i--) {
         $t = strtotime("-{$i} month", mktime(0, 0, 0, $mes, 1, $anio));
         [$si, $sg] = taller_resumen_mes($uid, (int) date('Y', $t), (int) date('n', $t));
-        fputcsv($out, [TALLER_MESES[(int) date('n', $t)] . ' ' . date('Y', $t),
+        fputcsv($out, [taller_mes(date('n', $t)) . ' ' . date('Y', $t),
                        number_format($si, 2, ',', ''), number_format($sg, 2, ',', ''),
                        number_format($si - $sg, 2, ',', '')], ';', '"', '');
     }
@@ -90,7 +90,7 @@ ui_panel_inicio('Estadísticas', $u, 'Estadísticas');
     </style>
 
     <div class="ganancia-caja">
-      <small>Ganancia de <?php echo TALLER_MESES[$mes] . ' ' . $anio; ?></small>
+      <small>Ganancia de <?php echo taller_mes($mes) . ' ' . $anio; ?></small>
       <b style="color:<?php echo $ganancia >= 0 ? 'var(--ok)' : 'var(--bad)'; ?>"><?php echo taller_precio($ganancia); ?></b>
     </div>
 
@@ -112,7 +112,7 @@ ui_panel_inicio('Estadísticas', $u, 'Estadísticas');
       <div class="leyenda"><span><i class="vi"></i>Ingresos</span><span><i class="vg"></i>Gastos</span></div>
       <div class="grafico">
         <?php foreach ($serie as $p): ?>
-          <div class="mes-g" title="<?php echo TALLER_MESES[(int) date('n', $p['ts'])] . ': '
+          <div class="mes-g" title="<?php echo taller_mes(date('n', $p['ts'])) . ': '
               . taller_precio($p['ingresos']) . ' / ' . taller_precio($p['gastos']); ?>">
             <i class="bi" style="height:<?php echo round($p['ingresos'] / $maximo * 100, 1); ?>%"></i>
             <i class="bg" style="height:<?php echo round($p['gastos'] / $maximo * 100, 1); ?>%"></i>
@@ -121,7 +121,7 @@ ui_panel_inicio('Estadísticas', $u, 'Estadísticas');
       </div>
       <div class="ejes">
         <?php foreach ($serie as $p): ?>
-          <span><?php echo strtolower(mb_substr(TALLER_MESES[(int) date('n', $p['ts'])], 0, 3)) . " '" . date('y', $p['ts']); ?></span>
+          <span><?php echo taller_mes_corto(date('n', $p['ts'])) . " '" . date('y', $p['ts']); ?></span>
         <?php endforeach; ?>
       </div>
 
@@ -131,7 +131,7 @@ ui_panel_inicio('Estadísticas', $u, 'Estadísticas');
         <?php foreach ($serie as $p): $g = $p['ingresos'] - $p['gastos']; ?>
           <tr>
             <td><a href="ventas.php?mes=<?php echo date('Y-m', $p['ts']); ?>" style="color:var(--txt)">
-              <?php echo TALLER_MESES[(int) date('n', $p['ts'])] . ' ' . date('Y', $p['ts']); ?></a></td>
+              <?php echo taller_mes(date('n', $p['ts'])) . ' ' . date('Y', $p['ts']); ?></a></td>
             <td class="num" style="color:var(--ok)"><?php echo taller_precio($p['ingresos']); ?></td>
             <td class="num" style="color:var(--bad)"><?php echo taller_precio($p['gastos']); ?></td>
             <td class="num" style="color:<?php echo $g >= 0 ? 'var(--ok)' : 'var(--bad)'; ?>">

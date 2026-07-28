@@ -2208,12 +2208,22 @@ body.en-panel #newsModal { display: none !important; }
       return;
     }
 
+    // Las etiquetas del grafico se arman por JavaScript cada vez que cambia
+    // un numero, asi que el diccionario no las alcanza: van escritas
+    // directamente en el idioma activo.
+    const enIngles = typeof ptIdioma === 'function' && ptIdioma() === 'en';
+    const nombres = enIngles
+      ? { mat: 'Material', elec: 'Electricity', labor: 'Labor',
+          dep: 'Depreciation', add: 'Additional costs' }
+      : { mat: 'Material', elec: 'Electricidad', labor: 'Mano de obra',
+          dep: 'Depreciación', add: 'Adicionales' };
+
     const segments = [
-      { name: 'Material', value: mat, color: 'var(--chart-material)' },
-      { name: 'Electricidad', value: elec, color: 'var(--chart-electric)' },
-      { name: 'Mano de obra', value: labor, color: 'var(--chart-labor)' },
-      { name: 'Depreciacion', value: dep, color: 'var(--chart-depreciation)' },
-      { name: 'Adicionales', value: add, color: 'var(--chart-additional)' },
+      { name: nombres.mat,   value: mat,   color: 'var(--chart-material)' },
+      { name: nombres.elec,  value: elec,  color: 'var(--chart-electric)' },
+      { name: nombres.labor, value: labor, color: 'var(--chart-labor)' },
+      { name: nombres.dep,   value: dep,   color: 'var(--chart-depreciation)' },
+      { name: nombres.add,   value: add,   color: 'var(--chart-additional)' },
     ].filter(s => s.value > 0);
 
     let cumPct = 0;

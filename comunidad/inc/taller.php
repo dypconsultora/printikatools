@@ -429,6 +429,33 @@ function taller_logo_url($usuario, $prefijo = '') {
 const TALLER_MESES = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
                       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
+const TALLER_MESES_EN = ['', 'January', 'February', 'March', 'April', 'May', 'June',
+                         'July', 'August', 'September', 'October', 'November', 'December'];
+
+/**
+ * Idioma elegido, visto desde el servidor.
+ *
+ * Los meses los arma PHP y el traductor de la plataforma es de JavaScript, asi
+ * que no los alcanza. Por eso el idioma tambien viaja en una cookie
+ * (la escribe ptIdiomaGuardar en inc/ui.php).
+ */
+function taller_idioma() {
+    return (($_COOKIE['ptools_idioma'] ?? '') === 'en') ? 'en' : 'es';
+}
+
+/** Nombre del mes en el idioma activo. */
+function taller_mes($n) {
+    $n = (int) $n;
+    return taller_idioma() === 'en' ? (TALLER_MESES_EN[$n] ?? '') : (TALLER_MESES[$n] ?? '');
+}
+
+/** Abreviatura del mes, como se ve abajo de las barras del grafico. */
+function taller_mes_corto($n) {
+    return taller_idioma() === 'en'
+        ? mb_substr(taller_mes($n), 0, 3)              // Jan, Feb, Mar
+        : mb_strtolower(mb_substr(taller_mes($n), 0, 3));  // ene, feb, mar
+}
+
 /** Barra de navegación de mes (flechas + selector de últimos 24 meses + Exportar CSV). */
 function taller_nav_mes($pagina, $anio, $mes) {
     $ts = mktime(0, 0, 0, $mes, 1, $anio);
@@ -452,7 +479,7 @@ function taller_nav_mes($pagina, $anio, $mes) {
             $t = strtotime("-{$i} month", mktime(0, 0, 0, (int) date('n'), 1, (int) date('Y')));
             $v = date('Y-m', $t); ?>
           <option value="<?php echo $v; ?>" <?php echo $v === sprintf('%04d-%02d', $anio, $mes) ? 'selected' : ''; ?>>
-            <?php echo TALLER_MESES[(int) date('n', $t)] . ' ' . date('Y', $t); ?></option>
+            <?php echo taller_mes(date('n', $t)) . ' ' . date('Y', $t); ?></option>
         <?php endfor; ?>
       </select>
       <a class="flecha<?php echo $es_actual ? ' off' : ''; ?>" href="<?php echo $pagina; ?>?mes=<?php echo $next; ?>" aria-label="Mes siguiente">&rsaquo;</a>

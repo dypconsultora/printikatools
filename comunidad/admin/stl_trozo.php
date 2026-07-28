@@ -62,12 +62,12 @@ if (empty($_FILES['trozo']['tmp_name']) || !is_uploaded_file($_FILES['trozo']['t
     exit;
 }
 
-// Tope de seguridad: 80 MB armados. Sin esto, alguien podria llenar el disco.
+// Tope de seguridad: 200 MB armados. Sin esto, alguien podria llenar el disco.
 $yaHay = is_file($destino) ? filesize($destino) : 0;
-if ($yaHay + $_FILES['trozo']['size'] > 80 * 1024 * 1024) {
+if ($yaHay + $_FILES['trozo']['size'] > 200 * 1024 * 1024) {
     @unlink($destino);
     http_response_code(413);
-    echo json_encode(['ok' => false, 'error' => 'El archivo supera los 80 MB']);
+    echo json_encode(['ok' => false, 'error' => 'El archivo supera los 200 MB']);
     exit;
 }
 
