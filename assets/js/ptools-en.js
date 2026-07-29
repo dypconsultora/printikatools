@@ -254,6 +254,86 @@
     'Pedir un enlace nuevo': 'Request a new link',
     'Las contraseñas no coinciden.': 'The passwords do not match.',
     'La contraseña debe tener al menos 8 caracteres.': 'The password must be at least 8 characters.',
+    'Printika Pro Anual': 'Printika Pro Annual',
+    '2 meses gratis': '2 months free',
+    '2 meses sin cargo': '2 months at no cost',
+    // Adelanto de las secciones con candado (comunidad/inc/vistazo.php)
+    'Incluido en el plan completo': 'Included in the full plan',
+    'Elegí abajo con qué plan lo desbloqueás.': 'Choose below which plan unlocks it.',
+    'Ver los planes': 'See the plans',
+    'Estás en el plan Gratuito: tenés la calculadora y los recursos. El plan completo suma la librería STL, todo Mi taller y el soporte por Telegram.':
+      'You are on the Free plan: you have the calculator and the resources. The full plan adds the STL library, all of My Workshop and Telegram support.',
+    'Para probar y empezar': 'To try it out and get started',
+    'Calculadora de costos online': 'Online cost calculator',
+    'Cálculo en ARS, USD y EUR': 'Pricing in ARS, USD and EUR',
+    'Recursos en videos y PDF': 'Video and PDF resources',
+    'Librería STL completa': 'Full STL library',
+    'Soporte por Telegram': 'Telegram support',
+    // Librería STL
+    'Modelos listos para imprimir y vender, sin buscar por internet.': 'Models ready to print and sell, without hunting around the internet.',
+    'Una biblioteca que crece todos los meses, con archivos probados en impresora antes de publicarlos. Los bajás y los imprimís, sin sorpresas.':
+      'A library that grows every month, with files tested on a printer before we publish them. You download and print, no surprises.',
+    'Modelos nuevos todos los meses': 'New models every month',
+    'Probados antes de publicarse: no vas a perder filamento': 'Tested before publishing: you will not waste filament',
+    'Descarga directa, sin registrarte en otro lado': 'Direct download, no signing up somewhere else',
+    // Presupuestos
+    'Presupuestos con tu logo, en PDF, en menos de un minuto.': 'Quotes with your logo, as a PDF, in under a minute.',
+    'Elegís el cliente, cargás las piezas y sale el PDF armado con tus datos y tu marca. Se acabó el "te paso el precio por WhatsApp" a mano.':
+      'Pick the client, add the pieces and out comes a PDF with your details and your brand. No more typing prices into WhatsApp by hand.',
+    'PDF con tu logo y tus datos': 'PDF with your logo and your details',
+    'Quedan todos guardados y los buscás cuando quieras': 'They all stay saved and you can search them anytime',
+    'Del presupuesto a la venta, sin volver a cargar nada': 'From quote to sale without re-entering anything',
+    // Productos
+    'Tus piezas con su precio ya calculado, listas para presupuestar.': 'Your pieces with their price already worked out, ready to quote.',
+    'Cargás una vez lo que imprimís seguido, con su costo real, y después lo usás en cualquier presupuesto con un clic.':
+      'Enter what you print often once, with its real cost, then use it in any quote with one click.',
+    'El precio se calcula solo con tu costo de filamento': 'The price works itself out from your filament cost',
+    'Se reutilizan en presupuestos y ventas': 'Reused across quotes and sales',
+    'Si cambia el filamento, actualizás en un solo lugar': 'If filament prices change, you update in one place',
+    // Clientes
+    'Toda tu clientela junta, con lo que le vendiste a cada uno.': 'All your clients in one place, with what you sold each of them.',
+    'Dejás de buscar el teléfono en la agenda y el pedido viejo en el chat. Cada cliente con sus datos, sus presupuestos y sus compras.':
+      'No more digging for a phone number in your contacts and an old order in a chat. Each client with their details, quotes and purchases.',
+    'Datos, teléfono y dirección en un solo lugar': 'Details, phone and address in one place',
+    'El historial de lo que le vendiste': 'The history of what you sold them',
+    'Se completa solo al hacer un presupuesto': 'Fills itself in as you make a quote',
+    // Stock
+    'Stock de materiales': 'Materials stock',
+    'Cuánto filamento te queda, y cuánto te costó de verdad.': 'How much filament you have left, and what it really cost you.',
+    'Cargás cada rollo con lo que pagaste y el sistema descuenta lo que vas usando. Así el precio que cobrás sale de tu costo real, no de un cálculo de hace seis meses.':
+      'Enter each spool with what you paid and the system subtracts what you use. That way your price comes from your real cost, not from a calculation you did six months ago.',
+    'Cuánto queda de cada rollo': 'How much is left of each spool',
+    'Aviso cuando se está por acabar': 'A heads-up when one is running out',
+    'Tus costos reales alimentan la calculadora': 'Your real costs feed the calculator',
+    // Ventas
+    'Lo que vendiste, lo que cobraste y lo que te falta cobrar.': 'What you sold, what you got paid, and what is still owed.',
+    'Cada venta con su cliente, su fecha y su estado de pago. Sin planilla aparte y sin acordarte de memoria quién te debe.':
+      'Every sale with its client, date and payment status. No separate spreadsheet and no remembering from memory who owes you.',
+    'Cobrado y pendiente, separado': 'Paid and outstanding, kept apart',
+    'Nace del presupuesto: no cargás dos veces': 'Born from the quote: you never enter it twice',
+    'Alimenta las estadísticas del taller': 'Feeds your workshop statistics',
+    // Estadísticas
+    'Si tu taller gana plata, y con qué la gana.': 'Whether your workshop makes money, and what makes it.',
+    'Cuánto facturaste por mes, qué piezas dejan más margen y quiénes son tus mejores clientes. Es la diferencia entre imprimir y tener un negocio.':
+      'How much you billed each month, which pieces leave the most margin and who your best clients are. It is the difference between printing and running a business.',
+    'Facturación mes a mes': 'Month-by-month billing',
+    'Qué te deja margen y qué no': 'What leaves you margin and what does not',
+    'Tus mejores clientes, ordenados': 'Your best clients, ranked',
+    // Configuración
+    'Configuración del taller': 'Workshop settings',
+    'Tu logo, tus datos y tu moneda en todo lo que sale a la calle.': 'Your logo, your details and your currency on everything that goes out.',
+    'Los presupuestos salen con tu marca y no con la nuestra. También elegís la moneda y activás la verificación en dos pasos.':
+      'Quotes go out with your brand, not ours. You also pick the currency and turn on two-step verification.',
+    'Tu logo en los PDF': 'Your logo on the PDFs',
+    'Moneda a elección (ARS, USD, EUR)': 'Currency of your choice (ARS, USD, EUR)',
+    'Verificación en dos pasos': 'Two-step verification',
+    // Telegram
+    'Preguntá y te contestamos, sin formularios ni esperas de días.': 'Ask and we answer, no forms and no waiting days.',
+    'El grupo privado donde están los que ya viven de esto: consultas de precios, de materiales y de máquina, con respuesta de gente que imprime todos los días.':
+      'The private group where people already making a living from this hang out: questions about pricing, materials and machines, answered by people who print every day.',
+    'Respuesta rápida a tus consultas': 'Quick answers to your questions',
+    'Grupo privado sólo para suscriptores': 'Private group for subscribers only',
+    'Novedades y herramientas nuevas primero': 'News and new tools first',
     // Verificación de correo
     'Confirmá tu correo': 'Confirm your email',
     'Hasta que confirmes, la cuenta queda en espera.': 'Until you confirm, your account stays on hold.',

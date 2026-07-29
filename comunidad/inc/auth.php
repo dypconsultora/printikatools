@@ -100,7 +100,10 @@ function requerir_miembro() {
     }
     com_exigir_email_verificado();
     if (!acceso_total()) {
-        header('Location: suscripcion.php');
+        // Se avisa QUE seccion quiso abrir, para poder mostrarle un adelanto de
+        // esa y no un cartel generico que no le dice nada
+        $clave = basename((string) ($_SERVER['SCRIPT_NAME'] ?? ''), '.php');
+        header('Location: suscripcion.php?bloqueado=' . urlencode($clave));
         exit;
     }
 }

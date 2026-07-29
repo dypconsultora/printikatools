@@ -399,7 +399,7 @@ function ui_menu() {
     return [
         'Plataforma' => [
             ['calculadora',  'Calculadora',   'calculadora.php', true, false],
-            ['libreria',     'Librería STL',  'libreria.php', true, false],
+            ['libreria',     'Librería STL',  'libreria.php', true, true],
             ['recursos',     'Recursos', [['pdf', 'PDF', 'recursos.php?tab=pdf'],
                                           ['video', 'Videos', 'recursos.php?tab=videos']], true, false],
         ],
@@ -413,7 +413,7 @@ function ui_menu() {
             ['configuracion','Configuración', 'configuracion.php', true, true],
         ],
         'Soporte' => [
-            ['telegram', 'Telegram', 'https://t.me/+N5f7IcWPXihhMWQx', true, false],
+            ['telegram', 'Telegram', 'https://t.me/+N5f7IcWPXihhMWQx', true, true],
         ],
     ];
 }
@@ -551,8 +551,13 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
                 <?php echo ui_icono($hicono, 15); ?><?php echo htmlspecialchars($hnombre); ?></a>
             <?php endforeach; ?>
           </div>
-        <?php elseif ($ok && $pago && !$conTodo): ?>
-          <a class="item bloq" href="<?php echo $raiz; ?>suscripcion.php" title="Disponible en el plan completo">
+        <?php elseif ($ok && $pago && !$conTodo):
+            // El candado lleva la seccion puesta: asi la pantalla de planes
+            // puede mostrar un adelanto de LO QUE ESA persona quiso abrir, en
+            // vez de un cartel generico igual para todo
+            $clave = str_starts_with((string) $href, 'http') ? 'telegram' : basename((string) $href, '.php'); ?>
+          <a class="item bloq" href="<?php echo $raiz; ?>suscripcion.php?bloqueado=<?php echo urlencode($clave); ?>"
+             title="Disponible en el plan completo">
             <?php echo ui_icono($icono); ?><?php echo htmlspecialchars($nombre); ?>
             <span class="candado"><?php echo ui_icono('candado', 14); ?></span>
           </a>

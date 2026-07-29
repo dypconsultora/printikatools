@@ -7,7 +7,7 @@ require_once __DIR__ . '/inc/auth.php';
 require_once __DIR__ . '/inc/ui.php';
 require_once __DIR__ . '/inc/taller.php';
 
-requerir_usuario();
+requerir_miembro();
 $u = usuario_actual();
 taller_migrar();
 $db = com_db();

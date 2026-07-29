@@ -22,6 +22,17 @@ arrancar una sesión nueva sin tener que redescubrir todo.
 | Pro mensual | ARS 18.000 | `COMUNIDAD_PRECIO_MENSUAL` en `comunidad/inc/bootstrap.php` |
 | Pro anual | ARS 180.000 | `COMUNIDAD_PRECIO_ANUAL` (2 meses de regalo) |
 
+**Qué entra en cada plan.** Gratis: calculadora y recursos, nada más. Pro: además la
+librería STL, todo Mi taller y el soporte por Telegram. Quién es Pro se marca con la
+última bandera de cada item en `ui_menu()`, y la pantalla se protege con
+`requerir_miembro()`. Las dos cosas van juntas: la bandera pinta el candado, la
+función es la que realmente bloquea.
+
+Al tocar un candado no se muestra un cartel genérico: `comunidad/inc/vistazo.php`
+tiene, por sección, qué es y para qué sirve, más una captura real de esa pantalla
+(`assets/img/vistazo/`, una por idioma). Se regeneran entrando como admin con datos
+de ejemplo y sacando la foto sin el menú lateral.
+
 Los precios **siempre** salen de esas constantes. Ya hubo dos bugs por escribirlos
 a mano en una pantalla y que quedaran desactualizados.
 
