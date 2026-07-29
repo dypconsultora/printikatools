@@ -344,12 +344,13 @@ $og_alt = $en
          justify-content:space-between;height:104px;gap:14px}
     .nav .marca img{height:84px;width:auto;display:block}
     .nav nav{display:flex;align-items:center;gap:20px}
-    .nav nav a{color:var(--txt-2);font-size:14px;font-weight:500;white-space:nowrap;transition:color .15s ease}
+    .nav nav a{color:var(--txt-2);font-family:var(--titulos);font-size:15.5px;font-weight:500;
+         letter-spacing:-.005em;white-space:nowrap;transition:color .15s ease}
     .nav nav a:hover{color:var(--txt)}
-    .nav .btn{height:38px;padding:0 16px;font-size:13.5px}
+    .nav .btn{height:40px;padding:0 18px;font-size:14.5px;font-family:var(--titulos);font-weight:600}
     .nav nav a.btn{color:var(--accent-ink)}
     .nav nav a.btn:hover{color:var(--accent-ink)}
-    .nav nav a.entrar{color:var(--txt)}
+    .nav nav a.entrar{color:var(--txt);font-weight:500}
     .tema{display:inline-flex;gap:3px;background:var(--surface-2);border:1px solid var(--bd-suave);
           border-radius:99px;padding:3px}
     .tema-btn{display:flex;align-items:center;justify-content:center;width:32px;height:28px;
@@ -606,7 +607,8 @@ $og_alt = $en
       /* Se achican los TRES juntos: si solo se achica el encabezado, el logo
          deja de alinear con el titulo de abajo. */
       .cont,.nav .cont,footer .cont{padding:0 clamp(28px,4vw,56px)}
-      .nav nav{gap:15px}
+      .nav .marca img{height:72px}
+      .nav nav{gap:14px}
     }
     @media (max-width:1100px){
       .nav nav a.link-seccion{display:none}
