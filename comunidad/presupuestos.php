@@ -107,6 +107,12 @@ ui_panel_inicio('Presupuestos', $u, 'Presupuestos');
       td form{margin:0}
       .vacio{padding:52px 20px;text-align:center;color:var(--txt-2);font-size:14px}
       @media (max-width:900px){ .tabla-scroll{overflow-x:auto} }
+      /* Las tres pestañas mas el "Ordenar" no entran en un telefono angosto */
+      @media (max-width:560px){
+        .tabs{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+        .tab{padding:10px;font-size:13.5px;white-space:nowrap}
+        .orden{width:100%;justify-content:flex-end;padding-bottom:8px}
+      }
     </style>
 
     <form class="buscador" method="get">

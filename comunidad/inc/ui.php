@@ -45,6 +45,7 @@ function ui_icono($nombre, $tam = 18) {
         'video'        => '<path d="m10 7 5 3-5 3Z"/><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M12 17v4"/><path d="M8 21h8"/>',
         'ojo'          => '<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>',
         'correo'       => '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+        'menu'         => '<line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/>',
         'ojo-cerrado'  => '<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
     ];
     $d = $trazos[$nombre] ?? $trazos['inicio'];
@@ -256,7 +257,9 @@ function ui_tarjeta_inicio($titulo) { ?>
   }
   .tarjeta{background:var(--surface);border:1px solid var(--bd-suave);border-radius:var(--radio-g);
            padding:40px 36px;width:100%;max-width:400px}
-  .logo{display:block;margin:0 auto 28px;height:112px;width:auto}
+  /* max-width para que en un telefono angosto el logo achique en vez de
+     empujar la tarjeta fuera de la pantalla */
+  .logo{display:block;margin:0 auto 28px;height:112px;width:auto;max-width:100%}
   h1{font-size:19px;font-weight:700;text-align:center;letter-spacing:-.01em;margin-bottom:6px}
   .sub{font-size:13.5px;color:var(--txt-2);text-align:center;margin-bottom:8px}
   .pie{font-size:13px;color:var(--txt-2);text-align:center;margin-top:24px}
@@ -552,16 +555,68 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
   .contenido{flex:1;padding:40px 44px;min-width:0;max-width:1120px}
   .contenido h1{font-size:22px;font-weight:700;letter-spacing:-.015em}
   .contenido .bajada{color:var(--txt-2);font-size:14px;margin:4px 0 28px}
+  /* En el celular el menu no puede ir apilado arriba del contenido: eran mas de
+     800 px de menu antes de llegar al titulo de la pantalla, casi dos pantallas
+     de scroll para leer lo que se vino a leer. Pasa a ser un cajon que se abre
+     desde el costado, con una barra fija arriba. */
+  .barra-movil{display:none}
+  .lateral .cerrar-menu{display:none}
   @media (max-width: 820px){
-    .app{flex-direction:column}
-    .lateral{width:100%;height:auto;position:static}
-    .contenido{padding:24px 16px}
+    .barra-movil{display:flex;align-items:center;gap:12px;position:fixed;top:0;left:0;right:0;
+        height:60px;padding:0 14px;z-index:70;background:var(--surface);
+        border-bottom:1px solid var(--bd-suave)}
+    .barra-movil .marca-m{display:block;line-height:0}
+    .barra-movil .marca-m img{height:34px;width:auto;display:block}
+    /* margin-left:auto lo empuja siempre al borde derecho, este o no el titulo */
+    .barra-movil .menu-btn{display:flex;align-items:center;justify-content:center;
+        width:44px;height:44px;flex-shrink:0;margin-left:auto;background:none;
+        border:1px solid var(--bd-suave);border-radius:10px;color:var(--txt);cursor:pointer}
+    .barra-movil .menu-btn:active{background:var(--surface-2)}
+    .barra-movil .titulo-m{font-family:var(--titulos);font-size:15px;font-weight:600;
+        color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-right:auto}
+
+    .app{flex-direction:column;padding-top:60px}
+    .lateral{position:fixed;top:0;bottom:0;left:0;z-index:90;
+        width:min(84vw,310px);height:100dvh;padding-top:18px;
+        border-right:1px solid var(--bd-suave);
+        transform:translateX(-102%);transition:transform .25s ease;
+        overscroll-behavior:contain}
+    .lateral.abierto{transform:translateX(0);box-shadow:0 0 40px rgba(0,0,0,.5)}
+    .lateral .cerrar-menu{display:flex;align-items:center;justify-content:center;
+        position:absolute;top:12px;right:12px;width:38px;height:38px;
+        background:none;border:1px solid var(--bd-suave);border-radius:10px;
+        color:var(--txt-2);cursor:pointer}
+    .velo-menu{position:fixed;inset:0;z-index:85;background:rgba(4,8,16,.6);
+        opacity:0;pointer-events:none;transition:opacity .25s ease}
+    .velo-menu.visible{opacity:1;pointer-events:auto}
+    body.menu-abierto{overflow:hidden}
+    .contenido{padding:22px 16px}
+    /* Los dedos necesitan mas superficie que el mouse */
+    .lateral .item{min-height:46px}
+    /* El logo del cajon deja lugar al boton de cerrar */
+    .lateral .marca{padding-right:52px}
+  }
+  @media (max-width: 400px){
+    .barra-movil .titulo-m{display:none}
   }
 </style>
 </head>
 <body>
+<!-- Barra fija del celular: el logo, en que pantalla esta, y el boton del menu -->
+<div class="barra-movil">
+  <a class="marca-m" href="<?php echo $raiz; ?>index.php" aria-label="Printika Tools">
+    <img class="logo-oscuro" src="<?php echo ui_base(); ?>/assets/img/printika-tools-dark.svg" alt="Printika Tools">
+    <img class="logo-claro" src="<?php echo ui_base(); ?>/assets/img/printika-tools.svg" alt="Printika Tools">
+  </a>
+  <span class="titulo-m"><?php echo htmlspecialchars($activo !== '' ? $activo : $titulo); ?></span>
+  <button type="button" class="menu-btn" id="abrirMenu" aria-label="Abrir el menú"
+          aria-controls="menuLateral" aria-expanded="false"><?php echo ui_icono('menu', 22); ?></button>
+</div>
+<div class="velo-menu" id="veloMenu" hidden></div>
+
 <div class="app">
-  <aside class="lateral">
+  <aside class="lateral" id="menuLateral">
+    <button type="button" class="cerrar-menu" id="cerrarMenu" aria-label="Cerrar el menú"><?php echo ui_icono('cerrar', 18); ?></button>
     <a class="marca" href="<?php echo $raiz; ?>index.php">
       <img class="logo-oscuro" src="<?php echo ui_base(); ?>/assets/img/printika-tools-dark.svg" alt="Printika Tools">
       <img class="logo-claro" src="<?php echo ui_base(); ?>/assets/img/printika-tools.svg" alt="Printika Tools">
@@ -644,6 +699,40 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
           plegados[g] = si;
           try { localStorage.setItem('ptools_menu_plegado', JSON.stringify(plegados)); } catch (e) {}
         });
+      });
+
+      // --- Cajon del menu en el celular ---
+      const lateral = document.getElementById('menuLateral');
+      const velo    = document.getElementById('veloMenu');
+      const abrir   = document.getElementById('abrirMenu');
+      const cerrar  = document.getElementById('cerrarMenu');
+
+      function menuMostrar(si) {
+        lateral.classList.toggle('abierto', si);
+        velo.hidden = false;
+        velo.classList.toggle('visible', si);
+        document.body.classList.toggle('menu-abierto', si);
+        abrir.setAttribute('aria-expanded', si ? 'true' : 'false');
+        // Al abrir, el foco va adentro: quien navega con teclado o lector de
+        // pantalla no se queda atrapado atras del cajon
+        if (si) { const f = lateral.querySelector('.item, .cerrar-menu'); if (f) f.focus(); }
+        else abrir.focus();
+      }
+
+      abrir.addEventListener('click', () => menuMostrar(true));
+      cerrar.addEventListener('click', () => menuMostrar(false));
+      velo.addEventListener('click', () => menuMostrar(false));
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && lateral.classList.contains('abierto')) menuMostrar(false);
+      });
+      // Elegir una pantalla cierra el cajon; los botones de grupo no, que son
+      // para desplegar y quedarse mirando
+      lateral.querySelectorAll('a.item').forEach(a => {
+        a.addEventListener('click', () => menuMostrar(false));
+      });
+      // Si el telefono se pone horizontal y ya entra el menu fijo, se cierra
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 820 && lateral.classList.contains('abierto')) menuMostrar(false);
       });
     })();
     </script>

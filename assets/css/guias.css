@@ -159,7 +159,9 @@ a{color:var(--accent)}
 .hub h1{font-family:var(--titulos);font-size:clamp(30px,5vw,44px);font-weight:700;
   letter-spacing:-.03em;line-height:1.12;margin-bottom:14px}
 .hub .cabeza p{font-size:17px;color:var(--txt-2)}
-.hub-grilla{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+/* min(320px,100%): en una pantalla de 320 el minimo de 320 no entraba junto con
+   los margenes y la tarjeta se salia. Asi nunca pide mas de lo que hay. */
+.hub-grilla{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:16px}
 .tarjeta-guia{display:block;background:var(--surface);border:1px solid var(--bd-suave);
   border-radius:var(--radio-g);padding:26px;text-decoration:none;
   transition:border-color .25s ease,transform .25s cubic-bezier(.16,1,.3,1),box-shadow .25s ease}

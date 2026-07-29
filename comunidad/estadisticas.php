@@ -87,6 +87,17 @@ ui_panel_inicio('Estadísticas', $u, 'Estadísticas');
       tr:last-child td{border-bottom:none}
       td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
       @media (max-width:800px){ .duo{grid-template-columns:1fr} .ganancia-caja b{font-size:30px} }
+      /* En el celular las barras no achicaban (26 px fijos por barra, seis meses)
+         y el gráfico se salía de la pantalla. min-width:0 es lo que les permite
+         encogerse: sin eso, una columna flex nunca baja del tamaño de su contenido. */
+      @media (max-width:560px){
+        .grafico{gap:2%;padding:0 2px;height:180px}
+        .mes-g{min-width:0;gap:3px}
+        .mes-g i{width:13px;max-width:44%}
+        .ejes{gap:2%;padding:0 2px}
+        .ejes span{min-width:0;font-size:10.5px}
+        .leyenda{gap:14px;font-size:12.5px}
+      }
     </style>
 
     <div class="ganancia-caja">

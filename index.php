@@ -625,7 +625,7 @@ $og_alt = $en
          un punto y quedan 30 de sobra, sin sacar ningun enlace. */
       .nav nav a{font-size:16px}
     }
-    @media (max-width:1100px){
+    @media (max-width:1240px){
       .nav nav a.link-seccion{display:none}
     }
     @media (max-width:960px){
@@ -637,6 +637,57 @@ $og_alt = $en
       .caja.grande{grid-column:span 2;grid-row:auto}
       .comunidad .dos{grid-template-columns:1fr;gap:36px}
       .nav nav{gap:14px}
+    }
+    /* Menu del celular: en pantalla grande no existe */
+    .nav .menu-btn{display:none}
+    .menu-movil, .velo-nav{display:none}
+    .menu-movil .extras-movil{display:none}
+    @media (max-width:1240px){
+      .nav .menu-btn{display:flex;align-items:center;justify-content:center;
+          width:44px;height:44px;flex-shrink:0;background:none;
+          border:1px solid var(--bd,rgba(255,255,255,.14));border-radius:10px;
+          color:var(--txt);cursor:pointer}
+      .velo-nav{display:block;position:fixed;inset:0;z-index:90;background:rgba(4,8,16,.6);
+          opacity:0;pointer-events:none;transition:opacity .25s ease}
+      .velo-nav.visible{opacity:1;pointer-events:auto}
+      .menu-movil{display:flex;flex-direction:column;gap:2px;position:fixed;z-index:95;
+          top:0;right:0;bottom:0;width:min(82vw,320px);padding:74px 20px 28px;
+          background:var(--surface,#131a27);border-left:1px solid var(--bd-suave,rgba(255,255,255,.08));
+          transform:translateX(102%);transition:transform .25s ease;overflow-y:auto;
+          overscroll-behavior:contain}
+      .menu-movil[hidden]{display:flex}          /* lo maneja el transform, no el hidden */
+      .menu-movil.abierto{transform:translateX(0);box-shadow:0 0 40px rgba(0,0,0,.5)}
+      .menu-movil a{display:flex;align-items:center;min-height:48px;padding:0 12px;
+          border-radius:10px;font-family:var(--titulos);font-size:17px;font-weight:500;
+          color:var(--txt-2);text-decoration:none}
+      .menu-movil a:active{background:var(--surface-2)}
+      .menu-movil a.btn{justify-content:center;margin-top:6px;color:var(--accent-ink)}
+      .menu-movil hr{border:none;border-top:1px solid var(--bd-suave,rgba(255,255,255,.08));margin:12px 0}
+      .menu-movil .cerrar-nav{position:absolute;top:16px;right:18px;display:flex;
+          align-items:center;justify-content:center;width:42px;height:42px;background:none;
+          border:1px solid var(--bd,rgba(255,255,255,.14));border-radius:10px;
+          color:var(--txt-2);cursor:pointer}
+      body.nav-abierto{overflow:hidden}
+      .menu-movil .extras-movil{display:grid;grid-template-columns:auto 1fr;gap:10px 14px;
+          align-items:center;margin-top:20px;padding-top:16px;
+          border-top:1px solid var(--bd-suave,rgba(255,255,255,.08))}
+      .menu-movil .fila-tit{font-size:11px;font-weight:700;letter-spacing:.08em;
+          text-transform:uppercase;color:var(--txt-3)}
+      .menu-movil .par{display:inline-flex;gap:2px;background:var(--surface-2,rgba(255,255,255,.06));
+          border:1px solid var(--bd,rgba(255,255,255,.12));border-radius:999px;padding:3px;justify-self:start}
+      .menu-movil .par > a, .menu-movil .par > button{display:inline-flex;align-items:center;
+          justify-content:center;min-height:34px;padding:0 16px;border:none;background:none;
+          border-radius:999px;font-family:inherit;font-size:12.5px;font-weight:700;
+          color:var(--txt-3);cursor:pointer;text-decoration:none;opacity:.6}
+      .menu-movil .par > a.activo{opacity:1;background:var(--surface);color:var(--txt)}
+    }
+    /* El encabezado del telefono se queda con lo imprescindible: marca, la
+       accion principal y el menu. Todo lo demas esta adentro del menu. */
+    @media (max-width:900px){
+      .nav nav .tema{display:none}
+      .nav nav a.entrar{display:none}
+      .nav nav{gap:10px}
+      .nav .btn{height:38px;padding:0 15px;font-size:14px}
     }
     @media (max-width:680px){
       .nav .cont, footer .cont{padding:0 20px}   /* en el celular, igual que el resto */
@@ -709,9 +760,42 @@ $og_alt = $en
         </span>
         <a class="entrar" href="/comunidad/login.php">Iniciar sesión</a>
         <a class="btn" href="#planes">Registrarse</a>
+        <?php // En el celular no entran los enlaces de seccion, y hasta ahora
+              // simplemente se escondian: Guias, Precios, FAQ y la Calculadora
+              // desaparecian del telefono. Ahora viven en este menu. ?>
+        <button type="button" class="menu-btn" id="abrirMenuNav" aria-label="Abrir el menú"
+                aria-controls="menuMovil" aria-expanded="false"><?php echo ui_icono('menu', 22); ?></button>
       </nav>
     </div>
   </header>
+
+  <div class="velo-nav" id="veloNav" hidden></div>
+  <nav class="menu-movil" id="menuMovil" hidden aria-label="Menú">
+    <button type="button" class="cerrar-nav" id="cerrarMenuNav" aria-label="Cerrar el menú"><?php echo ui_icono('cerrar', 20); ?></button>
+    <a href="#herramientas">Herramientas</a>
+    <a href="#comunidad">Comunidad</a>
+    <a href="#planes">Precios</a>
+    <a href="/guias/">Guías</a>
+    <a href="#faq">FAQ</a>
+    <a href="/comunidad/cotizador/" target="_blank" rel="noopener">Calculadora</a>
+    <hr>
+    <a href="/comunidad/login.php">Iniciar sesión</a>
+    <a class="btn" href="#planes">Registrarse</a>
+    <?php // El selector de idioma y el de tema no entran en el encabezado de un
+          // telefono; en vez de esconderlos, viven acá abajo ?>
+    <div class="extras-movil">
+      <span class="fila-tit">Idioma</span>
+      <span class="par">
+        <a href="/" hreflang="es"<?php echo $en ? '' : ' class="activo"'; ?>>ESP</a>
+        <a href="/en/" hreflang="en"<?php echo $en ? ' class="activo"' : ''; ?>>ENG</a>
+      </span>
+      <span class="fila-tit">Tema</span>
+      <span class="par">
+        <button type="button" onclick="ptTema('light')">Día</button>
+        <button type="button" onclick="ptTema('dark')">Noche</button>
+      </span>
+    </div>
+  </nav>
 
   <main>
     <div class="hero" style="position:relative;overflow:hidden">
@@ -1356,6 +1440,39 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.btn').forEach(function (b) {
     b.addEventListener('mouseenter', function () { gsap.to(b, { scale: 1.03, duration: 0.18, ease: 'power2.out' }); });
     b.addEventListener('mouseleave', function () { gsap.to(b, { scale: 1, duration: 0.22, ease: 'power2.out' }); });
+  });
+});
+</script>
+<script>
+// Menu del celular. Los enlaces de seccion son anclas de esta misma pagina, asi
+// que al tocarlos hay que cerrar el menu para que se vea a donde saltamos.
+document.addEventListener('DOMContentLoaded', function () {
+  var menu   = document.getElementById('menuMovil');
+  var velo   = document.getElementById('veloNav');
+  var abrir  = document.getElementById('abrirMenuNav');
+  var cerrar = document.getElementById('cerrarMenuNav');
+  if (!menu || !abrir) return;
+
+  function mostrar(si) {
+    menu.hidden = false; velo.hidden = false;
+    menu.classList.toggle('abierto', si);
+    velo.classList.toggle('visible', si);
+    document.body.classList.toggle('nav-abierto', si);
+    abrir.setAttribute('aria-expanded', si ? 'true' : 'false');
+    if (si) { var f = menu.querySelector('a'); if (f) f.focus(); } else abrir.focus();
+  }
+
+  abrir.addEventListener('click', function () { mostrar(true); });
+  cerrar.addEventListener('click', function () { mostrar(false); });
+  velo.addEventListener('click', function () { mostrar(false); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && menu.classList.contains('abierto')) mostrar(false);
+  });
+  menu.querySelectorAll('a').forEach(function (a) {
+    a.addEventListener('click', function () { mostrar(false); });
+  });
+  window.addEventListener('resize', function () {
+    if (window.innerWidth > 1240 && menu.classList.contains('abierto')) mostrar(false);
   });
 });
 </script>
