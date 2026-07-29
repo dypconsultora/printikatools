@@ -133,6 +133,26 @@ Hay tres mecanismos distintos según qué se traduce, y conviene no confundirlos
 
 La landing y el cotizador además **detectan el idioma del navegador** la primera vez.
 
+## La portada tiene que verse aunque el JavaScript no corra
+
+La pantalla de carga (`#cargador`) tapa toda la pantalla, y lo que entra animado
+arranca en `opacity:0`. Si el JavaScript no corre, eso deja el sitio **invisible**:
+pasó, y se nota más en Windows, donde los antivirus de empresa y los bloqueadores
+frenan scripts mucho más seguido. Hay tres redes, y **ninguna se puede sacar**:
+
+1. `<html class="sin-js">` y un script en línea que la cambia por `con-js`. El CSS
+   `.sin-js` esconde el cargador y muestra todo. Si el JavaScript está bloqueado,
+   la clase nunca cambia y el sitio se ve completo.
+2. Una animación CSS que a los 9 segundos desvanece el cargador sola, por si el
+   JavaScript arranca y se cae antes de sacarlo. No depende de ningún script.
+3. Si GSAP no cargó, el propio JavaScript muestra lo que estaba escondido.
+
+**`prefers-reduced-motion` no apaga todo.** Windows lo activa seguido (lo prende
+"Ajustar para obtener el mejor rendimiento", el Escritorio remoto y varios
+perfiles de ahorro). Antes cortaba todas las animaciones y la página quedaba
+muerta. Ahora se conservan las apariciones hechas **solo con opacidad** y se
+dejan afuera los movimientos, que son los que de verdad marean.
+
 ## Estilo del código
 
 - **Comentarios en castellano**, y explican *por qué*, no *qué*. Sin acentos en los

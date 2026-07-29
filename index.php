@@ -92,7 +92,7 @@ $og_alt = $en
     : 'Printika Tools · Calculadora de costos y presupuestos 3D';
 ?>
 <!DOCTYPE html>
-<html lang="<?php echo $idi; ?>">
+<html lang="<?php echo $idi; ?>" class="sin-js">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -248,6 +248,7 @@ $og_alt = $en
   <link rel="preload" href="/assets/fonts/SpaceGrotesk-700-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/fonts/fuentes.css">
   <style>.idioma button.activo{opacity:1 !important;background:var(--surface,rgba(255,255,255,.12)) !important}</style>
+  <script>document.documentElement.className = document.documentElement.className.replace('sin-js', 'con-js');</script>
   <script src="/assets/js/lib/gsap.min.js" defer></script>
   <script src="/assets/js/lib/ScrollTrigger.min.js" defer></script>
   <style>
@@ -258,6 +259,19 @@ $og_alt = $en
       font-weight:700;letter-spacing:-.02em;color:var(--txt,#e8edf5);font-variant-numeric:tabular-nums}
     #cargador .barra{width:min(300px,60vw);height:3px;border-radius:99px;background:rgba(128,148,180,.18);overflow:hidden}
     #cargador .barra i{display:block;height:100%;width:0;background:var(--accent,#2db7fa)}
+    /* PRIMERA RED: sin JavaScript no hay pantalla de carga ni nada escondido.
+       Antes, si el JavaScript no corria (antivirus de empresa, bloqueador,
+       navegador viejo), esta pantalla tapaba el sitio entero clavada en 0% y no
+       se veia NADA. Pasaba mas en Windows, que es donde vive ese tipo de
+       antivirus. */
+    .sin-js #cargador{display:none}
+    .sin-js .anim-oculto,
+    .sin-js .h1-serena .palabra{opacity:1}
+    /* SEGUNDA RED: aunque el JavaScript arranque, si se cae antes de sacar la
+       pantalla de carga esta se va sola. Es una animacion de CSS, no depende de
+       que ningun script siga vivo. */
+    #cargador{animation:cargador-rendirse 0s linear 9s forwards}
+    @keyframes cargador-rendirse{ to{opacity:0;visibility:hidden;pointer-events:none} }
     /* Que los anclajes frenen debajo de la barra fija */
     #herramientas,#comunidad,#planes,#faq{scroll-margin-top:36px}
     .moneda-sel button.activo{opacity:1 !important;background:var(--accent) !important;color:var(--accent-ink,#06202f) !important}
@@ -1201,9 +1215,60 @@ document.addEventListener('DOMContentLoaded', function () {
   if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
   var reducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var cargador = document.getElementById('cargador');
-  if (reducido || !window.gsap) {
+
+  // Sin GSAP no hay nada que animar: se muestra todo y listo.
+  if (!window.gsap) {
     if (cargador) cargador.remove();
     document.querySelectorAll('.h1-serena .palabra').forEach(function (w) { w.style.opacity = 1; });
+    // TERCERA RED: sin GSAP nadie va a mostrar lo que el CSS dejo invisible
+    document.querySelectorAll('.anim-oculto').forEach(function (e) { e.style.opacity = 1; });
+    return;
+  }
+
+  /**
+   * "Reducir movimiento" activado.
+   *
+   * Antes esto cortaba aca y la pagina quedaba completamente quieta: ni una
+   * aparicion. Se noto porque en Windows ese interruptor esta prendido mucho mas
+   * seguido que en Mac (lo activa "Ajustar para obtener el mejor rendimiento",
+   * el Escritorio remoto y varios perfiles de ahorro de energia), asi que hay
+   * gente que veia el sitio muerto.
+   *
+   * Lo que la gente pide con ese interruptor es que no se MUEVA nada: los
+   * desplazamientos, el parallax y los cambios de tamano son los que marean. Un
+   * desvanecido suave no molesta a nadie. Asi que se conservan las apariciones
+   * hechas solo con opacidad, y se dejan afuera todos los movimientos.
+   */
+  if (reducido) {
+    if (cargador) cargador.remove();
+    document.querySelectorAll('.h1-serena .palabra').forEach(function (w) { w.style.opacity = 1; });
+
+    var aparecer = ['.hero .insignia', '.hero .sub', '.hero .ctas', '.hero .stats', '.hero-visual',
+                    '#herramientas .cabeza', '#herramientas .caja', '.novedades .nov-caja',
+                    '.comunidad .cabeza', '.comunidad .beneficio', '#planes .cabeza',
+                    '#planes .plan', '#faq .cabeza', '#faq details', '.cierre .cont'];
+    aparecer.forEach(function (sel) {
+      var els = gsap.utils.toArray(sel);
+      if (!els.length) return;
+      gsap.set(els, { opacity: 0 });
+      els.forEach(function (el) {
+        gsap.to(el, {
+          opacity: 1, duration: 0.5, ease: 'none',
+          scrollTrigger: { trigger: el, start: 'top 92%', once: true }
+        });
+      });
+    });
+    // Los numeros del hero igual cuentan: es texto que cambia, no algo que se mueve
+    gsap.utils.toArray('.hero .stat b').forEach(function (b) {
+      var texto = b.textContent.trim();
+      var destino = parseInt(texto.replace(/\D/g, ''), 10);
+      if (!destino) return;
+      var prefijo = texto.replace(/[\d].*/, '');
+      var n = { v: 0 };
+      gsap.to(n, { v: destino, duration: 1, ease: 'power2.out', delay: 0.2,
+        onUpdate: function () { b.textContent = prefijo + Math.round(n.v); } });
+    });
+    if (window.ScrollTrigger) ScrollTrigger.refresh();
     return;
   }
 
