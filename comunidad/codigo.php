@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 session_regenerate_id(true);
                 $_SESSION['uid'] = $pendiente;
                 com_db()->prepare('UPDATE usuarios SET ultimo_login = NOW() WHERE id = ?')->execute([$pendiente]);
-                header('Location: index.php');
+                header('Location: ' . com_destino_ingreso());
                 exit;
             case 'vencido':
                 $error = 'El código venció. Pedí uno nuevo.';

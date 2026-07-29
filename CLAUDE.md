@@ -27,6 +27,13 @@ a mano en una pantalla y que quedaran desactualizados.
 
 Cobro por **Mercado Pago** (`preapproval`). El flujo es: se registran → los manda a
 pagar → el webhook confirma → se activa la cuenta sola.
+
+**Nadie se registra dos veces.** El que ya tiene cuenta gratis y quiere pasar a pago
+usa la misma: el plan elegido se anota en la sesión (`com_plan_pendiente()`) apenas
+aparece un `?plan=` y sobrevive al login, al 2FA y a la confirmación del correo;
+cuando la persona queda adentro, `com_destino_ingreso()` la manda al checkout en vez
+de al panel. El webhook activa por `external_reference = usuario_id:plan`, así que el
+pago se le suma **al usuario que ya existía**.
 En inglés el cobro iba a ser por PayPal, **los links todavía son de mentira**
 (`paypal.com/CAMBIAR-mensual|anual` en `en/`).
 

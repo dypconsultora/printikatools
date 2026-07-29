@@ -12,9 +12,9 @@ if ($u === null) {
     exit;
 }
 com_verif_migrar();
-// Ya confirmó: adentro
+// Ya confirmó: adentro (o directo a pagar, si venía a contratar un plan)
 if (com_email_verificado($u)) {
-    header('Location: index.php');
+    header('Location: ' . com_destino_ingreso());
     exit;
 }
 

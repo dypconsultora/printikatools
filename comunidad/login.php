@@ -9,8 +9,12 @@ if (!com_preview_ok() && usuario_actual() === null) {
     exit;
 }
 
+// Si viene de elegir un plan pago, se anota antes de nada: asi la intencion
+// sobrevive al login, al 2FA y a la confirmacion del correo
+if (isset($_GET['plan'])) com_plan_pendiente($_GET['plan']);
+
 if (usuario_actual() !== null) {
-    header('Location: index.php');
+    header('Location: ' . com_destino_ingreso());
     exit;
 }
 
@@ -23,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (com_login_bloqueado()) {
         $error = 'Demasiados intentos fallidos. Esperá 15 minutos y probá de nuevo.';
     } elseif (($paso = com_login($_POST['email'] ?? '', $_POST['password'] ?? '')) !== false) {
-        header('Location: ' . ($paso === '2fa' ? 'codigo.php' : 'index.php'));
+        header('Location: ' . ($paso === '2fa' ? 'codigo.php' : com_destino_ingreso()));
         exit;
     } else {
         com_login_fallo($_POST['email'] ?? '');

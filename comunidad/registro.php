@@ -12,11 +12,14 @@ if (!com_preview_ok() && usuario_actual() === null) {
     exit;
 }
 
+// El plan se anota apenas llega, no recien al crear la cuenta: si resulta que
+// ya tenia usuario y se va a ingresar, la eleccion tiene que seguirlo hasta el
+// pago en vez de perderse por el camino
+if (isset($_GET['plan'])) com_plan_pendiente($_GET['plan']);
+
 if (usuario_actual() !== null) {
-    // Si venia a contratar un plan, no lo mandamos al panel: lo llevamos a pagar
-    $pedido = $_GET['plan'] ?? '';
-    header('Location: ' . (in_array($pedido, ['mensual', 'anual'], true)
-        ? 'mp_checkout.php?plan=' . $pedido : 'index.php'));
+    // Ya tiene cuenta y esta adentro: no se registra de nuevo, va derecho a pagar
+    header('Location: ' . com_destino_ingreso());
     exit;
 }
 
@@ -64,8 +67,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ], $motivo_correo);
             $creado = true;
         } catch (PDOException $e) {
+            // El enlace se lleva el plan: si ya tenía cuenta, ingresa y sigue
+            // derecho al pago con el MISMO usuario, sin crear otro
+            $aLogin = 'login.php' . ($plan !== 'gratis' ? '?plan=' . urlencode($plan) : '');
             $error = ($e->errorInfo[1] ?? 0) == 1062
-                ? 'Ya existe una cuenta con ese email. <a href="login.php">Ingresá acá</a>.'
+                ? 'Ya tenés una cuenta con ese email. <a href="' . $aLogin . '">Ingresá y seguí con tu plan</a>'
+                  . ' &mdash; no hace falta que te registres de nuevo.'
                 : 'No se pudo crear la cuenta. Probá de nuevo.';
         }
     }
@@ -115,6 +122,8 @@ ui_tarjeta_inicio('Crear cuenta');
         <?php ui_campo_password('password2', 'password2', 'minlength="8" required autocomplete="new-password"'); ?>
         <button class="btn" type="submit">Crear cuenta</button>
       </form>
-      <p class="pie">¿Ya tenés cuenta? <a href="login.php">Ingresá</a></p>
+      <p class="pie">¿Ya tenés cuenta?
+        <a href="login.php<?php echo $plan !== 'gratis' ? '?plan=' . urlencode($plan) : ''; ?>">Ingresá</a>
+        <?php if ($plan !== 'gratis'): ?>y seguís con este plan<?php endif; ?></p>
     <?php endif; ?>
 <?php ui_tarjeta_fin(); ?>

@@ -105,6 +105,38 @@ function requerir_miembro() {
     }
 }
 
+/**
+ * El plan que la persona venia a contratar, si venia a contratar uno.
+ *
+ * La intencion de pagar se pierde muy facil: alguien elige "Pro anual" en la
+ * portada, descubre que ya tenia cuenta, ingresa... y termina en el panel sin
+ * haber pagado nunca, sin entender que le falto. Por eso el plan se anota en la
+ * sesion apenas aparece un ?plan= en cualquier pantalla del ingreso, y se usa
+ * recien cuando la persona quedo adentro de verdad.
+ *
+ * Con $plan guarda; sin argumentos, lee. Nunca crea una cuenta nueva: el pago
+ * se le suma a la cuenta que ya tiene.
+ */
+function com_plan_pendiente($plan = null) {
+    com_sesion();
+    if ($plan !== null) {
+        if (in_array($plan, ['mensual', 'anual'], true)) $_SESSION['plan_elegido'] = $plan;
+        else unset($_SESSION['plan_elegido']);
+    }
+    return $_SESSION['plan_elegido'] ?? '';
+}
+
+/**
+ * A donde mandar a alguien que acaba de entrar: al pago si venia a pagar, y si
+ * no al panel de siempre. El plan pendiente se consume aca (una sola vez).
+ */
+function com_destino_ingreso() {
+    $plan = com_plan_pendiente();
+    if ($plan === '') return 'index.php';
+    unset($_SESSION['plan_elegido']);
+    return 'mp_checkout.php?plan=' . $plan;
+}
+
 /** Secciones del plan gratis (calculadora, libreria STL): solo exige login. */
 function requerir_usuario() {
     if (usuario_actual() === null) {
