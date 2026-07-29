@@ -249,6 +249,7 @@ function ui_tarjeta_inicio($titulo) { ?>
     .volver-nav .marca-mini img{height:38px}
     .volver-nav nav{gap:8px}
     .volver-nav .idioma .idioma-tit{display:none}
+    .volver-nav .btn-nav{height:36px;padding:0 14px;font-size:13.5px}
     .volver-nav .tema-mini{display:none}
     .volver-nav nav a.entrar{display:none}
   }

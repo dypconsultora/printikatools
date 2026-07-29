@@ -212,6 +212,7 @@ footer a:hover{color:var(--accent)}
   .nav nav{gap:8px}
   .nav nav a.link-seccion{display:none}
   .nav .idioma-tit{display:none}
+  .nav .btn{height:36px;padding:0 14px;font-size:13.5px}
   .nav .tema .tema-btn{display:none}
   .nav .entrar{display:none}
   .footer-grilla{grid-template-columns:1fr}

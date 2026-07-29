@@ -417,12 +417,14 @@ $og_alt = $en
         -webkit-background-clip:text;background-clip:text;color:transparent}
     .hero .sub{font-size:clamp(15px,1.6vw,17.5px);color:var(--txt-2);max-width:480px;margin-bottom:32px}
     .hero .ctas{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:44px}
-    .stats{display:flex;flex-wrap:nowrap;border-top:1px solid var(--bd-suave);padding-top:24px}
-    .stat{padding:0 24px;border-left:1px solid var(--bd-suave);min-width:0}
-    .stat:first-child{padding-left:0;border-left:none}
-    .stat b{display:block;font-family:var(--titulos);font-size:24px;font-weight:700;
-        letter-spacing:-.02em;color:var(--txt)}
-    .stat span{font-size:12px;color:var(--txt-3)}
+    .stats{display:flex;flex-wrap:nowrap;border-top:1px solid var(--bd-suave);padding-top:28px}
+    /* Cada columna se reparte el ancho y su contenido va centrado */
+    .stat{flex:1 1 0;padding:0 18px;border-left:1px solid var(--bd-suave);min-width:0;
+        text-align:center}
+    .stat:first-child{border-left:none}
+    .stat b{display:block;font-family:var(--titulos);font-size:34px;font-weight:700;
+        letter-spacing:-.02em;line-height:1.1;color:var(--txt)}
+    .stat span{display:block;margin-top:6px;font-size:14.5px;line-height:1.35;color:var(--txt-3)}
     .hero-visual{position:relative}
     .hero-visual::before{content:'';position:absolute;inset:-10%;pointer-events:none;
         background:radial-gradient(50% 50% at 50% 50%, rgba(45,183,250,.18), transparent 70%)}
@@ -639,11 +641,13 @@ $og_alt = $en
       .nav .cont{gap:10px}
       .nav nav{gap:8px}
       .nav .idioma-tit{display:none}
+      /* El boton crecio con el menu nuevo y ya no entraba a 375 */
+      .nav .btn{height:36px;padding:0 14px;font-size:13.5px}
       .nav .tema .tema-btn{display:none}
       .nav .entrar{display:none}
-      .stat{padding:0 12px}
-      .stat b{font-size:19px}
-      .stat span{font-size:11px}
+      .stat{padding:0 10px}
+      .stat b{font-size:24px}
+      .stat span{font-size:12.5px}
       .footer-grilla{grid-template-columns:1fr;gap:26px}
       .foto-taller .flotante{right:10px}
     }
