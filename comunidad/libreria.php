@@ -85,7 +85,20 @@ ui_panel_inicio('Librería STL', $u, 'Librería STL');
       .cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
       .cats a{font-size:13px;font-weight:600;padding:6px 14px;border-radius:999px;border:1px solid var(--bd);color:var(--txt-2)}
       .cats a.activa{background:var(--accent-tinte);border-color:var(--accent);color:var(--accent)}
-      .stl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+      /* Siempre cuatro por fila. Antes las columnas las decidia el navegador
+         segun el ancho: en un monitor grande entraban cinco o seis y en una
+         notebook tres, asi que la biblioteca se veia distinta en cada maquina.
+         Y con menos de cuatro modelos las tarjetas se estiraban hasta quedar
+         enormes. Con cuatro columnas fijas, dos modelos son dos tarjetas del
+         mismo tamano de siempre, alineadas a la izquierda.
+         minmax(0,1fr) y no 1fr: sin eso un nombre largo ensancha su columna. */
+      .stl-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+      /* Debajo de cierto ancho cuatro no entran sin que la portada quede
+         ilegible, asi que se baja de a una. Los cortes estan puestos para que
+         la tarjeta nunca baje de ~190 px, que es donde el nombre todavia se lee. */
+      @media (max-width:1150px){ .stl-grid{grid-template-columns:repeat(3,minmax(0,1fr))} }
+      @media (max-width:1000px){ .stl-grid{grid-template-columns:repeat(2,minmax(0,1fr))} }
+      @media (max-width:520px){  .stl-grid{grid-template-columns:minmax(0,1fr)} }
       .stl-c{background:var(--surface);border:1px solid var(--bd-suave);border-radius:var(--radio-g);overflow:hidden;
              display:flex;flex-direction:column}
       .stl-img{aspect-ratio:4/3;background:var(--surface-2);display:flex;align-items:center;justify-content:center;
