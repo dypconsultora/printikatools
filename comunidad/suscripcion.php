@@ -23,8 +23,11 @@ $AVISOS = [
     'sin_mp'   => 'El pago online se está configurando. Escribinos por Telegram y lo activamos a mano.',
     'error_mp' => 'No pudimos iniciar el pago. Probá de nuevo en unos minutos o escribinos.',
     'sin_mensual' => 'Por ahora el plan mensual no está disponible. El anual te sale más barato: son 2 meses de regalo.',
+    'solo_pro'    => 'Eso necesita cuenta Pro. Con el plan completo lo tenés, junto con todo Mi taller.',
 ];
 $aviso = $AVISOS[$_GET['aviso'] ?? ''] ?? '';
+// 'volviste' es la unica buena noticia; el resto son avisos, no logros
+$aviso_ok = ($_GET['aviso'] ?? '') === 'volviste';
 
 // Venia de tocar un candado: se le muestra un adelanto de ESA pantalla
 $bloq = ($plan === 'gratis') ? vistazo_seccion($_GET['bloqueado'] ?? '') : null;
@@ -101,7 +104,7 @@ ui_panel_inicio('Tu plan', $u, 'Tu plan');
       <?php endif; ?>
     </p>
 
-    <?php if ($aviso): ?><div class="msg ok"><?php echo ui_icono('check', 16); ?><span><?php echo htmlspecialchars($aviso); ?></span></div><?php endif; ?>
+    <?php if ($aviso): ?><div class="msg <?php echo $aviso_ok ? 'ok' : 'warn'; ?>"><?php echo ui_icono($aviso_ok ? 'check' : 'alerta', 16); ?><span><?php echo htmlspecialchars($aviso); ?></span></div><?php endif; ?>
 
     <style>
       .planes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;max-width:1000px}

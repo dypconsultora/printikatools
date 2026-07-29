@@ -53,55 +53,46 @@ ui_panel_inicio('Inicio', $u, 'Inicio');
       .tarjeta-h p{font-size:13px;color:var(--txt-2);line-height:1.5}
       .tarjeta-h.prox .ico-caja{background:var(--surface-2);color:var(--txt-3)}
       .tarjeta-h.prox h2{color:var(--txt-2)}
+      /* La que necesita plan pago: apagada pero legible, y con el cartel */
+      .tarjeta-h.bloqueada .ico-caja{background:var(--surface-2);color:var(--txt-3)}
+      .tarjeta-h.bloqueada h2, .tarjeta-h.bloqueada p{color:var(--txt-3)}
+      .tarjeta-h.bloqueada .flecha{color:var(--txt-3)}
+      a.tarjeta-h.bloqueada:hover{border-color:var(--accent)}
+      a.tarjeta-h.bloqueada:hover .sello{background:var(--accent);color:var(--accent-ink)}
+      .tarjeta-h .sello{display:inline-flex;align-items:center;gap:5px;margin-top:12px;
+          padding:4px 10px;border-radius:99px;background:var(--accent-tinte);color:var(--accent);
+          font-size:11.5px;font-weight:700;letter-spacing:.02em;transition:background-color .15s ease,color .15s ease}
     </style>
+    <?php
+    // [archivo, icono, titulo, bajada, esDePago]. Antes las ocho tarjetas se
+    // veian iguales: quien estaba en el plan gratis tocaba Presupuestos y recien
+    // ahi se enteraba de que no lo tenia. Ahora la que es de pago lo dice antes.
+    $accesos = [
+        ['calculadora.php',  'calculadora',  'Calculadora de costos', 'Calculá el precio justo de tus impresiones 3D.', false],
+        ['libreria.php',     'libreria',     'Librería STL',          'Modelos listos para imprimir, seleccionados por Printika.', true],
+        ['presupuestos.php', 'presupuestos', 'Presupuestos',          'Generá y enviá presupuestos profesionales a tus clientes.', true],
+        ['productos.php',    'etiqueta',     'Productos',             'Tu catálogo de piezas con costo y precio de venta.', true],
+        ['clientes.php',     'clientes',     'Clientes',              'Tu cartera de clientes, vinculada a los presupuestos.', true],
+        ['ventas.php',       'ventas',       'Ventas',                'Ingresos y gastos del taller, mes a mes.', true],
+        ['estadisticas.php', 'estadisticas', 'Estadísticas',          'Ganancia, ingresos y gastos de los últimos meses.', true],
+        ['stock.php',        'stock',        'Stock Materiales',      'Controlá tus rollos de filamento e insumos.', true],
+    ];
+    $conTodo = acceso_total();
+    ?>
     <div class="tarjetas">
-      <a class="tarjeta-h" href="calculadora.php">
-        <span class="flecha"><?php echo ui_icono('flecha', 16); ?></span>
-        <span class="ico-caja"><?php echo ui_icono('calculadora', 19); ?></span>
-        <h2>Calculadora de costos</h2>
-        <p>Calculá el precio justo de tus impresiones 3D.</p>
-      </a>
-      <a class="tarjeta-h" href="libreria.php">
-        <span class="flecha"><?php echo ui_icono('flecha', 16); ?></span>
-        <span class="ico-caja"><?php echo ui_icono('libreria', 19); ?></span>
-        <h2>Librería STL</h2>
-        <p>Modelos listos para imprimir, seleccionados por Printika.</p>
-      </a>
-      <a class="tarjeta-h" href="presupuestos.php">
-        <span class="flecha"><?php echo ui_icono('flecha', 16); ?></span>
-        <span class="ico-caja"><?php echo ui_icono('presupuestos', 19); ?></span>
-        <h2>Presupuestos</h2>
-        <p>Generá y enviá presupuestos profesionales a tus clientes.</p>
-      </a>
-      <a class="tarjeta-h" href="productos.php">
-        <span class="flecha"><?php echo ui_icono('flecha', 16); ?></span>
-        <span class="ico-caja"><?php echo ui_icono('etiqueta', 19); ?></span>
-        <h2>Productos</h2>
-        <p>Tu catálogo de piezas con costo y precio de venta.</p>
-      </a>
-      <a class="tarjeta-h" href="clientes.php">
-        <span class="flecha"><?php echo ui_icono('flecha', 16); ?></span>
-        <span class="ico-caja"><?php echo ui_icono('clientes', 19); ?></span>
-        <h2>Clientes</h2>
-        <p>Tu cartera de clientes, vinculada a los presupuestos.</p>
-      </a>
-      <a class="tarjeta-h" href="ventas.php">
-        <span class="flecha"><?php echo ui_icono('flecha', 16); ?></span>
-        <span class="ico-caja"><?php echo ui_icono('ventas', 19); ?></span>
-        <h2>Ventas</h2>
-        <p>Ingresos y gastos del taller, mes a mes.</p>
-      </a>
-      <a class="tarjeta-h" href="estadisticas.php">
-        <span class="flecha"><?php echo ui_icono('flecha', 16); ?></span>
-        <span class="ico-caja"><?php echo ui_icono('estadisticas', 19); ?></span>
-        <h2>Estadísticas</h2>
-        <p>Ganancia, ingresos y gastos de los últimos meses.</p>
-      </a>
-      <a class="tarjeta-h" href="stock.php">
-        <span class="flecha"><?php echo ui_icono('flecha', 16); ?></span>
-        <span class="ico-caja"><?php echo ui_icono('stock', 19); ?></span>
-        <h2>Stock Materiales</h2>
-        <p>Controlá tus rollos de filamento e insumos.</p>
-      </a>
+      <?php foreach ($accesos as [$url, $ico, $titulo_t, $bajada_t, $dePago]):
+          $bloqueada = $dePago && !$conTodo;
+          // La bloqueada lleva al adelanto de ESA seccion, no a un cartel generico
+          $destino = $bloqueada ? 'suscripcion.php?bloqueado=' . basename($url, '.php') : $url; ?>
+        <a class="tarjeta-h<?php echo $bloqueada ? ' bloqueada' : ''; ?>" href="<?php echo htmlspecialchars($destino); ?>">
+          <span class="flecha"><?php echo ui_icono($bloqueada ? 'candado' : 'flecha', 16); ?></span>
+          <span class="ico-caja"><?php echo ui_icono($ico, 19); ?></span>
+          <h2><?php echo htmlspecialchars($titulo_t); ?></h2>
+          <p><?php echo htmlspecialchars($bajada_t); ?></p>
+          <?php if ($bloqueada): ?>
+            <span class="sello"><?php echo ui_icono('candado', 12); ?>Necesitás cuenta Pro</span>
+          <?php endif; ?>
+        </a>
+      <?php endforeach; ?>
     </div>
 <?php ui_panel_fin(); ?>

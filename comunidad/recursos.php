@@ -18,7 +18,7 @@ if (preg_match('/^\d+$/', $_GET['descargar'] ?? '')) {
     $stmt->execute([(int) $_GET['descargar']]);
     $item = $stmt->fetch();
     if ($item && $item['acceso'] === 'pago' && !acceso_total()) {
-        header('Location: suscripcion.php');
+        header('Location: suscripcion.php?aviso=solo_pro');
         exit;
     }
     $ruta = $item ? __DIR__ . '/uploads/recursos/pdf-' . $item['id'] . '.pdf' : '';

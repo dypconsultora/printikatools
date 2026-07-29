@@ -257,6 +257,12 @@
     'Printika Pro Anual': 'Printika Pro Annual',
     '2 meses gratis': '2 months free',
     '2 meses sin cargo': '2 months at no cost',
+    // Tarjetas del panel que necesitan plan pago
+    'Necesitás cuenta Pro': 'Pro account required',
+    'Eso necesita cuenta Pro. Con el plan completo lo tenés, junto con todo Mi taller.':
+      'That needs a Pro account. The full plan includes it, along with all of My Workshop.',
+    'Por ahora el plan mensual no está disponible. El anual te sale más barato: son 2 meses de regalo.':
+      'The monthly plan is not available right now. The yearly one works out cheaper: 2 months are on us.',
     // Pantalla de acceso denegado (ui_pantalla_error)
     'Acceso solo para administradores.': 'Administrators only.',
     'Esta pantalla es del panel de administración del sitio. Con tu cuenta podés entrar a todo lo demás. Si creés que tendrías que ver esto, probá con la cuenta de administradora.':
