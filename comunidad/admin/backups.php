@@ -221,6 +221,14 @@ ui_panel_inicio('Backups', $yo, 'Backups', '../');
       td .acc{display:flex;gap:6px;justify-content:flex-end}
       td form{margin:0}
       .vacio{font-size:13.5px;color:var(--txt-3);padding:14px 0}
+      .ruta{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;
+            background:var(--surface-2);border:1px solid var(--bd-suave);border-radius:var(--radio-g);
+            padding:18px 20px}
+      .ruta .et{display:block;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+            color:var(--txt-3);margin-bottom:6px}
+      .ruta code{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;
+            color:var(--txt);word-break:break-all;line-height:1.5}
+      .ruta p{font-size:12.5px;color:var(--txt-3);line-height:1.5;margin-top:6px}
     </style>
 
     <div class="bk">
@@ -255,8 +263,27 @@ ui_panel_inicio('Backups', $yo, 'Backups', '../');
     </div>
 
     <h2 style="font-size:15px;font-weight:600;margin:26px 0 4px">Copias guardadas en el servidor</h2>
-    <p class="bajada" style="margin-bottom:0">Se conservan las <?php echo BK_GUARDADOS; ?> últimas de cada tipo;
+    <p class="bajada" style="margin-bottom:8px">Se conservan las <?php echo BK_GUARDADOS; ?> últimas de cada tipo;
        las más viejas se borran solas. Ocupan <?php echo bk_tam($ocupado); ?>.</p>
+
+    <div class="ruta">
+      <div>
+        <span class="et">Carpeta en el servidor</span>
+        <code>comunidad/uploads/backups/</code>
+        <p>Así la ves si entrás por FTP o por el administrador de archivos del hosting.</p>
+      </div>
+      <div>
+        <span class="et">Ruta completa</span>
+        <code><?php echo htmlspecialchars(bk_dir()); ?></code>
+        <p>La ruta absoluta, por si la necesitás para una herramienta de respaldo.</p>
+      </div>
+      <div>
+        <span class="et">Desde el navegador</span>
+        <code>no se puede abrir</code>
+        <p>A propósito: el archivo de la base tiene los correos y las contraseñas cifradas de todos
+           los usuarios. Se bajan solo desde acá, con tu sesión de administradora.</p>
+      </div>
+    </div>
 
     <?php if ($guardadas): ?>
     <div class="lista">
