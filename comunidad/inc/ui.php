@@ -214,10 +214,10 @@ function ui_tarjeta_inicio($titulo) { ?>
       justify-content:space-between;gap:14px;height:104px;padding:0 clamp(28px,5.5vw,88px);
       border-bottom:1px solid var(--nav-bd,var(--bd-suave));background:var(--nav-bg,var(--surface));
       backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
-  .volver-nav .marca-mini img{height:84px;width:auto;display:block}
+  .volver-nav .marca-mini img{height:66px;width:auto;display:block}
   .volver-nav nav{display:flex;align-items:center;gap:20px}
-  .volver-nav nav a{font-family:var(--titulos);font-size:15.5px;font-weight:500;
-      letter-spacing:-.005em;color:var(--txt-2);white-space:nowrap}
+  .volver-nav nav a{font-family:var(--titulos);font-size:17px;font-weight:500;
+      letter-spacing:.005em;color:var(--txt-2);white-space:nowrap}
   .volver-nav nav a:hover{color:var(--accent)}
   /* El boton perdia su color: .volver-nav nav a le gana a .btn */
   .volver-nav nav a.btn{color:var(--accent-ink)}
@@ -232,13 +232,14 @@ function ui_tarjeta_inicio($titulo) { ?>
   :root[data-theme="light"] .volver-nav .tema-mini > button[data-tema="light"]{
       background:var(--surface);color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.25)}
   .volver-nav nav a.entrar{color:var(--txt)}
-  .volver-nav .btn-nav{height:40px;padding:0 18px;font-size:14.5px;
+  .volver-nav .btn-nav{height:42px;padding:0 20px;font-size:15.5px;
       font-family:var(--titulos);font-weight:600}
   @media (max-width:1400px){
     .volver-nav,.pie-sitio{padding-left:clamp(28px,4vw,56px);
       padding-right:clamp(28px,4vw,56px)}
-    .volver-nav .marca-mini img{height:72px}
-    .volver-nav nav{gap:14px}
+    .volver-nav .marca-mini img{height:58px}
+    .volver-nav nav{gap:12px}
+    .volver-nav nav a{font-size:16px}
   }
   @media (max-width:1100px){ .volver-nav nav a.opcional{display:none} }
   @media (max-width:960px){ .volver-nav{height:84px} .volver-nav .marca-mini img{height:64px} }

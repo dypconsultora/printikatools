@@ -342,12 +342,12 @@ $og_alt = $en
          -webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--nav-bd)}
     .nav .cont{max-width:none;padding:0 clamp(28px,5.5vw,88px);display:flex;align-items:center;
          justify-content:space-between;height:104px;gap:14px}
-    .nav .marca img{height:84px;width:auto;display:block}
+    .nav .marca img{height:66px;width:auto;display:block}
     .nav nav{display:flex;align-items:center;gap:20px}
-    .nav nav a{color:var(--txt-2);font-family:var(--titulos);font-size:15.5px;font-weight:500;
-         letter-spacing:-.005em;white-space:nowrap;transition:color .15s ease}
+    .nav nav a{color:var(--txt-2);font-family:var(--titulos);font-size:17px;font-weight:500;
+         letter-spacing:.005em;white-space:nowrap;transition:color .15s ease}
     .nav nav a:hover{color:var(--txt)}
-    .nav .btn{height:40px;padding:0 18px;font-size:14.5px;font-family:var(--titulos);font-weight:600}
+    .nav .btn{height:42px;padding:0 20px;font-size:15.5px;font-family:var(--titulos);font-weight:600}
     .nav nav a.btn{color:var(--accent-ink)}
     .nav nav a.btn:hover{color:var(--accent-ink)}
     .nav nav a.entrar{color:var(--txt);font-weight:500}
@@ -607,8 +607,11 @@ $og_alt = $en
       /* Se achican los TRES juntos: si solo se achica el encabezado, el logo
          deja de alinear con el titulo de abajo. */
       .cont,.nav .cont,footer .cont{padding:0 clamp(28px,4vw,56px)}
-      .nav .marca img{height:72px}
-      .nav nav{gap:14px}
+      .nav .marca img{height:58px}
+      .nav nav{gap:12px}
+      /* A 17px el menu entra por 4px: demasiado justo. En este rango baja
+         un punto y quedan 30 de sobra, sin sacar ningun enlace. */
+      .nav nav a{font-size:16px}
     }
     @media (max-width:1100px){
       .nav nav a.link-seccion{display:none}
