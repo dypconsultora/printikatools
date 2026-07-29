@@ -243,6 +243,17 @@ function taller_migrar() {
         UNIQUE KEY uq_email (email)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+    // Cuando se le mando el correo de bienvenida (NULL = todavia no).
+    // Sirve para no escribirle dos veces a la misma persona y para que en el
+    // panel se vea de un vistazo a quien le falta.
+    $stmt = $db->prepare("SELECT COUNT(*) c FROM information_schema.COLUMNS
+                           WHERE TABLE_SCHEMA = DATABASE()
+                             AND TABLE_NAME = 'novedades_emails' AND COLUMN_NAME = 'bienvenida_en'");
+    $stmt->execute();
+    if (!(int) $stmt->fetch()['c']) {
+        $db->exec("ALTER TABLE novedades_emails ADD COLUMN bienvenida_en DATETIME NULL DEFAULT NULL");
+    }
+
     $db->exec("CREATE TABLE IF NOT EXISTS recursos_pdf (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         titulo VARCHAR(150) NOT NULL,

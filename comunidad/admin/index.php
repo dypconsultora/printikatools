@@ -12,19 +12,7 @@ $yo = usuario_actual();
 taller_migrar();
 $db = com_db();
 
-// Export CSV de emails captados
-if (isset($_GET['csv_emails'])) {
-    header('Content-Type: text/csv; charset=UTF-8');
-    header('Content-Disposition: attachment; filename="emails-novedades.csv"');
-    echo "\xEF\xBB\xBF";
-    $out = fopen('php://output', 'w');
-    fputcsv($out, ['Email', 'Fecha'], ';', '"', '');
-    foreach ($db->query('SELECT email, creado_en FROM novedades_emails ORDER BY creado_en DESC') as $r) {
-        fputcsv($out, [$r['email'], $r['creado_en']], ';', '"', '');
-    }
-    fclose($out);
-    exit;
-}
+// El CSV de emails y el borrado viven ahora en admin/emails.php
 
 $tot = fn($sql) => (int) $db->query($sql)->fetch()['c'];
 $usuarios_tot = $tot('SELECT COUNT(*) c FROM usuarios');
@@ -110,7 +98,7 @@ ui_panel_inicio('Panel', $yo, 'Panel', '../');
 
       <div class="caja">
         <h2>Emails captados (cotizador)
-          <?php if ($emails_tot): ?><a href="index.php?csv_emails=1">Exportar CSV</a><?php endif; ?></h2>
+          <a href="emails.php">Ver todos</a></h2>
         <?php if (!$emails): ?><p class="nada">Cuando alguien deje su email en el popup del cotizador, aparece acá.</p>
         <?php else: ?>
           <table><?php foreach ($emails as $e): ?>

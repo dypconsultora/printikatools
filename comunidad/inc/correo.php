@@ -23,12 +23,15 @@ function correo_disponible() { return correo_config() !== null; }
  * botón grande. Tablas y estilos en línea porque es lo único que
  * renderizan bien Gmail, Outlook y compañía.
  */
-function correo_plantilla($titulo, $parrafos, $boton = null, $pie = '') {
+function correo_plantilla($titulo, $parrafos, $boton = null, $pie = '', $extra = '') {
     $esc = fn($t) => htmlspecialchars($t, ENT_QUOTES, 'UTF-8');
     $cuerpo = '';
     foreach ((array) $parrafos as $p) {
         $cuerpo .= '<p style="margin:0 0 16px;font-size:15px;line-height:1.65;color:#3d4759">' . $p . '</p>';
     }
+    // $extra va entero, sin envolver en <p>: es para tablas (la de planes, por
+    // ejemplo), que dentro de un parrafo rompen en Outlook.
+    $cuerpo .= $extra;
     $btn = '';
     if ($boton) {
         $btn = '<table role="presentation" cellpadding="0" cellspacing="0" style="margin:26px 0">
@@ -112,4 +115,116 @@ function correo_enviar($para, $nombre, $asunto, $html, $texto, &$error = null) {
         $error = 'No se pudo enviar el correo.';
         return false;
     }
+}
+
+/**
+ * Una fila de la tabla de planes del correo de bienvenida.
+ * Todo en linea y con tablas porque es lo unico que Gmail y Outlook respetan.
+ */
+function correo_plan_fila($nombre, $precio, $detalle, $destacado = false) {
+    $borde = $destacado ? '#2db7fa' : '#e3eaf3';
+    $fondo = $destacado ? '#f2fbff' : '#ffffff';
+    return '<tr><td style="padding:0 0 10px">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+             style="background:' . $fondo . ';border:1px solid ' . $borde . ';border-radius:12px">
+        <tr>
+          <td style="padding:14px 16px">
+            <span style="font-size:15px;font-weight:bold;color:#131a27">' . $nombre . '</span><br>
+            <span style="font-size:13px;line-height:1.5;color:#5b6779">' . $detalle . '</span>
+          </td>
+          <td align="right" style="padding:14px 16px;white-space:nowrap;
+                                   font-size:15px;font-weight:bold;color:#131a27">' . $precio . '</td>
+        </tr>
+      </table>
+    </td></tr>';
+}
+
+/**
+ * Correo de bienvenida al que deja su direccion en el popup del cotizador.
+ *
+ * No es un "gracias por suscribirte" y nada mas: le confirma que quedo anotado
+ * y aprovecha el unico momento en que nos esta prestando atencion para
+ * contarle que la cuenta gratis existe. Por eso muestra los tres planes con el
+ * gratuito primero: el objetivo es que se registre, no que lea.
+ *
+ * $idioma: 'es' o 'en' (el cotizador tiene las dos versiones).
+ *
+ * Devuelve ['asunto', 'html', 'texto']. Va separado del envio para poder
+ * mirar como queda el correo sin mandarselo a nadie.
+ */
+function correo_bienvenida_partes($idioma = 'es') {
+    $en = $idioma === 'en';
+    // El alta es la misma en los dos idiomas: la plataforma se traduce sola
+    $alta = 'https://printikatools.com/comunidad/registro.php';
+
+    $precio = fn($n) => '$' . number_format($n, 0, ',', '.');
+
+    if ($en) {
+        $asunto  = 'Your quote is done. Your workshop is the part that is missing.';
+        $titulo  = 'We got your email';
+        $parrafos = [
+            'Thanks for leaving it. You are on the list, and you will be the first to know
+             about every new tool we release.',
+            'In the meantime, something you may not know: the calculator you were using is
+             only one piece. With a Printika Tools account the price stops being a loose
+             number and becomes <strong>your whole workshop running</strong> &mdash; quotes
+             with your own logo, clients, filament stock, sales and statistics, all in the
+             same place.',
+            '<strong>Creating the account is free and we do not ask for a card.</strong>',
+        ];
+        $planes = correo_plan_fila('Free', 'US$0',
+                    'The full calculator, quotes and your first clients.')
+                . correo_plan_fila('Pro monthly', 'US$15',
+                    'The whole workshop: stock, sales, statistics, STL library and the guides.')
+                . correo_plan_fila('Pro yearly', 'US$150',
+                    'Same as monthly, with 2 months on us. Most people pick this one.', true);
+        $boton = ['url' => $alta, 'texto' => 'Create my free account'];
+        $pie   = 'You are getting this because you left your address at the calculator on
+                  printikatools.com. If it was not you, just ignore it &mdash; we will not
+                  write again.';
+        $texto = "We got your email.\n\n"
+               . "Create your free Printika Tools account: $alta\n\n"
+               . "Free US\$0 · Pro monthly US\$15 · Pro yearly US\$150 (2 months free)";
+    } else {
+        $asunto  = 'Tu cotización ya está. Lo que falta es el taller.';
+        $titulo  = 'Recibimos tu correo';
+        $parrafos = [
+            'Gracias por dejárnoslo. Ya quedaste anotado y vas a ser de los primeros en
+             enterarte de cada herramienta nueva que saquemos.',
+            'Mientras tanto, algo que quizás no sabías: el cotizador que estabas usando es
+             sólo una parte. Con una cuenta de Printika Tools el precio deja de ser un
+             cálculo suelto y pasa a ser <strong>tu taller entero funcionando</strong>:
+             presupuestos con tu logo, clientes, stock de filamento, ventas y estadísticas,
+             todo en el mismo lugar.',
+            '<strong>Crear la cuenta es gratis y no te pedimos tarjeta.</strong>',
+        ];
+        $planes = correo_plan_fila('Gratis', '$0',
+                    'El cotizador completo, presupuestos y tus primeros clientes.')
+                . correo_plan_fila('Pro mensual', $precio(COMUNIDAD_PRECIO_MENSUAL) . '/mes',
+                    'Todo el taller: stock, ventas, estadísticas, librería STL y las guías.')
+                . correo_plan_fila('Pro anual', $precio(COMUNIDAD_PRECIO_ANUAL) . '/año',
+                    'Lo mismo, con 2 meses de regalo. Es el que más eligen.', true);
+        $boton = ['url' => $alta, 'texto' => 'Crear mi cuenta gratis'];
+        $pie   = 'Recibís este correo porque dejaste tu dirección en el cotizador de
+                  printikatools.com. Si no fuiste vos, ignoralo: no te volvemos a escribir.';
+        $texto = "Recibimos tu correo.\n\n"
+               . "Crea tu cuenta gratis de Printika Tools: $alta\n\n"
+               . 'Gratis $0 · Pro mensual ' . $precio(COMUNIDAD_PRECIO_MENSUAL) . '/mes · '
+               . 'Pro anual ' . $precio(COMUNIDAD_PRECIO_ANUAL) . "/año (2 meses de regalo)";
+    }
+
+    $tabla = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                     style="margin:6px 0 2px">' . $planes . '</table>';
+
+    return [
+        'asunto' => $asunto,
+        'html'   => correo_plantilla($titulo, $parrafos, $boton, $pie, $tabla),
+        'texto'  => $texto,
+    ];
+}
+
+/** Manda el correo de bienvenida a una direccion. */
+function correo_bienvenida_novedades($email, $idioma = 'es', &$error = null) {
+    $c = correo_bienvenida_partes($idioma);
+    return correo_enviar($email, '', $c['asunto'], $c['html'], $c['texto'], $error);
 }

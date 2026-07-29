@@ -44,6 +44,7 @@ function ui_icono($nombre, $tam = 18) {
         'pdf'          => '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
         'video'        => '<path d="m10 7 5 3-5 3Z"/><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M12 17v4"/><path d="M8 21h8"/>',
         'ojo'          => '<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>',
+        'correo'       => '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
         'ojo-cerrado'  => '<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
     ];
     $d = $trazos[$nombre] ?? $trazos['inicio'];
@@ -399,6 +400,7 @@ function ui_menu_admin() {
         ['nube',         'Cargar STL',   'admin/stl.php', true, false],
         ['recursos',     'Cargar recursos', 'admin/recursos.php', true, false],
         ['cursos',       'Guías',        'admin/guias.php', true, false],
+        ['correo',       'Emails captados', 'admin/emails.php', true, false],
         ['ventas',       'Mercado Pago', 'admin/mercadopago.php', true, false],
         ['descargar',    'Backups',      'admin/backups.php', true, false],
     ];

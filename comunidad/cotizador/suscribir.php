@@ -44,6 +44,46 @@ if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($em
     exit;
 }
 
+$idioma = (($data['idioma'] ?? '') === 'en') ? 'en' : 'es';
+
+/**
+ * Cierra la respuesta HTTP para que el navegador deje de esperar, pero el
+ * script siga corriendo. Solo funciona con FPM; si no esta, no pasa nada malo:
+ * simplemente el correo de bienvenida sale antes de contestar.
+ */
+function novedades_responder_ya() {
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+        return;
+    }
+    @ob_end_flush();
+    @flush();
+}
+
+/**
+ * Le manda el correo de bienvenida a quien acaba de dejar su direccion, una
+ * sola vez. La marca queda en la base, asi que si vuelve a cargar el popup con
+ * el mismo mail no le llega de nuevo.
+ */
+function novedades_bienvenida($email, $idioma) {
+    try {
+        $stmt = db()->prepare('SELECT id FROM novedades_emails
+                               WHERE email = ? AND bienvenida_en IS NULL LIMIT 1');
+        $stmt->execute([$email]);
+        $fila = $stmt->fetch();
+        if (!$fila) return;                       // ya la recibio antes
+
+        require_once dirname(__DIR__) . '/inc/correo.php';
+        if (!correo_bienvenida_novedades($email, $idioma)) return;
+
+        db()->prepare('UPDATE novedades_emails SET bienvenida_en = NOW() WHERE id = ?')
+            ->execute([$fila['id']]);
+    } catch (Throwable $e) {
+        // Si falla, la direccion ya quedo guardada: se puede reenviar desde el panel
+        error_log('[suscribir.php] bienvenida: ' . $e->getMessage());
+    }
+}
+
 // Límite por sesión (anti abuso)
 $_SESSION['news_envios'] = ($_SESSION['news_envios'] ?? 0) + 1;
 if ($_SESSION['news_envios'] > 3) {
@@ -81,6 +121,7 @@ try {
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         email VARCHAR(190) NOT NULL,
         creado_en DATETIME NOT NULL,
+        bienvenida_en DATETIME NULL DEFAULT NULL,
         PRIMARY KEY (id),
         UNIQUE KEY uq_email (email)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
@@ -106,6 +147,12 @@ try {
 
     $mail->send();
     echo json_encode(['ok' => true]);
+
+    // Contestarle al navegador ANTES de mandar la bienvenida: el popup ya puede
+    // decir "gracias" mientras el segundo correo sale por atras. Sin esto la
+    // persona se come la espera de dos conexiones SMTP seguidas.
+    novedades_responder_ya();
+    novedades_bienvenida($email, $idioma);
 } catch (Throwable $e) {
     error_log('[suscribir.php] ' . $e->getMessage());
     http_response_code(500);

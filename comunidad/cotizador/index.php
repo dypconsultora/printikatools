@@ -2632,7 +2632,12 @@ PRECIO FINAL: ${price}${meliInfo}
         const res = await fetch('suscribir.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': (window.APP && window.APP.csrf) || '' },
-          body: JSON.stringify({ email: email, website: $('newsHoney').value })
+          body: JSON.stringify({
+            email: email,
+            website: $('newsHoney').value,
+            // Para que el correo de bienvenida le llegue en el idioma que esta viendo
+            idioma: (typeof ptIdioma === 'function' ? ptIdioma() : 'es')
+          })
         });
         const r = await res.json();
         if (!r || !r.ok) throw new Error((r && r.error) || 'Error');
