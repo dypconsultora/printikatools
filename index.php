@@ -573,6 +573,48 @@ $og_alt = $en
         animation:borde-vivo 6s linear infinite;transition:transform .25s ease,box-shadow .25s ease}
     .cta-borde:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(45,183,250,.25)}
     @keyframes borde-vivo{0%{background-position:0% 0}100%{background-position:200% 0}}
+    /* ── Banner de novedades ───────────────────────────────────────────── */
+    .novedades{padding:0 0 8px}
+    .nov-caja{position:relative;overflow:hidden;display:grid;grid-template-columns:1.15fr 1fr;
+        gap:40px;align-items:center;padding:44px 48px;border-radius:22px;
+        background:var(--surface);border:1px solid var(--bd-suave)}
+    /* Un resplandor del color de la marca, para que el bloque se despegue de
+       las secciones vecinas sin cambiarle el fondo a la pagina */
+    .nov-brillo{position:absolute;top:-60%;right:-10%;width:520px;height:520px;border-radius:50%;
+        background:radial-gradient(circle,rgba(45,183,250,.16),transparent 68%);pointer-events:none}
+    .nov-texto{position:relative}
+    .nov-texto h2{font-family:var(--titulos);font-size:clamp(23px,2.4vw,31px);line-height:1.18;
+        letter-spacing:-.015em;margin:10px 0 12px}
+    .nov-texto p{font-size:15.5px;line-height:1.6;color:var(--txt-2);max-width:46ch}
+    .nov-form{position:relative}
+    .nov-form label{display:block;font-size:12px;font-weight:600;letter-spacing:.06em;
+        text-transform:uppercase;color:var(--txt-3);margin-bottom:8px}
+    .nov-fila{display:flex;gap:10px}
+    .nov-fila input{flex:1;min-width:0;height:52px;padding:0 16px;font-family:inherit;font-size:15px;
+        color:var(--txt);background:var(--fondo);border:1px solid var(--bd);border-radius:12px;
+        transition:border-color .18s ease,box-shadow .18s ease}
+    .nov-fila input::placeholder{color:var(--txt-3)}
+    .nov-fila input:focus{outline:none;border-color:var(--accent);
+        box-shadow:0 0 0 3px rgba(45,183,250,.22)}
+    .nov-fila input[aria-invalid="true"]{border-color:var(--bad)}
+    .nov-fila .btn{height:52px;padding:0 26px;white-space:nowrap}
+    .nov-fila .btn[disabled]{opacity:.55;cursor:default}
+    .nov-ayuda{font-size:13px;line-height:1.5;color:var(--txt-3);margin-top:10px;min-height:20px}
+    .nov-ayuda.mal{color:var(--bad)}
+    .nov-ayuda.bien{color:var(--ok)}
+    @media (max-width:900px){
+      .nov-caja{grid-template-columns:1fr;gap:26px;padding:34px 26px}
+      .nov-brillo{right:-40%;top:-40%}
+    }
+    @media (max-width:560px){
+      /* Apilado: en un telefono el boton al lado del campo deja los dos chicos */
+      .nov-fila{flex-direction:column}
+      /* flex:none obligatorio: al apilar, el eje pasa a ser vertical y el
+         flex:1 del campo le comia la altura (quedaba de 21 px) */
+      .nov-fila input{flex:none;width:100%}
+      .nov-fila .btn{width:100%;justify-content:center}
+    }
+
     .cta-btn{display:inline-flex;align-items:center;gap:10px;padding:15px 34px;border-radius:14px;
         background:var(--surface);color:var(--txt);font-size:16px;font-weight:700}
     .cta-btn:hover{color:var(--txt)}
@@ -902,6 +944,35 @@ $og_alt = $en
         </div>
         <div style="text-align:center;margin-top:36px">
           <a class="btn sec" href="/comunidad/cotizador/">Probar la calculadora</a>
+        </div>
+      </div>
+    </section>
+
+    <?php /* Banner de novedades, entre Herramientas y Comunidad.
+             Un solo campo: pedir mas datos baja la conversion y para avisar de
+             una herramienta nueva alcanza con el correo. */ ?>
+    <section class="novedades" id="novedades">
+      <div class="cont">
+        <div class="nov-caja">
+          <div class="nov-brillo" aria-hidden="true"></div>
+          <div class="nov-texto">
+            <span class="ceja">Novedades</span>
+            <h2>Enterate primero de cada herramienta nueva</h2>
+            <p>Todos los meses sumamos algo al taller. Dejanos tu correo y te avisamos
+               cuando sale, sin vueltas y sin llenarte la casilla.</p>
+          </div>
+          <form class="nov-form" id="novForm" novalidate>
+            <label for="novEmail">Tu correo</label>
+            <div class="nov-fila">
+              <input type="email" id="novEmail" name="email" required autocomplete="email"
+                     inputmode="email" placeholder="tunombre@correo.com" aria-describedby="novAyuda">
+              <button class="btn" type="submit" id="novBtn">Avisame</button>
+            </div>
+            <?php /* Trampa para robots: escondida, y fuera del alcance del teclado */ ?>
+            <input type="text" name="website" id="novHoney" tabindex="-1" autocomplete="off"
+                   aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+            <p class="nov-ayuda" id="novAyuda" role="status">Sin spam. Te podés borrar cuando quieras.</p>
+          </form>
         </div>
       </div>
     </section>
@@ -1452,6 +1523,86 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.btn').forEach(function (b) {
     b.addEventListener('mouseenter', function () { gsap.to(b, { scale: 1.03, duration: 0.18, ease: 'power2.out' }); });
     b.addEventListener('mouseleave', function () { gsap.to(b, { scale: 1, duration: 0.22, ease: 'power2.out' }); });
+  });
+});
+</script>
+<script>
+// Banner de novedades.
+document.addEventListener('DOMContentLoaded', function () {
+  var form  = document.getElementById('novForm');
+  if (!form) return;
+  var campo = document.getElementById('novEmail');
+  var boton = document.getElementById('novBtn');
+  var ayuda = document.getElementById('novAyuda');
+  var en    = (typeof ptIdioma === 'function' && ptIdioma() === 'en');
+
+  var T = en ? {
+    ayuda:   'No spam. Unsubscribe whenever you want.',
+    invalido:'Check the email address.',
+    enviando:'Sending…',
+    boton:   'Notify me',
+    listo:   'Done. We sent you an email — if you do not see it, check your Spam folder.',
+    falla:   'We could not save it. Try again in a moment.'
+  } : {
+    ayuda:   'Sin spam. Te podés borrar cuando quieras.',
+    invalido:'Fijate que el correo esté bien escrito.',
+    enviando:'Enviando…',
+    boton:   'Avisame',
+    listo:   'Listo. Te mandamos un correo: si no lo ves, mirá en Correo no deseado.',
+    falla:   'No pudimos guardarlo. Probá de nuevo en un ratito.'
+  };
+  ayuda.textContent = T.ayuda;
+  boton.textContent = T.boton;
+
+  function decir(texto, clase) {
+    ayuda.textContent = texto;
+    ayuda.className = 'nov-ayuda' + (clase ? ' ' + clase : '');
+  }
+  var valido = function () { return /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(campo.value.trim()); };
+
+  // Al salir del campo, no en cada tecla: avisar mientras todavia esta
+  // escribiendo la direccion es molesto y siempre dice que esta mal
+  campo.addEventListener('blur', function () {
+    if (campo.value.trim() === '') { campo.removeAttribute('aria-invalid'); decir(T.ayuda); return; }
+    if (!valido()) { campo.setAttribute('aria-invalid', 'true'); decir(T.invalido, 'mal'); }
+    else { campo.removeAttribute('aria-invalid'); decir(T.ayuda); }
+  });
+  campo.addEventListener('input', function () {
+    if (campo.getAttribute('aria-invalid') && valido()) {
+      campo.removeAttribute('aria-invalid'); decir(T.ayuda);
+    }
+  });
+
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    if (!valido()) { campo.setAttribute('aria-invalid', 'true'); decir(T.invalido, 'mal'); campo.focus(); return; }
+
+    boton.disabled = true;
+    decir(T.enviando);
+
+    fetch('/novedades.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: campo.value.trim(),
+        website: document.getElementById('novHoney').value,
+        idioma: en ? 'en' : 'es'
+      })
+    }).then(function (r) {
+      return r.json().catch(function () { return { ok: false }; });
+    }).then(function (r) {
+      if (r && r.ok) {
+        // Se reemplaza el formulario por la confirmacion: dejarlo ahi invita a
+        // mandar el mismo correo otra vez
+        form.innerHTML = '<p class="nov-ayuda bien" role="status">' + T.listo + '</p>';
+      } else {
+        boton.disabled = false;
+        decir((r && r.error) || T.falla, 'mal');
+      }
+    }).catch(function () {
+      boton.disabled = false;
+      decir(T.falla, 'mal');
+    });
   });
 });
 </script>
