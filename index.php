@@ -1031,6 +1031,9 @@ document.addEventListener('DOMContentLoaded', function () {
     cargador.remove();
     // El alto de la pagina cambio: hay que recalcular donde arranca cada cosa
     if (window.ScrollTrigger) ScrollTrigger.refresh();
+    // Y recien ahora se encienden las entradas: si se encendieran antes,
+    // las secciones que ya estan a la vista se animarian detras del cargador.
+    activarEntradas();
   }, '-=0.2')
   .to(heroEls, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: 0.09 }, '-=0.35')
   .add(function () {
@@ -1099,6 +1102,14 @@ document.addEventListener('DOMContentLoaded', function () {
    * hiciera al reves (from()), las tarjetas estarian visibles hasta que les
    * toca el turno y se veria un parpadeo.
    */
+  var entradasPendientes = [];
+
+  /** Enciende los disparadores. Se llama cuando el cargador ya se fue. */
+  function activarEntradas() {
+    entradasPendientes.forEach(function (f) { f(); });
+    entradasPendientes = [];
+  }
+
   function coreografia(selector, esconder, mostrar) {
     var el = document.querySelector(selector);
     if (!el) return;
@@ -1109,15 +1120,17 @@ document.addEventListener('DOMContentLoaded', function () {
     gsap.set(el.querySelectorAll('.cabeza .ceja, .cabeza p'), { opacity: 0, y: 18 });
     esconder(el);
 
-    var tl = gsap.timeline({
-      defaults: { ease: 'power3.out' },
-      scrollTrigger: { trigger: el, start: 'top 78%', once: true }
+    entradasPendientes.push(function () {
+      var tl = gsap.timeline({
+        defaults: { ease: 'power3.out' },
+        scrollTrigger: { trigger: el, start: 'top 78%', once: true }
+      });
+      tl.to(el.querySelectorAll('.cabeza .ceja'), { opacity: 1, y: 0, duration: 0.5 }, 0)
+        .to(el.querySelectorAll('.cabeza h2 .palabra-mask > i'),
+            { yPercent: 0, duration: 0.95, ease: 'power4.out', stagger: 0.055 }, 0.05)
+        .to(el.querySelectorAll('.cabeza p'), { opacity: 1, y: 0, duration: 0.6 }, 0.35);
+      mostrar(tl, el);
     });
-    tl.to(el.querySelectorAll('.cabeza .ceja'), { opacity: 1, y: 0, duration: 0.5 }, 0)
-      .to(el.querySelectorAll('.cabeza h2 .palabra-mask > i'),
-          { yPercent: 0, duration: 0.95, ease: 'power4.out', stagger: 0.055 }, 0.05)
-      .to(el.querySelectorAll('.cabeza p'), { opacity: 1, y: 0, duration: 0.6 }, 0.35);
-    mostrar(tl, el);
   }
 
   // Herramientas: las tarjetas llegan girando desde abajo
@@ -1174,9 +1187,11 @@ document.addEventListener('DOMContentLoaded', function () {
     var el = document.querySelector('.cierre .cont');
     if (!el) return;
     gsap.set(el, { opacity: 0, y: 50, scale: 0.96 });
-    gsap.to(el, {
-      opacity: 1, y: 0, scale: 1, duration: 1, ease: 'power3.out',
-      scrollTrigger: { trigger: el, start: 'top 82%', once: true }
+    entradasPendientes.push(function () {
+      gsap.to(el, {
+        opacity: 1, y: 0, scale: 1, duration: 1, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 82%', once: true }
+      });
     });
   })();
 
