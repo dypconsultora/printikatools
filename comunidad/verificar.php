@@ -61,8 +61,8 @@ ui_tarjeta_inicio('Confirmación de correo');
     <div class="msg ok"><?php echo ui_icono('check', 16); ?>
       <span>Ya podés usar la calculadora, la librería STL y los recursos.</span></div>
     <?php $plan_pendiente = $_SESSION['plan_elegido'] ?? ''; unset($_SESSION['plan_elegido']); ?>
-    <a class="btn" href="<?php echo $plan_pendiente ? 'suscripcion.php?plan=' . htmlspecialchars($plan_pendiente) : 'index.php'; ?>"
-       style="width:100%;margin-top:20px"><?php echo $plan_pendiente ? 'Continuar con mi plan' : 'Entrar a la plataforma'; ?></a>
+    <a class="btn" href="<?php echo $plan_pendiente ? 'mp_checkout.php?plan=' . htmlspecialchars($plan_pendiente) : 'index.php'; ?>"
+       style="width:100%;margin-top:20px"><?php echo $plan_pendiente ? 'Ir a pagar mi plan' : 'Entrar a la plataforma'; ?></a>
 
 <?php elseif ($estado === 'yaestaba'): ?>
     <h1>Tu correo ya estaba confirmado</h1>

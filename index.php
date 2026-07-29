@@ -880,8 +880,8 @@ $og_alt = $en
               <li><?php echo ui_icono('check', 15); ?>Herramientas nuevas cada mes</li>
             </ul>
             <a class="btn sec btn-pago" target="_blank" rel="noopener"
-               data-mp="https://mpago.la/118mn81" data-pp="https://www.paypal.com/CAMBIAR-mensual"
-               href="<?php echo $en ? 'https://www.paypal.com/CAMBIAR-mensual' : 'https://mpago.la/118mn81'; ?>">Suscribirme</a>
+               data-mp="/comunidad/registro.php?plan=mensual" data-pp="https://www.paypal.com/CAMBIAR-mensual"
+               href="<?php echo $en ? 'https://www.paypal.com/CAMBIAR-mensual' : '/comunidad/registro.php?plan=mensual'; ?>">Suscribirme</a>
           </div>
           <div class="plan destacado">
             <span class="etiqueta swap-mon" data-ars="2 meses gratis" data-usd="2 meses gratis">2 meses gratis</span>
@@ -897,8 +897,8 @@ $og_alt = $en
               <li><?php echo ui_icono('check', 15); ?>Acceso anticipado a herramientas nuevas</li>
             </ul>
             <a class="btn btn-pago" target="_blank" rel="noopener"
-               data-mp="https://mpago.la/1vNcghS" data-pp="https://www.paypal.com/CAMBIAR-anual"
-               href="<?php echo $en ? 'https://www.paypal.com/CAMBIAR-anual' : 'https://mpago.la/1vNcghS'; ?>">Suscribirme</a>
+               data-mp="/comunidad/registro.php?plan=anual" data-pp="https://www.paypal.com/CAMBIAR-anual"
+               href="<?php echo $en ? 'https://www.paypal.com/CAMBIAR-anual' : '/comunidad/registro.php?plan=anual'; ?>">Suscribirme</a>
           </div>
         </div>
       </div>

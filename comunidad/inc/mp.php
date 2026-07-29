@@ -31,8 +31,10 @@ function mp_api($metodo, $ruta, $body = null) {
 /** Datos de cada plan pago. */
 function mp_planes() {
     return [
-        'mensual' => ['titulo' => 'Comunidad Mensual', 'monto' => COMUNIDAD_PRECIO_MENSUAL, 'meses' => 1],
-        'anual'   => ['titulo' => 'Comunidad Anual',   'monto' => COMUNIDAD_PRECIO_ANUAL,   'meses' => 12],
+        // Los nombres son los que ve el cliente en la web: si en el checkout
+        // de Mercado Pago aparece otro, desconfia justo antes de pagar.
+        'mensual' => ['titulo' => 'Printika Pro',       'monto' => COMUNIDAD_PRECIO_MENSUAL, 'meses' => 1],
+        'anual'   => ['titulo' => 'Printika Pro Anual', 'monto' => COMUNIDAD_PRECIO_ANUAL,   'meses' => 12],
     ];
 }
 

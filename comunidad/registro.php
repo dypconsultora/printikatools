@@ -13,7 +13,10 @@ if (!com_preview_ok() && usuario_actual() === null) {
 }
 
 if (usuario_actual() !== null) {
-    header('Location: index.php');
+    // Si venia a contratar un plan, no lo mandamos al panel: lo llevamos a pagar
+    $pedido = $_GET['plan'] ?? '';
+    header('Location: ' . (in_array($pedido, ['mensual', 'anual'], true)
+        ? 'mp_checkout.php?plan=' . $pedido : 'index.php'));
     exit;
 }
 
@@ -75,7 +78,13 @@ if ($creado) {
     exit;
 }
 
-$PLANES_TXT = ['gratis' => 'Gratuito · $0', 'mensual' => 'Mensual · $18.000/mes', 'anual' => 'Anual · $170.000/año'];
+// Los precios salen de las constantes, no escritos a mano: asi no se puede
+// volver a desfasar del resto del sitio (decia $170.000 y son $180.000).
+$PLANES_TXT = [
+    'gratis'  => 'Gratuito · $0',
+    'mensual' => 'Mensual · $' . number_format(COMUNIDAD_PRECIO_MENSUAL, 0, ',', '.') . '/mes',
+    'anual'   => 'Anual · $' . number_format(COMUNIDAD_PRECIO_ANUAL, 0, ',', '.') . '/año',
+];
 
 ui_tarjeta_inicio('Crear cuenta');
 ?>
