@@ -23,8 +23,11 @@ function correo_disponible() { return correo_config() !== null; }
  * botón grande. Tablas y estilos en línea porque es lo único que
  * renderizan bien Gmail, Outlook y compañía.
  */
-function correo_plantilla($titulo, $parrafos, $boton = null, $pie = '', $extra = '') {
+function correo_plantilla($titulo, $parrafos, $boton = null, $pie = '', $extra = '', $idioma = 'es') {
     $esc = fn($t) => htmlspecialchars($t, ENT_QUOTES, 'UTF-8');
+    $en  = $idioma === 'en';
+    $bajada = $en ? '3D printing tools and community'
+                  : 'Herramientas y comunidad de impresión 3D';
     $cuerpo = '';
     foreach ((array) $parrafos as $p) {
         $cuerpo .= '<p style="margin:0 0 16px;font-size:15px;line-height:1.65;color:#3d4759">' . $p . '</p>';
@@ -34,17 +37,19 @@ function correo_plantilla($titulo, $parrafos, $boton = null, $pie = '', $extra =
     $cuerpo .= $extra;
     $btn = '';
     if ($boton) {
+        // Texto blanco sobre un azul mas profundo que el celeste de la marca:
+        // sobre el celeste claro el blanco queda lavado y casi no se lee
         $btn = '<table role="presentation" cellpadding="0" cellspacing="0" style="margin:26px 0">
-            <tr><td style="border-radius:10px;background:#2db7fa">
+            <tr><td style="border-radius:10px;background:#0c7ab8">
               <a href="' . $esc($boton['url']) . '" style="display:inline-block;padding:14px 32px;
                  font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;
-                 color:#06202f;text-decoration:none;border-radius:10px">' . $esc($boton['texto']) . '</a>
+                 color:#ffffff;text-decoration:none;border-radius:10px">' . $esc($boton['texto']) . '</a>
             </td></tr></table>';
     }
     $piehtml = $pie ? '<p style="margin:22px 0 0;font-size:12.5px;line-height:1.6;color:#8a95a8">' . $pie . '</p>' : '';
 
     return '<!DOCTYPE html>
-<html lang="es"><head><meta charset="UTF-8">
+<html lang="' . ($en ? 'en' : 'es') . '"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#eef2f7;font-family:Arial,Helvetica,sans-serif">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef2f7;padding:32px 16px">
@@ -62,7 +67,7 @@ function correo_plantilla($titulo, $parrafos, $boton = null, $pie = '', $extra =
         </td></tr>
         <tr><td style="background:#f6f9fd;padding:18px 34px;border-top:1px solid #e3eaf3">
           <p style="margin:0;font-size:12px;line-height:1.6;color:#8a95a8">
-            Printika Tools · Herramientas y comunidad de impresión 3D<br>
+            Printika Tools · ' . $bajada . '<br>
             <a href="https://printikatools.com/" style="color:#2db7fa;text-decoration:none">printikatools.com</a>
           </p>
         </td></tr>
@@ -118,23 +123,111 @@ function correo_enviar($para, $nombre, $asunto, $html, $texto, &$error = null) {
 }
 
 /**
- * Una fila de la tabla de planes del correo de bienvenida.
- * Todo en linea y con tablas porque es lo unico que Gmail y Outlook respetan.
+ * Los tres planes, con las MISMAS palabras que la seccion Planes de la landing.
+ *
+ * Se escriben una sola vez y en castellano; para el ingles se traducen con el
+ * mismo diccionario que usa la landing (assets/lang/landing-en.json). De esta
+ * forma el correo no puede terminar diciendo algo distinto de lo que la persona
+ * ve en la web, que es como aparecieron los precios desactualizados de antes.
+ *
+ * Si se cambia un plan en index.php, hay que cambiarlo aca tambien: son dos
+ * lugares, pero las palabras son las mismas y el diccionario ya las cubre.
  */
-function correo_plan_fila($nombre, $precio, $detalle, $destacado = false) {
+function correo_planes($en) {
+    $dic = [];
+    if ($en) {
+        $json = @file_get_contents(dirname(__DIR__, 2) . '/assets/lang/landing-en.json');
+        if ($json !== false) $dic = json_decode($json, true) ?: [];
+    }
+    $tr = fn($t) => $dic[$t] ?? $t;
+
+    $monto = fn($ars, $usd) => $en ? $usd : '$' . number_format($ars, 0, ',', '.');
+
+    return [
+        [
+            'nombre'  => 'Printika Free',
+            'precio'  => $en ? 'US$0' : '$0',
+            'periodo' => '',
+            'nota'    => $tr('Para probar y empezar'),
+            'items'   => array_map($tr, [
+                'Calculadora de costos online',
+                'Cálculo en ARS, USD y EUR',
+                'Recursos en videos y PDF',
+            ]),
+        ],
+        [
+            'nombre'  => 'Printika Pro',
+            'precio'  => $monto(COMUNIDAD_PRECIO_MENSUAL, 'US$15'),
+            'periodo' => $tr('/mes'),
+            'nota'    => $tr('Renovación mes a mes, sin permanencia'),
+            'items'   => array_map($tr, [
+                'Calculadora completa (versión PRO)',
+                'Mi Taller: presupuestos, clientes y stock',
+                'Librería STL y estadísticas',
+                'Tus datos guardados en tu cuenta',
+                'Soporte técnico prioritario',
+                'Herramientas nuevas cada mes',
+            ]),
+        ],
+        [
+            'nombre'    => $tr('Printika Pro Anual'),
+            'precio'    => $monto(COMUNIDAD_PRECIO_ANUAL, 'US$150'),
+            'periodo'   => $tr('/año'),
+            'etiqueta'  => $tr('2 meses gratis'),
+            'nota'      => $tr('Un solo pago y te olvidás todo el año'),
+            'destacado' => true,
+            'items'     => array_map($tr, [
+                'Todo lo del plan mensual',
+                $en ? '2 meses sin cargo (US$30 de ahorro)' : '2 meses sin cargo ($36.000 de ahorro)',
+                'Precio congelado por 12 meses',
+                'Acceso anticipado a herramientas nuevas',
+            ]),
+        ],
+    ];
+}
+
+/**
+ * Una tarjeta de plan del correo. Todo en linea y con tablas porque es lo unico
+ * que Gmail y Outlook respetan; el tilde va como texto y no como imagen para
+ * que se vea aunque el correo bloquee las imagenes.
+ */
+function correo_plan_fila($plan) {
+    $destacado = !empty($plan['destacado']);
     $borde = $destacado ? '#2db7fa' : '#e3eaf3';
-    $fondo = $destacado ? '#f2fbff' : '#ffffff';
-    return '<tr><td style="padding:0 0 10px">
+    $fondo = $destacado ? '#f4fbff' : '#ffffff';
+
+    $etiqueta = '';
+    if (!empty($plan['etiqueta'])) {
+        $etiqueta = '<span style="display:inline-block;margin-bottom:8px;padding:3px 10px;
+                     border-radius:99px;background:#2db7fa;color:#06202f;
+                     font-size:11px;font-weight:bold">' . $plan['etiqueta'] . '</span><br>';
+    }
+
+    $items = '';
+    foreach ($plan['items'] as $i) {
+        $items .= '<tr>
+            <td valign="top" style="padding:3px 8px 3px 0;font-size:13px;color:#2db7fa;font-weight:bold">&#10003;</td>
+            <td style="padding:3px 0;font-size:13px;line-height:1.5;color:#3d4759">' . $i . '</td>
+          </tr>';
+    }
+
+    $periodo = $plan['periodo'] !== ''
+        ? ' <span style="font-size:13px;font-weight:normal;color:#5b6779">' . $plan['periodo'] . '</span>'
+        : '';
+
+    return '<tr><td style="padding:0 0 12px">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
              style="background:' . $fondo . ';border:1px solid ' . $borde . ';border-radius:12px">
-        <tr>
-          <td style="padding:14px 16px">
-            <span style="font-size:15px;font-weight:bold;color:#131a27">' . $nombre . '</span><br>
-            <span style="font-size:13px;line-height:1.5;color:#5b6779">' . $detalle . '</span>
-          </td>
-          <td align="right" style="padding:14px 16px;white-space:nowrap;
-                                   font-size:15px;font-weight:bold;color:#131a27">' . $precio . '</td>
-        </tr>
+        <tr><td style="padding:16px 18px">
+          ' . $etiqueta . '
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+            <td style="font-size:16px;font-weight:bold;color:#131a27">' . $plan['nombre'] . '</td>
+            <td align="right" style="white-space:nowrap;font-size:17px;font-weight:bold;color:#131a27">'
+              . $plan['precio'] . $periodo . '</td>
+          </tr></table>
+          <p style="margin:4px 0 12px;font-size:13px;color:#8a95a8">' . $plan['nota'] . '</p>
+          <table role="presentation" cellpadding="0" cellspacing="0">' . $items . '</table>
+        </td></tr>
       </table>
     </td></tr>';
 }
@@ -160,7 +253,7 @@ function correo_bienvenida_partes($idioma = 'es') {
     $precio = fn($n) => '$' . number_format($n, 0, ',', '.');
 
     if ($en) {
-        $asunto  = 'Your quote is done. Your workshop is the part that is missing.';
+        $asunto  = 'The calculator is ready. What is missing is the workshop. PrintikaTools';
         $titulo  = 'We got your email';
         $parrafos = [
             'Thanks for leaving it. You are on the list, and you will be the first to know
@@ -172,12 +265,6 @@ function correo_bienvenida_partes($idioma = 'es') {
              same place.',
             '<strong>Creating the account is free and we do not ask for a card.</strong>',
         ];
-        $planes = correo_plan_fila('Free', 'US$0',
-                    'The full calculator, quotes and your first clients.')
-                . correo_plan_fila('Pro monthly', 'US$15',
-                    'The whole workshop: stock, sales, statistics, STL library and the guides.')
-                . correo_plan_fila('Pro yearly', 'US$150',
-                    'Same as monthly, with 2 months on us. Most people pick this one.', true);
         $boton = ['url' => $alta, 'texto' => 'Create my free account'];
         $pie   = 'You are getting this because you left your address at the calculator on
                   printikatools.com. If it was not you, just ignore it &mdash; we will not
@@ -186,7 +273,7 @@ function correo_bienvenida_partes($idioma = 'es') {
                . "Create your free Printika Tools account: $alta\n\n"
                . "Free US\$0 · Pro monthly US\$15 · Pro yearly US\$150 (2 months free)";
     } else {
-        $asunto  = 'Tu cotización ya está. Lo que falta es el taller.';
+        $asunto  = 'El cotizador ya está. Lo que falta es el taller. PrintikaTools';
         $titulo  = 'Recibimos tu correo';
         $parrafos = [
             'Gracias por dejárnoslo. Ya quedaste anotado y vas a ser de los primeros en
@@ -198,12 +285,6 @@ function correo_bienvenida_partes($idioma = 'es') {
              todo en el mismo lugar.',
             '<strong>Crear la cuenta es gratis y no te pedimos tarjeta.</strong>',
         ];
-        $planes = correo_plan_fila('Gratis', '$0',
-                    'El cotizador completo, presupuestos y tus primeros clientes.')
-                . correo_plan_fila('Pro mensual', $precio(COMUNIDAD_PRECIO_MENSUAL) . '/mes',
-                    'Todo el taller: stock, ventas, estadísticas, librería STL y las guías.')
-                . correo_plan_fila('Pro anual', $precio(COMUNIDAD_PRECIO_ANUAL) . '/año',
-                    'Lo mismo, con 2 meses de regalo. Es el que más eligen.', true);
         $boton = ['url' => $alta, 'texto' => 'Crear mi cuenta gratis'];
         $pie   = 'Recibís este correo porque dejaste tu dirección en el cotizador de
                   printikatools.com. Si no fuiste vos, ignoralo: no te volvemos a escribir.';
@@ -213,12 +294,14 @@ function correo_bienvenida_partes($idioma = 'es') {
                . 'Pro anual ' . $precio(COMUNIDAD_PRECIO_ANUAL) . "/año (2 meses de regalo)";
     }
 
+    $filas = '';
+    foreach (correo_planes($en) as $p) $filas .= correo_plan_fila($p);
     $tabla = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-                     style="margin:6px 0 2px">' . $planes . '</table>';
+                     style="margin:6px 0 2px">' . $filas . '</table>';
 
     return [
         'asunto' => $asunto,
-        'html'   => correo_plantilla($titulo, $parrafos, $boton, $pie, $tabla),
+        'html'   => correo_plantilla($titulo, $parrafos, $boton, $pie, $tabla, $idioma),
         'texto'  => $texto,
     ];
 }
