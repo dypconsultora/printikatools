@@ -23,11 +23,18 @@ function correo_disponible() { return correo_config() !== null; }
  * botón grande. Tablas y estilos en línea porque es lo único que
  * renderizan bien Gmail, Outlook y compañía.
  */
-function correo_plantilla($titulo, $parrafos, $boton = null, $pie = '', $extra = '', $idioma = 'es') {
+function correo_plantilla($titulo, $parrafos, $boton = null, $pie = '', $extra = '', $idioma = 'es', $baja = '') {
     $esc = fn($t) => htmlspecialchars($t, ENT_QUOTES, 'UTF-8');
     $en  = $idioma === 'en';
     $bajada = $en ? '3D printing tools and community'
                   : 'Herramientas y comunidad de impresión 3D';
+    // Solo los correos de novedades llevan baja. Los de la cuenta (confirmar el
+    // correo, el codigo de acceso) no: esos hacen falta para usar el sistema y
+    // ofrecer darse de baja de ellos no tendria sentido.
+    $bajahtml = $baja
+        ? '<br><a href="' . $esc($baja) . '" style="color:#8a95a8;text-decoration:underline">'
+          . ($en ? 'Unsubscribe' : 'Darme de baja') . '</a>'
+        : '';
     $cuerpo = '';
     foreach ((array) $parrafos as $p) {
         $cuerpo .= '<p style="margin:0 0 16px;font-size:15px;line-height:1.65;color:#3d4759">' . $p . '</p>';
@@ -68,7 +75,8 @@ function correo_plantilla($titulo, $parrafos, $boton = null, $pie = '', $extra =
         <tr><td style="background:#f6f9fd;padding:18px 34px;border-top:1px solid #e3eaf3">
           <p style="margin:0;font-size:12px;line-height:1.6;color:#8a95a8">
             Printika Tools · ' . $bajada . '<br>
-            <a href="https://printikatools.com/" style="color:#2db7fa;text-decoration:none">printikatools.com</a>
+            <a href="https://printikatools.com/" style="color:#2db7fa;text-decoration:none">printikatools.com</a>'
+            . $bajahtml . '
           </p>
         </td></tr>
       </table>
@@ -81,7 +89,7 @@ function correo_plantilla($titulo, $parrafos, $boton = null, $pie = '', $extra =
  * Envía un correo HTML con el logo incrustado.
  * Devuelve true si salió; false si falló (y deja el motivo en $error).
  */
-function correo_enviar($para, $nombre, $asunto, $html, $texto, &$error = null) {
+function correo_enviar($para, $nombre, $asunto, $html, $texto, &$error = null, $baja = '') {
     $cfg = correo_config();
     if (!$cfg) { $error = 'El envío de correos no está configurado.'; return false; }
 
@@ -108,6 +116,15 @@ function correo_enviar($para, $nombre, $asunto, $html, $texto, &$error = null) {
         $logo = $base . '/assets/img/printika-tools-mail.png';
         if (is_readable($logo)) {
             $mail->addEmbeddedImage($logo, 'logoprintika', 'printika-tools.png');
+        }
+
+        // Gmail y Yahoo piden estas dos cabeceras a quien manda correo masivo:
+        // ponen el boton "Cancelar suscripcion" arriba del mensaje. Tenerlas
+        // ayuda a que el correo NO caiga en la carpeta de no deseados, que es
+        // justo el problema que tenemos.
+        if ($baja !== '') {
+            $mail->addCustomHeader('List-Unsubscribe', '<' . $baja . '>');
+            $mail->addCustomHeader('List-Unsubscribe-Post', 'List-Unsubscribe=One-Click');
         }
 
         $mail->isHTML(true);
@@ -253,7 +270,7 @@ function correo_plan_fila($plan) {
  * Devuelve ['asunto', 'html', 'texto']. Va separado del envio para poder
  * mirar como queda el correo sin mandarselo a nadie.
  */
-function correo_bienvenida_partes($idioma = 'es') {
+function correo_bienvenida_partes($idioma = 'es', $email = '') {
     $en = $idioma === 'en';
     // El alta es la misma en los dos idiomas: la plataforma se traduce sola
     $alta = 'https://printikatools.com/comunidad/registro.php';
@@ -311,15 +328,22 @@ function correo_bienvenida_partes($idioma = 'es') {
     $tabla = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
                      style="margin:6px 0 2px">' . $filas . '</table>';
 
+    // Sin direccion (cuando se mira como quedo el correo) no hay enlace de baja
+    $baja = $email !== '' ? com_baja_url($email) : '';
+    if ($baja !== '') {
+        $texto .= "\n\n" . ($en ? 'Unsubscribe: ' : 'Darte de baja: ') . $baja;
+    }
+
     return [
         'asunto' => $asunto,
-        'html'   => correo_plantilla($titulo, $parrafos, $boton, $pie, $tabla, $idioma),
+        'html'   => correo_plantilla($titulo, $parrafos, $boton, $pie, $tabla, $idioma, $baja),
         'texto'  => $texto,
+        'baja'   => $baja,
     ];
 }
 
 /** Manda el correo de bienvenida a una direccion. */
 function correo_bienvenida_novedades($email, $idioma = 'es', &$error = null) {
-    $c = correo_bienvenida_partes($idioma);
-    return correo_enviar($email, '', $c['asunto'], $c['html'], $c['texto'], $error);
+    $c = correo_bienvenida_partes($idioma, $email);
+    return correo_enviar($email, '', $c['asunto'], $c['html'], $c['texto'], $error, $c['baja']);
 }

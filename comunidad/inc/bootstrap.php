@@ -128,6 +128,35 @@ function cfg_set($clave, $valor) {
 }
 
 /**
+ * Clave para firmar enlaces que viajan por correo (la baja de novedades).
+ *
+ * Se guarda en la tabla config y se crea sola la primera vez. No se saca de un
+ * archivo de configuracion porque cual de los dos se carga depende del entorno,
+ * y una firma que cambia invalida todos los enlaces ya enviados.
+ */
+function com_secreto() {
+    static $s = null;
+    if ($s !== null) return $s;
+    $s = cfg_get('secreto_enlaces');
+    if (!$s) {
+        $s = bin2hex(random_bytes(32));
+        cfg_set('secreto_enlaces', $s);
+    }
+    return $s;
+}
+
+/** Firma de la direccion, para que nadie pueda dar de baja a otro. */
+function com_baja_token($email) {
+    return substr(hash_hmac('sha256', mb_strtolower(trim($email)), com_secreto()), 0, 32);
+}
+
+/** Direccion completa para darse de baja de novedades. */
+function com_baja_url($email) {
+    return 'https://printikatools.com/baja.php?e=' . rawurlencode($email)
+         . '&t=' . com_baja_token($email);
+}
+
+/**
  * Limpieza unica: borra de la base los restos del acceso "PRO" del cotizador
  * viejo (el usuario y su contrasena). Ese ingreso se retiro el 2026-07-26;
  * el acceso pago real vive en la plataforma.
