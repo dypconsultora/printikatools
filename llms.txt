@@ -27,8 +27,8 @@ es gratuita y no requiere registro.
 - Librería de modelos STL y recursos en video y PDF
 
 ## Planes y precios
-- Printika Free: $0 — calculadora de costos, librería STL y recursos en videos y PDF
-- Printika Pro: $18.000 ARS por mes o US$15 por mes
+(El plan mensual esta fuera de venta por ahora; cuando vuelva hay que reponer su linea aca.)
+- Printika Free: $0 — calculadora de costos y recursos en videos y PDF
 - Printika Pro Anual: $180.000 ARS por año o US$150 por año (2 meses sin cargo)
 Detalle legible por máquina: https://printikatools.com/pricing.md
 

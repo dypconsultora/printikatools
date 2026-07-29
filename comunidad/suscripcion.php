@@ -22,6 +22,7 @@ $AVISOS = [
     'volviste' => 'Si completaste el pago, tu plan se activa en unos instantes. Actualizá la página en un ratito.',
     'sin_mp'   => 'El pago online se está configurando. Escribinos por Telegram y lo activamos a mano.',
     'error_mp' => 'No pudimos iniciar el pago. Probá de nuevo en unos minutos o escribinos.',
+    'sin_mensual' => 'Por ahora el plan mensual no está disponible. El anual te sale más barato: son 2 meses de regalo.',
 ];
 $aviso = $AVISOS[$_GET['aviso'] ?? ''] ?? '';
 
@@ -135,6 +136,8 @@ ui_panel_inicio('Tu plan', $u, 'Tu plan');
         <?php else: ?><span class="actual">Incluido en tu plan</span><?php endif; ?>
       </div>
 
+      <?php // Se oculta el mensual salvo que sea justo el plan que la persona tiene
+            if (com_mostrar_mensual($plan)): ?>
       <div class="plan-c<?php echo $elegido === 'mensual' ? ' destacado' : ''; ?>">
         <h2>Printika Pro</h2>
         <p class="precio"><?php echo '$' . number_format(COMUNIDAD_PRECIO_MENSUAL, 0, ',', '.'); ?> <small>/mes</small></p>
@@ -147,10 +150,11 @@ ui_panel_inicio('Tu plan', $u, 'Tu plan');
           <li><?php echo ui_icono('check', 15); ?>Tus datos guardados en tu cuenta</li>
         </ul>
         <?php if ($plan === 'mensual'): ?><span class="actual">Tu plan actual</span>
-        <?php elseif ($plan === 'gratis'): ?>
+        <?php elseif ($plan === 'gratis' && COMUNIDAD_MENSUAL_VISIBLE): ?>
           <a class="btn" href="mp_checkout.php?plan=mensual">Suscribirme con Mercado Pago</a>
         <?php else: ?><span class="actual">—</span><?php endif; ?>
       </div>
+      <?php endif; ?>
 
       <div class="plan-c destacado">
         <span class="cinta">2 meses gratis</span>
@@ -158,7 +162,13 @@ ui_panel_inicio('Tu plan', $u, 'Tu plan');
         <p class="precio"><?php echo '$' . number_format(COMUNIDAD_PRECIO_ANUAL, 0, ',', '.'); ?> <small>/año</small></p>
         <p class="detalle">Equivale a $15.000 por mes · ahorrás $36.000</p>
         <ul>
-          <li><?php echo ui_icono('check', 15); ?>Todo lo del plan mensual</li>
+          <?php if (com_mostrar_mensual($plan)): ?>
+            <li><?php echo ui_icono('check', 15); ?>Todo lo del plan mensual</li>
+          <?php else: ?>
+            <li><?php echo ui_icono('check', 15); ?>Todo Mi taller: presupuestos, productos, clientes</li>
+            <li><?php echo ui_icono('check', 15); ?>Stock, ventas y estadísticas</li>
+            <li><?php echo ui_icono('check', 15); ?>Librería STL y soporte por Telegram</li>
+          <?php endif; ?>
           <li><?php echo ui_icono('check', 15); ?>2 meses sin cargo</li>
           <li><?php echo ui_icono('check', 15); ?>Precio congelado por 12 meses</li>
         </ul>

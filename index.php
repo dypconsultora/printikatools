@@ -130,8 +130,11 @@ $og_alt = $en
   $faq = $en ? [
       ['How do I join the community?',
        'Create your free account with the Sign up button and then activate your subscription. You get access to every tool in minutes.'],
-      ['Is billing monthly or yearly?',
-       'Whichever you prefer: the monthly plan renews month to month with no lock-in, and the yearly plan gives you 2 months at no cost with the price locked for the whole year.'],
+      COMUNIDAD_MENSUAL_VISIBLE
+        ? ['Is billing monthly or yearly?',
+           'Whichever you prefer: the monthly plan renews month to month with no lock-in, and the yearly plan gives you 2 months at no cost with the price locked for the whole year.']
+        : ['How is the plan paid?',
+           'The yearly plan is paid once for the whole year: you get 2 months at no cost and the price stays locked for 12 months.'],
       ['Can I cancel anytime?',
        'Yes. If you cancel, you keep access until your subscription expires and you are never charged again.'],
       ['What does the free plan include?',
@@ -143,8 +146,11 @@ $og_alt = $en
   ] : [
       ['¿Cómo me uno a la comunidad?',
        'Creás tu cuenta gratis con el botón Registrarse y después activás tu suscripción. En minutos tenés acceso a todas las herramientas.'],
-      ['¿El pago es mensual o anual?',
-       'Como prefieras: el plan mensual cuesta $18.000 y se renueva mes a mes sin permanencia; el plan anual cuesta $180.000, ahorrás $36.000 (2 meses gratis) y el precio queda congelado todo el año.'],
+      COMUNIDAD_MENSUAL_VISIBLE
+        ? ['¿El pago es mensual o anual?',
+           'Como prefieras: el plan mensual cuesta $18.000 y se renueva mes a mes sin permanencia; el plan anual cuesta $180.000, ahorrás $36.000 (2 meses gratis) y el precio queda congelado todo el año.']
+        : ['¿Cómo se paga el plan?',
+           'El plan anual cuesta $180.000 y se paga una sola vez por todo el año: te ahorrás $36.000 (2 meses gratis) y el precio te queda congelado los 12 meses.'],
       ['¿Puedo cancelar cuando quiera?',
        'Sí. Si cancelás, mantenés el acceso hasta el vencimiento de tu suscripción y no se te cobra nada más.'],
       ['¿Qué incluye el plan gratuito?',
@@ -208,9 +214,13 @@ $og_alt = $en
         ['@type' => 'Offer', 'name' => 'Printika Free', 'price' => '0', 'priceCurrency' => 'ARS',
          'description' => $en ? 'Cost calculator, STL library and video and PDF resources.'
                               : 'Calculadora de costos, librería STL y recursos en videos y PDF.'],
-        ['@type' => 'Offer', 'name' => 'Printika Pro', 'price' => '18000', 'priceCurrency' => 'ARS',
-         'description' => $en ? 'Every workshop tool, renewed monthly.'
-                              : 'Todas las herramientas del taller, renovación mensual.'],
+        // El mensual sale del listado si no esta a la venta: lo que Google lee
+        // tiene que ser lo mismo que se ve en pantalla
+        ...(COMUNIDAD_MENSUAL_VISIBLE ? [
+          ['@type' => 'Offer', 'name' => 'Printika Pro', 'price' => '18000', 'priceCurrency' => 'ARS',
+           'description' => $en ? 'Every workshop tool, renewed monthly.'
+                                : 'Todas las herramientas del taller, renovación mensual.'],
+        ] : []),
         ['@type' => 'Offer', 'name' => $en ? 'Printika Pro Annual' : 'Printika Pro Anual', 'price' => '180000', 'priceCurrency' => 'ARS',
          'description' => $en ? 'Every workshop tool with 2 months at no cost.'
                               : 'Todas las herramientas del taller con 2 meses sin cargo.'],
@@ -866,6 +876,8 @@ $og_alt = $en
             </ul>
             <a class="btn sec" href="/comunidad/registro.php?plan=gratis">Empezar gratis</a>
           </div>
+          <?php // El mensual se puede sacar de la vidriera desde bootstrap.php
+                if (COMUNIDAD_MENSUAL_VISIBLE): ?>
           <div class="plan">
             <h3>Printika Pro</h3>
             <p class="precio"><span class="monto" data-ars="$18.000" data-usd="US$15"><?php echo $en ? 'US$15' : '$18.000'; ?></span> <small>/mes</small></p>
@@ -883,6 +895,7 @@ $og_alt = $en
                data-mp="/comunidad/registro.php?plan=mensual" data-pp="https://www.paypal.com/CAMBIAR-mensual"
                href="<?php echo $en ? 'https://www.paypal.com/CAMBIAR-mensual' : '/comunidad/registro.php?plan=mensual'; ?>">Suscribirme</a>
           </div>
+          <?php endif; ?>
           <div class="plan destacado">
             <span class="etiqueta swap-mon" data-ars="2 meses gratis" data-usd="2 meses gratis">2 meses gratis</span>
             <h3>Printika Pro Anual</h3>
@@ -890,7 +903,14 @@ $og_alt = $en
             <span class="ahorro" data-ars="Equivale a $15.000 por mes · ahorrás $36.000" data-usd="Equivale a US$12,50 por mes · ahorrás US$30"><?php echo $en ? 'Equivale a US$12,50 por mes · ahorrás US$30' : 'Equivale a $15.000 por mes · ahorrás $36.000'; ?></span>
             <p class="nota" style="margin-top:12px">Un solo pago y te olvidás todo el año</p>
             <ul>
-              <li><?php echo ui_icono('check', 15); ?>Todo lo del plan mensual</li>
+              <?php if (COMUNIDAD_MENSUAL_VISIBLE): ?>
+                <li><?php echo ui_icono('check', 15); ?>Todo lo del plan mensual</li>
+              <?php else: // sin el mensual a la vista, "todo lo del mensual" no dice nada ?>
+                <li><?php echo ui_icono('check', 15); ?>Calculadora completa (versión PRO)</li>
+                <li><?php echo ui_icono('check', 15); ?>Mi Taller: presupuestos, clientes y stock</li>
+                <li><?php echo ui_icono('check', 15); ?>Librería STL y estadísticas</li>
+                <li><?php echo ui_icono('check', 15); ?>Soporte técnico prioritario</li>
+              <?php endif; ?>
               <li><?php echo ui_icono('check', 15); ?><span class="swap-mon" data-ars="2 meses sin cargo ($36.000 de ahorro)" data-usd="2 meses sin cargo (US$30 de ahorro)"><?php echo $en ? '2 meses sin cargo (US$30 de ahorro)' : '2 meses sin cargo ($36.000 de ahorro)'; ?></span></li>
               <li><?php echo ui_icono('check', 15); ?>Precio congelado por 12 meses</li>
               <li><?php echo ui_icono('check', 15); ?>Recursos en videos y PDF</li>
@@ -917,9 +937,16 @@ $og_alt = $en
             En minutos tenés acceso a todas las herramientas.</p>
           </details>
           <details>
+            <?php if (COMUNIDAD_MENSUAL_VISIBLE): ?>
             <summary>¿El pago es mensual o anual?</summary>
             <p class="resp">Como prefieras: el plan mensual cuesta $18.000 y se renueva mes a mes sin permanencia,
             y el plan anual cuesta $180.000 — ahorrás $36.000 (2 meses gratis) y el precio queda congelado todo el año.</p>
+            <?php else: ?>
+            <summary>¿Cómo se paga el plan?</summary>
+            <p class="resp">El plan anual cuesta $180.000 y se paga una sola vez por todo el año: te ahorrás
+            $36.000 (2 meses gratis) y el precio te queda congelado los 12 meses. Antes de pagar podés usar
+            la calculadora gratis todo lo que quieras.</p>
+            <?php endif; ?>
           </details>
           <details>
             <summary>¿Puedo cancelar cuando quiera?</summary>

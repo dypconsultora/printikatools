@@ -59,6 +59,33 @@ if (!defined('COMUNIDAD_NOMBRE')) {
 }
 define('COMUNIDAD_PRECIO_MENSUAL', 18000);
 define('COMUNIDAD_PRECIO_ANUAL', 180000);
+
+/**
+ * ¿Se ofrece el plan mensual?
+ *
+ * En false queda a la venta solo el anual (y el gratuito): desaparece de la
+ * portada, de "Tu plan", del correo de bienvenida y de las preguntas
+ * frecuentes, y el checkout deja de aceptarlo aunque alguien tenga guardado el
+ * enlace viejo.
+ *
+ * PARA VOLVER A MOSTRARLO: cambiar false por true en la linea de abajo. Eso
+ * alcanza para TODO el sitio. Las dos unicas excepciones son los archivos que
+ * leen los buscadores con IA, que son de texto y no pasan por PHP: hay que
+ * reponer a mano el plan mensual en llms.txt y en pricing.md (los dos tienen
+ * una nota adentro recordandolo).
+ *
+ * A quien YA tiene el plan mensual no le pasa nada: le sigue funcionando, lo ve
+ * en "Tu plan" y se le renueva igual. Esto solo saca el cartel de la vidriera.
+ */
+define('COMUNIDAD_MENSUAL_VISIBLE', false);
+
+/**
+ * true si al usuario hay que mostrarle el plan mensual: o porque esta a la
+ * venta, o porque es el plan que ya tiene contratado.
+ */
+function com_mostrar_mensual($plan_actual = '') {
+    return COMUNIDAD_MENSUAL_VISIBLE || $plan_actual === 'mensual';
+}
 define('COMUNIDAD_WHATSAPP', 'https://wa.me/5491131373425?text=' . rawurlencode('Hola! Quiero activar mi suscripción de Printika Tools.'));
 
 /** Conexion PDO compartida. Devuelve null si no hay config o no conecta. */

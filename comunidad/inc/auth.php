@@ -122,8 +122,11 @@ function requerir_miembro() {
  */
 function com_plan_pendiente($plan = null) {
     com_sesion();
+    // El mensual solo vale si esta a la venta: si no, un enlace guardado de
+    // antes llevaria a la persona a un checkout que la va a rebotar igual
+    $validos = COMUNIDAD_MENSUAL_VISIBLE ? ['mensual', 'anual'] : ['anual'];
     if ($plan !== null) {
-        if (in_array($plan, ['mensual', 'anual'], true)) $_SESSION['plan_elegido'] = $plan;
+        if (in_array($plan, $validos, true)) $_SESSION['plan_elegido'] = $plan;
         else unset($_SESSION['plan_elegido']);
     }
     return $_SESSION['plan_elegido'] ?? '';

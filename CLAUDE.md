@@ -22,6 +22,13 @@ arrancar una sesión nueva sin tener que redescubrir todo.
 | Pro mensual | ARS 18.000 | `COMUNIDAD_PRECIO_MENSUAL` en `comunidad/inc/bootstrap.php` |
 | Pro anual | ARS 180.000 | `COMUNIDAD_PRECIO_ANUAL` (2 meses de regalo) |
 
+> ⚠️ **El plan mensual está oculto** desde el 2026-07-29, a pedido de Adriana y por
+> unos días. El interruptor es `COMUNIDAD_MENSUAL_VISIBLE` en `bootstrap.php`: en
+> `true` vuelve a aparecer en todo el sitio. Las únicas dos excepciones, porque son
+> texto plano y no pasan por PHP, son `llms.txt` y `pricing.md`: ahí hay que reponerlo
+> a mano (los dos tienen una nota adentro). **Ella tiene que avisar cuándo volver a
+> mostrarlo.** A quien ya lo tenga contratado no le cambia nada.
+
 **Qué entra en cada plan.** Gratis: calculadora y recursos, nada más. Pro: además la
 librería STL, todo Mi taller y el soporte por Telegram. Quién es Pro se marca con la
 última bandera de cada item en `ui_menu()`, y la pantalla se protege con

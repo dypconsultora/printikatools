@@ -14,6 +14,14 @@ if ($u === null) {
 com_exigir_email_verificado();
 
 $plan = ($_GET['plan'] ?? '') === 'anual' ? 'anual' : 'mensual';
+
+// Con el mensual fuera de venta, un enlace guardado de antes no puede seguir
+// dando de alta cobros mensuales: se lo manda a elegir de nuevo
+if ($plan === 'mensual' && !COMUNIDAD_MENSUAL_VISIBLE) {
+    header('Location: suscripcion.php?aviso=sin_mensual');
+    exit;
+}
+
 $info = mp_planes()[$plan];
 
 if (!mp_conectado()) {

@@ -155,7 +155,8 @@ function correo_planes($en) {
                 'Recursos en videos y PDF',
             ]),
         ],
-        [
+        // El mensual desaparece del correo si no esta a la venta (bootstrap.php)
+        ...(COMUNIDAD_MENSUAL_VISIBLE ? [[
             'nombre'  => 'Printika Pro',
             'precio'  => $monto(COMUNIDAD_PRECIO_MENSUAL, 'US$15'),
             'periodo' => $tr('/mes'),
@@ -168,7 +169,7 @@ function correo_planes($en) {
                 'Soporte técnico prioritario',
                 'Herramientas nuevas cada mes',
             ]),
-        ],
+        ]] : []),
         [
             'nombre'    => $tr('Printika Pro Anual'),
             'precio'    => $monto(COMUNIDAD_PRECIO_ANUAL, 'US$150'),
@@ -176,11 +177,18 @@ function correo_planes($en) {
             'etiqueta'  => $tr('2 meses gratis'),
             'nota'      => $tr('Un solo pago y te olvidás todo el año'),
             'destacado' => true,
-            'items'     => array_map($tr, [
+            'items'     => array_map($tr, COMUNIDAD_MENSUAL_VISIBLE ? [
                 'Todo lo del plan mensual',
                 $en ? '2 meses sin cargo (US$30 de ahorro)' : '2 meses sin cargo ($36.000 de ahorro)',
                 'Precio congelado por 12 meses',
                 'Acceso anticipado a herramientas nuevas',
+            ] : [
+                'Calculadora completa (versión PRO)',
+                'Mi Taller: presupuestos, clientes y stock',
+                'Librería STL y estadísticas',
+                $en ? '2 meses sin cargo (US$30 de ahorro)' : '2 meses sin cargo ($36.000 de ahorro)',
+                'Precio congelado por 12 meses',
+                'Soporte técnico prioritario',
             ]),
         ],
     ];
@@ -271,7 +279,9 @@ function correo_bienvenida_partes($idioma = 'es') {
                   write again.';
         $texto = "We got your email.\n\n"
                . "Create your free Printika Tools account: $alta\n\n"
-               . "Free US\$0 · Pro monthly US\$15 · Pro yearly US\$150 (2 months free)";
+               . 'Free US$0 · '
+               . (COMUNIDAD_MENSUAL_VISIBLE ? 'Pro monthly US$15 · ' : '')
+               . 'Pro yearly US$150 (2 months free)';
     } else {
         $asunto  = 'El cotizador ya está. Lo que falta es el taller. PrintikaTools';
         $titulo  = 'Recibimos tu correo';
@@ -290,7 +300,9 @@ function correo_bienvenida_partes($idioma = 'es') {
                   printikatools.com. Si no fuiste vos, ignoralo: no te volvemos a escribir.';
         $texto = "Recibimos tu correo.\n\n"
                . "Crea tu cuenta gratis de Printika Tools: $alta\n\n"
-               . 'Gratis $0 · Pro mensual ' . $precio(COMUNIDAD_PRECIO_MENSUAL) . '/mes · '
+               . 'Gratis $0 · '
+               . (COMUNIDAD_MENSUAL_VISIBLE
+                    ? 'Pro mensual ' . $precio(COMUNIDAD_PRECIO_MENSUAL) . '/mes · ' : '')
                . 'Pro anual ' . $precio(COMUNIDAD_PRECIO_ANUAL) . "/año (2 meses de regalo)";
     }
 

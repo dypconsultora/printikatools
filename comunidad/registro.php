@@ -27,7 +27,8 @@ $error = '';
 $creado = false;
 // Plan elegido en la landing: gratis entra directo; mensual/anual va al pago
 $plan = $_POST['plan'] ?? ($_GET['plan'] ?? 'gratis');
-if (!in_array($plan, ['gratis', 'mensual', 'anual'], true)) $plan = 'gratis';
+$planes_ok = COMUNIDAD_MENSUAL_VISIBLE ? ['gratis', 'mensual', 'anual'] : ['gratis', 'anual'];
+if (!in_array($plan, $planes_ok, true)) $plan = 'gratis';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre = trim($_POST['nombre'] ?? '');
     $email  = mb_strtolower(trim($_POST['email'] ?? ''));
