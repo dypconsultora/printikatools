@@ -148,6 +148,20 @@ function taller_migrar() {
             REFERENCES usuarios(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+    // Cuantos rollos hay de esa marca, tipo y color. Antes cada fila era UN rollo
+    // y se llevaban los gramos; ahora la fila es "de este filamento tengo N".
+    // Los gramos quedan en la tabla pero ya no se muestran: borrarlos seria
+    // tirar datos que alguien pudo haber cargado.
+    $stmt = $db->prepare("SELECT COUNT(*) c FROM information_schema.COLUMNS
+                           WHERE TABLE_SCHEMA = DATABASE()
+                             AND TABLE_NAME = 'rollos' AND COLUMN_NAME = 'cantidad'");
+    $stmt->execute();
+    if (!(int) $stmt->fetch()['c']) {
+        $db->exec("ALTER TABLE rollos ADD COLUMN cantidad INT NOT NULL DEFAULT 1 AFTER color");
+        // Un rollo ya cargado y sin gastar cuenta como uno; el vacio, como cero
+        $db->exec("UPDATE rollos SET cantidad = IF(peso_disponible > 0, 1, 0)");
+    }
+
     $db->exec("CREATE TABLE IF NOT EXISTS insumos (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         usuario_id BIGINT UNSIGNED NOT NULL,

@@ -40,31 +40,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $marca  = mb_substr(trim($_POST['marca'] ?? ''), 0, 100);
         $tipo   = in_array($_POST['tipo'] ?? '', taller_tipos_rollo(), true) ? $_POST['tipo'] : 'PLA';
         $color  = mb_substr(trim($_POST['color'] ?? ''), 0, 60);
-        $peso_o = max(1, (int) ($_POST['peso_original'] ?? 0));
-        $peso_d = max(0, (int) ($_POST['peso_disponible'] ?? 0));
-        $costo  = max(0, (float) str_replace(',', '.', $_POST['costo_kilo'] ?? '0'));
+        // Cuantos rollos hay de este filamento. Tope alto por si alguien
+        // compra por cantidad, pero acotado para que no entre cualquier cosa.
+        $cant  = max(0, min(9999, (int) ($_POST['cantidad'] ?? 0)));
+        $costo = max(0, (float) str_replace(',', '.', $_POST['costo_kilo'] ?? '0'));
 
         if ($marca === '' || $color === '') {
             $error = 'Completá la marca y el color del rollo.';
-        } elseif ($peso_d > $peso_o) {
-            $error = 'El peso disponible no puede ser mayor que el peso original.';
         } else {
             if ($id > 0) {
-                $db->prepare('UPDATE rollos SET marca=?, tipo=?, color=?, peso_original=?, peso_disponible=?, costo_kilo=?
+                $db->prepare('UPDATE rollos SET marca=?, tipo=?, color=?, cantidad=?, costo_kilo=?
                               WHERE id=? AND usuario_id=?')
-                   ->execute([$marca, $tipo, $color, $peso_o, $peso_d, $costo, $id, $uid]);
+                   ->execute([$marca, $tipo, $color, $cant, $costo, $id, $uid]);
                 header('Location: stock.php?ok=rollo_edit');
             } else {
-                $db->prepare('INSERT INTO rollos (usuario_id, marca, tipo, color, peso_original, peso_disponible, costo_kilo, creado_en)
-                              VALUES (?,?,?,?,?,?,?,NOW())')
-                   ->execute([$uid, $marca, $tipo, $color, $peso_o, $peso_d, $costo]);
+                $db->prepare('INSERT INTO rollos (usuario_id, marca, tipo, color, cantidad, costo_kilo, creado_en)
+                              VALUES (?,?,?,?,?,?,NOW())')
+                   ->execute([$uid, $marca, $tipo, $color, $cant, $costo]);
                 header('Location: stock.php?ok=rollo_nuevo');
             }
             exit;
         }
         $tab = 'filamentos';
         $abrir_rollo = ['id' => $id, 'marca' => $marca, 'tipo' => $tipo, 'color' => $color,
-                        'peso_original' => $peso_o, 'peso_disponible' => $peso_d, 'costo_kilo' => $costo];
+                        'cantidad' => $cant, 'costo_kilo' => $costo];
     } elseif ($accion === 'rollo_eliminar') {
         $db->prepare('DELETE FROM rollos WHERE id=? AND usuario_id=?')
            ->execute([(int) ($_POST['id'] ?? 0), $uid]);
@@ -176,13 +175,14 @@ ui_panel_inicio('Stock Materiales', $u, 'Stock Materiales');
       .rollo-nom small{font-size:12px;color:var(--txt-3)}
       .chip-tipo{display:inline-block;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px;
               background:var(--accent-tinte);color:var(--accent)}
-      .nivel{min-width:190px}
-      .nivel .datos{display:flex;justify-content:space-between;font-size:12px;color:var(--txt-2);
-              font-variant-numeric:tabular-nums;margin-bottom:5px}
-      .nivel .pista{height:7px;border-radius:999px;background:var(--surface-2);overflow:hidden}
-      .nivel .pista i{display:block;height:100%;border-radius:999px;background:var(--ok)}
-      .nivel.medio .pista i{background:var(--warn)}
-      .nivel.bajo .pista i{background:var(--bad)}
+      /* La columna es un numero de rollos, no una barra de gramos.
+         Nombre propio y no .cant: esa clase ya la usan los contadores de las
+         pestañas de arriba, y les rompia el fondo. */
+      .rollos-cant{min-width:120px}
+      .rollos-cant b{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--txt)}
+      .rollos-cant span{font-size:13px;color:var(--txt-3);margin-left:5px}
+      .rollos-cant.poco b{color:var(--warn)}
+      .rollos-cant.agotado b{color:var(--bad)}
       .badge-bajo{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;
               padding:3px 10px;border-radius:999px;background:var(--warn-tinte);color:var(--warn)}
       .badge-agotado{display:inline-flex;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px;
@@ -215,7 +215,7 @@ ui_panel_inicio('Stock Materiales', $u, 'Stock Materiales');
       .drawer .fila-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
       .btn-suave{background:none;border:none;color:var(--txt-2);font-size:14px;font-weight:600;cursor:pointer;padding:10px 14px}
       .btn-suave:hover{color:var(--txt)}
-      @media (max-width:700px){ .nivel{min-width:130px} .tabla-caja{padding:2px 10px} }
+      @media (max-width:700px){ .rollos-cant{min-width:0} .tabla-caja{padding:2px 10px} }
     </style>
 
     <div class="tabs">
@@ -251,26 +251,21 @@ ui_panel_inicio('Stock Materiales', $u, 'Stock Materiales');
           </tr></thead>
           <tbody>
           <?php foreach ($rollos as $r):
-              $pct = $r['peso_original'] > 0 ? $r['peso_disponible'] / $r['peso_original'] * 100 : 0;
-              $clase = $pct <= 0 ? 'bajo' : ($pct <= 20 ? 'bajo' : ($pct <= 50 ? 'medio' : '')); ?>
+              $cant = (int) $r['cantidad']; ?>
             <tr>
               <td class="rollo-nom"><b><?php echo htmlspecialchars($r['marca']); ?></b>
                 <small><?php echo htmlspecialchars($r['color']); ?></small></td>
               <td><span class="chip-tipo"><?php echo htmlspecialchars($r['tipo']); ?></span></td>
-              <td class="nivel <?php echo $clase; ?>">
-                <div class="datos">
-                  <span><?php echo number_format((int) $r['peso_disponible'], 0, ',', '.'); ?> g
-                        / <?php echo number_format((int) $r['peso_original'], 0, ',', '.'); ?> g</span>
-                  <span><?php echo round($pct); ?>%</span>
-                </div>
-                <div class="pista"><i style="width:<?php echo max(0, min(100, round($pct, 1))); ?>%"></i></div>
+              <td class="rollos-cant <?php echo $cant === 0 ? 'agotado' : ($cant === 1 ? 'poco' : ''); ?>">
+                <b><?php echo $cant; ?></b>
+                <span><?php echo $cant === 1 ? 'rollo' : 'rollos'; ?></span>
               </td>
               <td class="num"><?php echo $r['costo_kilo'] > 0 ? taller_precio($r['costo_kilo']) : '—'; ?></td>
               <td>
-                <?php if ((int) $r['peso_disponible'] <= 0): ?>
+                <?php if ($cant === 0): ?>
                   <span class="badge-agotado">Agotado</span>
-                <?php elseif ($pct <= 20): ?>
-                  <span class="badge-bajo"><?php echo ui_icono('alerta', 13); ?>Queda poco</span>
+                <?php elseif ($cant === 1): ?>
+                  <span class="badge-bajo"><?php echo ui_icono('alerta', 13); ?>Te queda uno</span>
                 <?php endif; ?>
               </td>
               <td>
@@ -387,22 +382,11 @@ ui_panel_inicio('Stock Materiales', $u, 'Stock Materiales');
               <option>Violeta</option><option>Rosa</option><option>Transparente</option>
             </datalist>
 
-            <p class="intro">Si el rollo es nuevo, los dos valores son iguales. Si ya lo empezaste a usar,
-               cargá el peso original (cuando estaba lleno) y cuánto te queda hoy.</p>
-            <div class="fila-2">
-              <span>
-                <label for="r-peso-o">Peso original (g)</label>
-                <input id="r-peso-o" type="number" name="peso_original" min="1" step="1" required
-                       value="<?php echo (int) ($abrir_rollo['peso_original'] ?? 1000); ?>">
-                <p class="ayuda">Cuánto pesa el rollo lleno (normalmente 1 kg = 1000 g).</p>
-              </span>
-              <span>
-                <label for="r-peso-d">Peso disponible (g)</label>
-                <input id="r-peso-d" type="number" name="peso_disponible" min="0" step="1" required
-                       value="<?php echo (int) ($abrir_rollo['peso_disponible'] ?? 1000); ?>">
-                <p class="ayuda">Lo que te queda hoy. Si es nuevo, dejalo igual al peso original.</p>
-              </span>
-            </div>
+            <label for="r-cant">Cuántos rollos tenés</label>
+            <input id="r-cant" type="number" name="cantidad" min="0" max="9999" step="1" required
+                   inputmode="numeric" value="<?php echo (int) ($abrir_rollo['cantidad'] ?? 1); ?>">
+            <p class="ayuda">De este filamento, en esta marca, tipo y color. Lo vas cambiando
+               a medida que gastás o comprás.</p>
 
             <label for="r-costo">Costo por kilo (opcional)</label>
             <input id="r-costo" type="number" name="costo_kilo" min="0" step="0.01"
