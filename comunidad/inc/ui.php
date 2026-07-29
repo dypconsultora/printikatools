@@ -303,8 +303,16 @@ function ui_tarjeta_inicio($titulo) { ?>
         <button type="button" data-tema="light" onclick="ptTema('light')" title="Modo día" aria-label="Modo día"><?php echo ui_icono('sol', 15); ?></button>
         <button type="button" data-tema="dark" onclick="ptTema('dark')" title="Modo noche" aria-label="Modo noche"><?php echo ui_icono('luna', 15); ?></button>
       </span>
-      <a class="entrar" href="<?php echo ui_base(); ?>/comunidad/login.php">Iniciar sesión</a>
-      <a class="btn btn-nav" href="<?php echo ui_base(); ?>/#planes">Registrarse</a>
+      <?php // Estas pantallas casi siempre las ve alguien deslogueado, pero la de
+            // "solo administradores" la ve alguien que YA entro: ofrecerle
+            // "Iniciar sesión" ahi seria desconcertante
+            if (function_exists('usuario_actual') && usuario_actual() !== null): ?>
+        <a class="entrar" href="<?php echo ui_base(); ?>/comunidad/logout.php">Cerrar sesión</a>
+        <a class="btn btn-nav" href="<?php echo ui_base(); ?>/comunidad/index.php">Ir a la plataforma</a>
+      <?php else: ?>
+        <a class="entrar" href="<?php echo ui_base(); ?>/comunidad/login.php">Iniciar sesión</a>
+        <a class="btn btn-nav" href="<?php echo ui_base(); ?>/#planes">Registrarse</a>
+      <?php endif; ?>
     </nav>
   </header>
   <div class="tarjeta-zona">
@@ -338,6 +346,46 @@ function ui_aviso_spam() { ?>
     <span>¿No te llegó? Mirá en la carpeta de Correo no deseado o Spam: a veces cae ahí. Si lo encontrás, marcalo como «No es spam» y los próximos te van a llegar bien.</span>
   </div>
 <?php }
+
+/**
+ * Pantalla de "hasta aca no podes pasar", con el diseño del resto del sitio.
+ *
+ * Antes estos casos cortaban con un exit() de texto pelado: pagina en blanco,
+ * sin logo, sin menu y sin ninguna forma de volver. Le pasaba a alguien que ya
+ * habia iniciado sesion, asi que quedaba encerrado.
+ *
+ * $acciones: lista de [texto, direccion, esPrincipal].
+ * $raiz: prefijo para las direcciones ('../' desde comunidad/admin/).
+ *
+ * Imprime la pagina entera; despues de llamarla hay que salir.
+ */
+function ui_pantalla_error($titulo, $detalle, $acciones = [], $raiz = '') {
+    ui_tarjeta_inicio($titulo);
+    ?>
+    <style>
+      .error-ico{display:flex;align-items:center;justify-content:center;width:64px;height:64px;
+                 margin:0 auto 18px;border-radius:50%;background:var(--warn-tinte);color:var(--warn)}
+      .error-ico svg{width:30px;height:30px}
+      .tarjeta h1{text-align:center}
+      .error-detalle{text-align:center;font-size:14.5px;line-height:1.6;color:var(--txt-2);
+                     margin:6px 0 24px}
+      .error-acciones{display:grid;gap:10px}
+      .error-acciones .btn{width:100%;justify-content:center}
+    </style>
+    <div class="error-ico"><?php echo ui_icono('candado', 30); ?></div>
+    <h1><?php echo htmlspecialchars($titulo); ?></h1>
+    <p class="error-detalle"><?php echo htmlspecialchars($detalle); ?></p>
+    <?php if ($acciones): ?>
+      <div class="error-acciones">
+        <?php foreach ($acciones as [$texto, $url, $principal]): ?>
+          <a class="btn<?php echo $principal ? '' : ' sec'; ?>"
+             href="<?php echo htmlspecialchars($raiz . $url); ?>"><?php echo htmlspecialchars($texto); ?></a>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+    <?php
+    ui_tarjeta_fin();
+}
 
 function ui_tarjeta_fin() { ?>
   </main>

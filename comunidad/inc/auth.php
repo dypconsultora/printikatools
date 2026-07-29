@@ -167,8 +167,22 @@ function requerir_admin() {
     }
     com_exigir_email_verificado('../');
     if (!es_admin()) {
+        // Antes esto cortaba con texto pelado sobre una pagina en blanco, sin
+        // logo ni forma de volver: la persona quedaba encerrada
         http_response_code(403);
-        exit('Acceso solo para administradores.');
+        require_once __DIR__ . '/ui.php';
+        ui_pantalla_error(
+            'Acceso solo para administradores.',
+            'Esta pantalla es del panel de administración del sitio. Con tu cuenta podés '
+            . 'entrar a todo lo demás. Si creés que tendrías que ver esto, probá con la '
+            . 'cuenta de administradora.',
+            [
+                ['Ir a la plataforma', 'index.php', true],
+                ['Cerrar sesión',      'logout.php', false],
+            ],
+            '../'
+        );
+        exit;
     }
 }
 

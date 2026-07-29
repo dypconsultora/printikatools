@@ -257,6 +257,11 @@
     'Printika Pro Anual': 'Printika Pro Annual',
     '2 meses gratis': '2 months free',
     '2 meses sin cargo': '2 months at no cost',
+    // Pantalla de acceso denegado (ui_pantalla_error)
+    'Acceso solo para administradores.': 'Administrators only.',
+    'Esta pantalla es del panel de administración del sitio. Con tu cuenta podés entrar a todo lo demás. Si creés que tendrías que ver esto, probá con la cuenta de administradora.':
+      'This screen belongs to the site admin panel. Your account can reach everything else. If you think you should be seeing this, try the administrator account.',
+    'Ir a la plataforma': 'Go to the platform',
     // Adelanto de las secciones con candado (comunidad/inc/vistazo.php)
     'Incluido en el plan completo': 'Included in the full plan',
     'Elegí abajo con qué plan lo desbloqueás.': 'Choose below which plan unlocks it.',
