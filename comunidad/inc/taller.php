@@ -254,6 +254,17 @@ function taller_migrar() {
         $db->exec("ALTER TABLE novedades_emails ADD COLUMN bienvenida_en DATETIME NULL DEFAULT NULL");
     }
 
+    // En que idioma estaba viendo el cotizador cuando dejo su direccion. Sin
+    // esto, reenviar la bienvenida a mano desde el panel le mandaba castellano
+    // a alguien que nunca vio el sitio en castellano.
+    $stmt = $db->prepare("SELECT COUNT(*) c FROM information_schema.COLUMNS
+                           WHERE TABLE_SCHEMA = DATABASE()
+                             AND TABLE_NAME = 'novedades_emails' AND COLUMN_NAME = 'idioma'");
+    $stmt->execute();
+    if (!(int) $stmt->fetch()['c']) {
+        $db->exec("ALTER TABLE novedades_emails ADD COLUMN idioma VARCHAR(2) NOT NULL DEFAULT 'es'");
+    }
+
     $db->exec("CREATE TABLE IF NOT EXISTS recursos_pdf (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         titulo VARCHAR(150) NOT NULL,

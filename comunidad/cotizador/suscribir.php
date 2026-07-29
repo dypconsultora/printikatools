@@ -92,6 +92,29 @@ if ($_SESSION['news_envios'] > 3) {
     exit;
 }
 
+// Guardar la direccion ANTES de tocar el correo. Antes esto estaba en el medio
+// del armado del mail, asi que si el SMTP fallaba (config mal, servidor caido)
+// la direccion se perdia del todo: no llegaba el aviso NI quedaba anotada.
+// Guardarla primero es lo unico que no se puede volver a hacer despues.
+try {
+    db()->exec("CREATE TABLE IF NOT EXISTS novedades_emails (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        email VARCHAR(190) NOT NULL,
+        creado_en DATETIME NOT NULL,
+        bienvenida_en DATETIME NULL DEFAULT NULL,
+        idioma VARCHAR(2) NOT NULL DEFAULT 'es',
+        PRIMARY KEY (id),
+        UNIQUE KEY uq_email (email)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    // Si la persona vuelve a anotarse desde la otra version del sitio, vale el
+    // ultimo idioma en el que la vimos
+    db()->prepare("INSERT INTO novedades_emails (email, creado_en, idioma) VALUES (?, NOW(), ?)
+                   ON DUPLICATE KEY UPDATE idioma = VALUES(idioma)")
+        ->execute([$email, $idioma]);
+} catch (Throwable $e) {
+    // sin base no frenamos el aviso por mail
+}
+
 // SMTP de la web (config de la raíz, lee el .env)
 $config = require dirname(__DIR__, 2) . '/config.php';
 require dirname(__DIR__, 2) . '/lib/PHPMailer/Exception.php';
@@ -115,22 +138,6 @@ try {
     $mail->addReplyTo($email);
 
     $mail->isHTML(true);
-// Guardar tambien en la base (lista de marketing visible en el admin)
-try {
-    db()->exec("CREATE TABLE IF NOT EXISTS novedades_emails (
-        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-        email VARCHAR(190) NOT NULL,
-        creado_en DATETIME NOT NULL,
-        bienvenida_en DATETIME NULL DEFAULT NULL,
-        PRIMARY KEY (id),
-        UNIQUE KEY uq_email (email)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-    db()->prepare('INSERT IGNORE INTO novedades_emails (email, creado_en) VALUES (?, NOW())')
-        ->execute([$email]);
-} catch (Throwable $e) {
-    // sin base no frenamos el aviso por mail
-}
-
     $mail->Subject = 'Nuevo suscriptor a novedades — Cotizador 3D';
 
     $emailHtml = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');

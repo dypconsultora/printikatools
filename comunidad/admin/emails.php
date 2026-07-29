@@ -65,13 +65,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $error = 'El envío de correos no está configurado (falta el .env con el SMTP).';
                 } else {
                     $huecos = implode(',', array_fill(0, count($ids), '?'));
-                    $filas = $db->prepare("SELECT id, email FROM novedades_emails WHERE id IN ($huecos)");
+                    $filas = $db->prepare("SELECT id, email, idioma FROM novedades_emails WHERE id IN ($huecos)");
                     $filas->execute($ids);
 
                     $enviados = 0;
                     $fallados = 0;
                     foreach ($filas->fetchAll() as $f) {
-                        if (correo_bienvenida_novedades($f['email'])) {
+                        // Cada uno en el idioma en el que se anoto, no siempre en castellano
+                        if (correo_bienvenida_novedades($f['email'], $f['idioma'])) {
                             $db->prepare('UPDATE novedades_emails SET bienvenida_en = NOW() WHERE id = ?')
                                ->execute([$f['id']]);
                             $enviados++;
@@ -103,11 +104,16 @@ if (isset($_GET['csv'])) {
     header('Content-Disposition: attachment; filename="emails-novedades.csv"');
     echo "\xEF\xBB\xBF";                                   // para que Excel lea los acentos
     $out = fopen('php://output', 'w');
-    fputcsv($out, ['Email', 'Fecha', 'Bienvenida'], ';', '"', '');
-    $stmt = $db->prepare("SELECT email, creado_en, bienvenida_en FROM novedades_emails $where ORDER BY creado_en DESC");
+    fputcsv($out, ['Email', 'Idioma', 'Fecha', 'Bienvenida'], ';', '"', '');
+    $stmt = $db->prepare("SELECT email, idioma, creado_en, bienvenida_en FROM novedades_emails $where ORDER BY creado_en DESC");
     $stmt->execute($args);
     foreach ($stmt as $r) {
-        fputcsv($out, [$r['email'], $r['creado_en'], $r['bienvenida_en'] ?: 'sin enviar'], ';', '"', '');
+        fputcsv($out, [
+            $r['email'],
+            $r['idioma'] === 'en' ? 'Inglés' : 'Castellano',
+            $r['creado_en'],
+            $r['bienvenida_en'] ?: 'sin enviar',
+        ], ';', '"', '');
     }
     fclose($out);
     exit;
@@ -126,7 +132,7 @@ $desde   = ($pagina - 1) * EMAILS_POR_PAGINA;
 
 // El LIMIT va interpolado porque son enteros ya calculados: MySQL no acepta
 // parámetros en LIMIT cuando las consultas no se emulan
-$stmt = $db->prepare("SELECT id, email, creado_en, bienvenida_en FROM novedades_emails
+$stmt = $db->prepare("SELECT id, email, idioma, creado_en, bienvenida_en FROM novedades_emails
                       $where ORDER BY creado_en DESC LIMIT $desde, " . EMAILS_POR_PAGINA);
 $stmt->execute($args);
 $lista = $stmt->fetchAll();
@@ -179,6 +185,7 @@ ui_panel_inicio('Emails captados', $yo, 'Emails captados', '../');
       .estado::before{content:'';width:6px;height:6px;border-radius:99px;background:currentColor}
       .estado.si{background:var(--ok-tinte);color:var(--ok)}
       .estado.no{background:var(--accent-tinte);color:var(--accent)}
+      .idi{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--txt-3)}
       .acciones-lote{display:flex;gap:8px;align-items:center;flex-wrap:wrap;
                      padding:12px 16px;border-bottom:1px solid var(--bd-suave);background:var(--surface-2)}
       .acciones-lote .cuenta{font-size:13px;color:var(--txt-2)}
@@ -246,13 +253,14 @@ ui_panel_inicio('Emails captados', $yo, 'Emails captados', '../');
         <table>
           <thead><tr>
             <th class="check"><input type="checkbox" id="todos" title="Marcar todas"></th>
-            <th>Email</th><th>Bienvenida</th><th>Fecha</th><th class="acc"></th>
+            <th>Email</th><th>Idioma</th><th>Bienvenida</th><th>Fecha</th><th class="acc"></th>
           </tr></thead>
           <tbody>
           <?php foreach ($lista as $r): ?>
             <tr>
               <td class="check"><input type="checkbox" class="uno" name="ids[]" value="<?php echo (int) $r['id']; ?>"></td>
               <td><?php echo htmlspecialchars($r['email']); ?></td>
+              <td><span class="idi"><?php echo $r['idioma'] === 'en' ? 'ENG' : 'ESP'; ?></span></td>
               <td><?php if ($r['bienvenida_en']): ?>
                     <span class="estado si">Enviada <?php echo date('d/m/y', strtotime($r['bienvenida_en'])); ?></span>
                   <?php else: ?>
