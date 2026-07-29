@@ -641,7 +641,7 @@ $og_alt = $en
     /* Menu del celular: en pantalla grande no existe */
     .nav .menu-btn{display:none}
     .menu-movil, .velo-nav{display:none}
-    .menu-movil .extras-movil{display:none}
+    .menu-movil .extras-movil, .menu-movil .marca-menu{display:none}
     @media (max-width:1240px){
       .nav .menu-btn{display:flex;align-items:center;justify-content:center;
           width:44px;height:44px;flex-shrink:0;background:none;
@@ -680,6 +680,14 @@ $og_alt = $en
           border-radius:999px;font-family:inherit;font-size:12.5px;font-weight:700;
           color:var(--txt-3);cursor:pointer;text-decoration:none;opacity:.6}
       .menu-movil .par > a.activo{opacity:1;background:var(--surface);color:var(--txt)}
+      /* Marcar el tema puesto: el atributo lo pone ptTema() en el <html> */
+      :root:not([data-theme="light"]) .menu-movil .par > button[data-tema="dark"],
+      :root[data-theme="light"] .menu-movil .par > button[data-tema="light"]{
+          opacity:1;background:var(--surface);color:var(--txt)}
+      /* El logo cierra el menú, centrado y separado del resto */
+      .menu-movil .marca-menu{display:block;margin:28px auto 4px;padding:0;min-height:0;
+          text-align:center;line-height:0}
+      .menu-movil .marca-menu img{height:56px;width:auto;max-width:100%;margin:0 auto;display:block}
     }
     /* El encabezado del telefono se queda con lo imprescindible: marca, la
        accion principal y el menu. Todo lo demas esta adentro del menu. */
@@ -698,7 +706,7 @@ $og_alt = $en
       .caja.grande{grid-column:auto}
       .beneficios{grid-template-columns:1fr}
       /* El encabezado no entraba en el celular: se va lo prescindible */
-      .nav .marca img{height:38px}
+      .nav .marca img{height:46px}
       .nav .cont{gap:10px}
       .nav nav{gap:8px}
       .nav .idioma-tit{display:none}
@@ -791,10 +799,14 @@ $og_alt = $en
       </span>
       <span class="fila-tit">Tema</span>
       <span class="par">
-        <button type="button" onclick="ptTema('light')">Día</button>
-        <button type="button" onclick="ptTema('dark')">Noche</button>
+        <button type="button" data-tema="light" onclick="ptTema('light')">Día</button>
+        <button type="button" data-tema="dark" onclick="ptTema('dark')">Noche</button>
       </span>
     </div>
+    <a class="marca-menu" href="/" aria-label="Printika Tools">
+      <img class="logo-oscuro" src="<?php echo $logo_oscuro; ?>" alt="Printika Tools">
+      <img class="logo-claro" src="<?php echo $logo_claro; ?>" alt="Printika Tools">
+    </a>
   </nav>
 
   <main>

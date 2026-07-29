@@ -566,7 +566,7 @@ function ui_panel_inicio($titulo, $usuario, $activo = '', $raiz = '') { ?>
         height:60px;padding:0 14px;z-index:70;background:var(--surface);
         border-bottom:1px solid var(--bd-suave)}
     .barra-movil .marca-m{display:block;line-height:0}
-    .barra-movil .marca-m img{height:34px;width:auto;display:block}
+    .barra-movil .marca-m img{height:42px;width:auto;display:block}
     /* margin-left:auto lo empuja siempre al borde derecho, este o no el titulo */
     .barra-movil .menu-btn{display:flex;align-items:center;justify-content:center;
         width:44px;height:44px;flex-shrink:0;margin-left:auto;background:none;
