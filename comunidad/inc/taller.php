@@ -211,6 +211,18 @@ function taller_migrar() {
         PRIMARY KEY (id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+    // Orden manual de la Libreria STL. Antes mandaba la fecha de subida y no
+    // habia forma de poner adelante el modelo que uno quiere mostrar primero.
+    // Arranca en 0 para todos: con el desempate por fecha, la lista se ve igual
+    // que siempre hasta que alguien mueva algo.
+    $stmt = $db->prepare("SELECT COUNT(*) c FROM information_schema.COLUMNS
+                           WHERE TABLE_SCHEMA = DATABASE()
+                             AND TABLE_NAME = 'stl_items' AND COLUMN_NAME = 'orden'");
+    $stmt->execute();
+    if (!(int) $stmt->fetch()['c']) {
+        $db->exec("ALTER TABLE stl_items ADD COLUMN orden INT NOT NULL DEFAULT 0");
+    }
+
     $db->exec("CREATE TABLE IF NOT EXISTS guias (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         slug VARCHAR(120) NOT NULL,

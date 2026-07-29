@@ -113,6 +113,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $db->prepare('UPDATE stl_items SET publicado = 1 - publicado WHERE id=?')
            ->execute([(int) ($_POST['id'] ?? 0)]);
         $aviso = 'Visibilidad actualizada.';
+    } elseif (($_POST['accion'] ?? '') === 'mover') {
+        // Intercambia el orden con el vecino de arriba o de abajo.
+        //
+        // Los que nunca se movieron tienen orden 0 y desempatan por fecha, asi
+        // que primero se numera la lista tal como se ve; si no, el primer
+        // "subir" no tendria con que compararse y no pasaria nada.
+        $id   = (int) ($_POST['id'] ?? 0);
+        $sube = ($_POST['dir'] ?? '') === 'arriba';
+        $todos = $db->query('SELECT id FROM stl_items ORDER BY orden, creado_en DESC, id DESC')->fetchAll();
+        $q = $db->prepare('UPDATE stl_items SET orden = ? WHERE id = ?');
+        foreach ($todos as $n => $fila) $q->execute([$n + 1, $fila['id']]);
+
+        $pos = array_search($id, array_column($todos, 'id'));
+        $vecino = $pos === false ? null : ($sube ? $pos - 1 : $pos + 1);
+        if ($vecino !== null && isset($todos[$vecino])) {
+            $q->execute([$vecino + 1, $id]);
+            $q->execute([$pos + 1, $todos[$vecino]['id']]);
+            $aviso = 'Se movió el modelo ' . ($sube ? 'hacia arriba.' : 'hacia abajo.');
+        }
     } elseif (($_POST['accion'] ?? '') === 'eliminar') {
         $id = (int) ($_POST['id'] ?? 0);
         $stmt = $db->prepare('SELECT * FROM stl_items WHERE id=?');
@@ -126,8 +145,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$items = $db->query('SELECT i.*, 1 + (SELECT COUNT(*) FROM stl_archivos a WHERE a.stl_id = i.id) AS cant_archivos
-                     FROM stl_items i ORDER BY i.creado_en DESC, i.id DESC')->fetchAll();
+// Filtro por categoría. Con muchos modelos, encontrar el que se quiere tocar
+// pasa a ser el trabajo más pesado de la pantalla.
+$cat_sel = trim((string) ($_GET['cat'] ?? ''));
+$cats_todas = $db->query("SELECT categoria, COUNT(*) c FROM stl_items
+                          WHERE categoria <> '' GROUP BY categoria ORDER BY categoria")->fetchAll();
+$total_todos = (int) $db->query('SELECT COUNT(*) c FROM stl_items')->fetch()['c'];
+$sin_cat = (int) $db->query("SELECT COUNT(*) c FROM stl_items WHERE categoria = ''")->fetch()['c'];
+
+$where = '';
+$args  = [];
+if ($cat_sel === '__sin__') {
+    $where = "WHERE i.categoria = ''";
+} elseif ($cat_sel !== '') {
+    $where = 'WHERE i.categoria = ?';
+    $args  = [$cat_sel];
+}
+
+// El orden manual manda; la fecha solo desempata a los que nunca se movieron
+$stmt = $db->prepare("SELECT i.*, 1 + (SELECT COUNT(*) FROM stl_archivos a WHERE a.stl_id = i.id) AS cant_archivos
+                      FROM stl_items i $where ORDER BY i.orden, i.creado_en DESC, i.id DESC");
+$stmt->execute($args);
+$items = $stmt->fetchAll();
+
+/** Enlace de esta pantalla conservando el filtro. */
+function stl_url($cat) {
+    return 'stl.php' . ($cat !== '' ? '?cat=' . urlencode($cat) : '');
+}
 
 ui_panel_inicio('Cargar STL', $yo, 'Cargar STL', '../');
 ?>
@@ -143,7 +187,36 @@ ui_panel_inicio('Cargar STL', $yo, 'Cargar STL', '../');
             padding:20px;margin-bottom:18px}
       .alta h2{font-size:15px;font-weight:600;margin-bottom:10px}
       .alta .fila{display:grid;grid-template-columns:1.2fr 1fr;gap:12px}
-      .alta .fila2{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;margin-top:10px}
+      /* align-items:start y no end: el texto de ayuda que cuelga del primer
+         campo empujaba hacia abajo al de al lado, y los dos rotulos quedaban a
+         distinta altura. Ahora arrancan parejos y el boton se baja a mano,
+         justo lo que mide el rotulo, para quedar a la altura de los campos. */
+      .alta .fila2{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:start;margin-top:10px}
+      .alta .fila2 > .btn{margin-top:39px}   /* lo que mide el rótulo, para quedar a la par de los campos */
+      @media (max-width:900px){
+        .alta .fila, .alta .fila2{grid-template-columns:1fr}
+        .alta .fila2 > .btn{margin-top:4px;width:100%;justify-content:center}
+      }
+
+      .filtro-cats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+      .filtro-cats a{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;
+              padding:6px 14px;border-radius:999px;border:1px solid var(--bd);color:var(--txt-2)}
+      .filtro-cats a:hover{border-color:var(--accent);color:var(--txt)}
+      .filtro-cats a.activa{background:var(--accent-tinte);border-color:var(--accent);color:var(--accent)}
+      .filtro-cats a span{font-size:11px;font-weight:700;background:var(--surface-2);
+              border-radius:99px;padding:1px 7px;color:var(--txt-3)}
+      .filtro-cats a.activa span{background:var(--accent);color:var(--accent-ink)}
+      .nota-orden{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--txt-3);margin-bottom:12px}
+      .nota-orden .ico{flex-shrink:0}
+
+      td.mover{width:46px;padding-right:0}
+      .flechas{display:flex;flex-direction:column;gap:3px}
+      .flechas form{margin:0;line-height:0}
+      .flechas button{width:30px;height:22px;display:flex;align-items:center;justify-content:center;
+              background:none;border:1px solid var(--bd-suave);border-radius:6px;color:var(--txt-3);
+              font-size:10px;line-height:1;cursor:pointer;padding:0}
+      .flechas button:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+      .flechas button:disabled{opacity:.25;cursor:default}
       .alta .fila-archivos{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
       @media (max-width:1100px){ .alta .fila-archivos{grid-template-columns:1fr 1fr} }
       input[type=file]{height:auto;padding:8px 12px;font-size:13px}
@@ -269,12 +342,57 @@ ui_panel_inicio('Cargar STL', $yo, 'Cargar STL', '../');
 </script>
 
     <?php if ($items): ?>
+    <?php if ($cats_todas || $sin_cat): ?>
+      <div class="filtro-cats">
+        <a class="<?php echo $cat_sel === '' ? 'activa' : ''; ?>" href="stl.php">Todos
+          <span><?php echo $total_todos; ?></span></a>
+        <?php foreach ($cats_todas as $c): ?>
+          <a class="<?php echo $cat_sel === $c['categoria'] ? 'activa' : ''; ?>"
+             href="<?php echo htmlspecialchars(stl_url($c['categoria'])); ?>">
+            <?php echo htmlspecialchars($c['categoria']); ?> <span><?php echo (int) $c['c']; ?></span></a>
+        <?php endforeach; ?>
+        <?php if ($sin_cat): ?>
+          <a class="<?php echo $cat_sel === '__sin__' ? 'activa' : ''; ?>"
+             href="<?php echo htmlspecialchars(stl_url('__sin__')); ?>">Sin categoría <span><?php echo $sin_cat; ?></span></a>
+        <?php endif; ?>
+      </div>
+    <?php endif; ?>
+
+    <?php if ($cat_sel !== ''): ?>
+      <p class="nota-orden"><?php echo ui_icono('alerta', 14); ?>
+        Estás viendo una categoría. Para cambiar el orden mostrá <a href="stl.php">todos</a>:
+        el orden es uno solo para toda la librería.</p>
+    <?php elseif (count($items) > 1): ?>
+      <p class="nota-orden"><?php echo ui_icono('flecha', 14); ?>
+        Con las flechas movés cada modelo. Así, de arriba hacia abajo, es como se ven en la Librería STL.</p>
+    <?php endif; ?>
+
     <div class="lista">
       <table>
-        <thead><tr><th></th><th>Modelo</th><th>Categoría</th><th>Descargas</th><th>Estado</th><th style="text-align:right">Acciones</th></tr></thead>
+        <thead><tr><?php if ($cat_sel === ''): ?><th>Orden</th><?php endif; ?><th></th><th>Modelo</th><th>Categoría</th><th>Descargas</th><th>Estado</th><th style="text-align:right">Acciones</th></tr></thead>
         <tbody>
-        <?php foreach ($items as $it): ?>
+        <?php foreach ($items as $i => $it): ?>
           <tr class="<?php echo $it['publicado'] ? '' : 'apagado'; ?>">
+            <?php if ($cat_sel === ''): ?>
+              <td class="mover">
+                <div class="flechas">
+                  <form method="post">
+                    <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
+                    <input type="hidden" name="accion" value="mover">
+                    <input type="hidden" name="dir" value="arriba">
+                    <input type="hidden" name="id" value="<?php echo (int) $it['id']; ?>">
+                    <button type="submit" title="Subir" aria-label="Subir"<?php echo $i === 0 ? ' disabled' : ''; ?>>▲</button>
+                  </form>
+                  <form method="post">
+                    <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
+                    <input type="hidden" name="accion" value="mover">
+                    <input type="hidden" name="dir" value="abajo">
+                    <input type="hidden" name="id" value="<?php echo (int) $it['id']; ?>">
+                    <button type="submit" title="Bajar" aria-label="Bajar"<?php echo $i === count($items) - 1 ? ' disabled' : ''; ?>>▼</button>
+                  </form>
+                </div>
+              </td>
+            <?php endif; ?>
             <td><?php if ($it['imagen_ext']): ?>
               <img class="mini" src="../uploads/stl/img-<?php echo (int) $it['id'] . '.' . htmlspecialchars($it['imagen_ext']); ?>" alt="">
               <?php else: ?><span class="mini" style="display:flex;align-items:center;justify-content:center;color:var(--txt-3)"><?php echo ui_icono('libreria', 20); ?></span><?php endif; ?></td>

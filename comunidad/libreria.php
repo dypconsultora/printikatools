@@ -63,7 +63,9 @@ $cat = trim($_GET['cat'] ?? '');
 $sql = 'SELECT * FROM stl_items WHERE publicado=1';
 $par = [];
 if ($cat !== '') { $sql .= ' AND categoria=?'; $par[] = $cat; }
-$stmt = $db->prepare($sql . ' ORDER BY creado_en DESC, id DESC');
+// El orden lo decide la administradora desde Cargar STL; la fecha solo
+// desempata a los modelos que nunca se movieron de lugar
+$stmt = $db->prepare($sql . ' ORDER BY orden, creado_en DESC, id DESC');
 $stmt->execute($par);
 $items = $stmt->fetchAll();
 
