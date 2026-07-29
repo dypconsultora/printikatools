@@ -203,7 +203,7 @@ ui_panel_inicio('Backups', $yo, 'Backups', '../');
     <?php if ($error): ?><div class="msg bad"><?php echo ui_icono('alerta', 16); ?><span><?php echo htmlspecialchars($error); ?></span></div><?php endif; ?>
 
     <style>
-      .bk{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;max-width:1000px}
+      .bk{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
       .bk-caja{background:var(--surface);border:1px solid var(--bd-suave);border-radius:var(--radio-g);padding:22px;
                display:flex;flex-direction:column;gap:8px}
       .bk-caja h2{font-size:15px;font-weight:600}
@@ -211,9 +211,9 @@ ui_panel_inicio('Backups', $yo, 'Backups', '../');
       .bk-caja .cuando{font-size:12px;color:var(--txt-3)}
       .bk-caja .acciones{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
       .bk-caja form{margin:0}
-      .nota-git{max-width:1000px;margin-top:18px;font-size:13px;color:var(--txt-3);line-height:1.6}
+      .nota-git{margin-top:18px;font-size:13px;color:var(--txt-3);line-height:1.6}
       .lista{background:var(--surface);border:1px solid var(--bd-suave);border-radius:var(--radio-g);
-             padding:6px 20px;margin-top:14px;overflow-x:auto;max-width:1000px}
+             padding:6px 20px;margin-top:14px;overflow-x:auto}
       table{width:100%;border-collapse:collapse;font-size:13.5px}
       th,td{padding:12px 10px;text-align:left;border-bottom:1px solid var(--bd-suave);vertical-align:middle}
       th{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--txt-3)}
