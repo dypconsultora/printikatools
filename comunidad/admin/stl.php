@@ -23,6 +23,7 @@ function stl_mover(array $a, $destino) {
                                : move_uploaded_file($a['tmp'], $destino);
 }
 $aviso = '';
+$movido = 0;
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -113,24 +114,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $db->prepare('UPDATE stl_items SET publicado = 1 - publicado WHERE id=?')
            ->execute([(int) ($_POST['id'] ?? 0)]);
         $aviso = 'Visibilidad actualizada.';
-    } elseif (($_POST['accion'] ?? '') === 'mover') {
-        // Intercambia el orden con el vecino de arriba o de abajo.
-        //
-        // Los que nunca se movieron tienen orden 0 y desempatan por fecha, asi
-        // que primero se numera la lista tal como se ve; si no, el primer
-        // "subir" no tendria con que compararse y no pasaria nada.
-        $id   = (int) ($_POST['id'] ?? 0);
-        $sube = ($_POST['dir'] ?? '') === 'arriba';
-        $todos = $db->query('SELECT id FROM stl_items ORDER BY orden, creado_en DESC, id DESC')->fetchAll();
-        $q = $db->prepare('UPDATE stl_items SET orden = ? WHERE id = ?');
-        foreach ($todos as $n => $fila) $q->execute([$n + 1, $fila['id']]);
+    } elseif (($_POST['accion'] ?? '') === 'ordenar') {
+        // Llega la lista entera de ids en el orden nuevo, tal como quedo en
+        // pantalla despues de arrastrar. Se guarda el orden completo y no solo
+        // la fila movida: mover una corre a todas las que estan abajo.
+        $ids = array_values(array_filter(array_map('intval', (array) ($_POST['ids'] ?? [])), fn($n) => $n > 0));
+        $reales = array_column($db->query('SELECT id FROM stl_items')->fetchAll(), 'id');
+        // Solo ids que existen de verdad, y sin repetidos
+        $ids = array_values(array_unique(array_intersect($ids, array_map('intval', $reales))));
 
-        $pos = array_search($id, array_column($todos, 'id'));
-        $vecino = $pos === false ? null : ($sube ? $pos - 1 : $pos + 1);
-        if ($vecino !== null && isset($todos[$vecino])) {
-            $q->execute([$vecino + 1, $id]);
-            $q->execute([$pos + 1, $todos[$vecino]['id']]);
-            $aviso = 'Se movió el modelo ' . ($sube ? 'hacia arriba.' : 'hacia abajo.');
+        if ($ids) {
+            $db->beginTransaction();
+            $q = $db->prepare('UPDATE stl_items SET orden = ? WHERE id = ?');
+            foreach ($ids as $n => $id) $q->execute([$n + 1, $id]);
+            // Cualquiera que no viniera en la lista va al final, para que no
+            // quede en 0 y se cuele arriba de todo
+            $faltantes = array_diff(array_map('intval', $reales), $ids);
+            $n = count($ids);
+            foreach ($faltantes as $id) $q->execute([++$n, $id]);
+            $db->commit();
+            $aviso = 'Orden guardado.';
+            $movido = (int) ($_POST['movido'] ?? 0);
         }
     } elseif (($_POST['accion'] ?? '') === 'eliminar') {
         $id = (int) ($_POST['id'] ?? 0);
@@ -209,14 +213,20 @@ ui_panel_inicio('Cargar STL', $yo, 'Cargar STL', '../');
       .nota-orden{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--txt-3);margin-bottom:12px}
       .nota-orden .ico{flex-shrink:0}
 
-      td.mover{width:46px;padding-right:0}
-      .flechas{display:flex;flex-direction:column;gap:3px}
-      .flechas form{margin:0;line-height:0}
-      .flechas button{width:30px;height:22px;display:flex;align-items:center;justify-content:center;
-              background:none;border:1px solid var(--bd-suave);border-radius:6px;color:var(--txt-3);
-              font-size:10px;line-height:1;cursor:pointer;padding:0}
-      .flechas button:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
-      .flechas button:disabled{opacity:.25;cursor:default}
+      td.mover{width:52px;padding-right:0}
+      .asa{display:flex;align-items:center;justify-content:center;width:38px;height:38px;
+              background:none;border:1px solid transparent;border-radius:8px;color:var(--txt-3);
+              cursor:grab;padding:0;touch-action:none}
+      .asa:hover{color:var(--accent);background:var(--surface-2)}
+      .asa:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+      tr.arrastrando{opacity:.4}
+      tr.arrastrando .asa{cursor:grabbing}
+      /* La linea marca donde va a caer la fila al soltar */
+      tbody tr.destino td{box-shadow:inset 0 2px 0 var(--accent)}
+      tbody tr.destino-fin td{box-shadow:inset 0 -2px 0 var(--accent)}
+      tr.recien-movida td{animation:destello 1.1s ease}
+      @keyframes destello{ from{background:var(--accent-tinte)} to{background:transparent} }
+      @media (prefers-reduced-motion:reduce){ tr.recien-movida td{animation:none} }
       .alta .fila-archivos{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
       @media (max-width:1100px){ .alta .fila-archivos{grid-template-columns:1fr 1fr} }
       input[type=file]{height:auto;padding:8px 12px;font-size:13px}
@@ -364,33 +374,31 @@ ui_panel_inicio('Cargar STL', $yo, 'Cargar STL', '../');
         el orden es uno solo para toda la librería.</p>
     <?php elseif (count($items) > 1): ?>
       <p class="nota-orden"><?php echo ui_icono('flecha', 14); ?>
-        Con las flechas movés cada modelo. Así, de arriba hacia abajo, es como se ven en la Librería STL.</p>
+        Agarrá un modelo de los puntitos y arrastralo. Así, de arriba hacia abajo, es como se ven en la Librería STL.</p>
     <?php endif; ?>
+
+    <form method="post" id="fOrden" hidden>
+      <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
+      <input type="hidden" name="accion" value="ordenar">
+      <input type="hidden" name="movido" id="ordenMovido">
+      <div id="ordenIds"></div>
+    </form>
 
     <div class="lista">
       <table>
         <thead><tr><?php if ($cat_sel === ''): ?><th>Orden</th><?php endif; ?><th></th><th>Modelo</th><th>Categoría</th><th>Descargas</th><th>Estado</th><th style="text-align:right">Acciones</th></tr></thead>
         <tbody>
         <?php foreach ($items as $i => $it): ?>
-          <tr class="<?php echo $it['publicado'] ? '' : 'apagado'; ?>">
+          <tr data-id="<?php echo (int) $it['id']; ?>" class="<?php echo $it['publicado'] ? '' : 'apagado';
+                  echo $movido === (int) $it['id'] ? ' recien-movida' : ''; ?>">
             <?php if ($cat_sel === ''): ?>
+              <?php // El asa tambien es un boton: quien no puede arrastrar (teclado,
+                    // lector de pantalla) lo enfoca y mueve la fila con las flechas ?>
               <td class="mover">
-                <div class="flechas">
-                  <form method="post">
-                    <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
-                    <input type="hidden" name="accion" value="mover">
-                    <input type="hidden" name="dir" value="arriba">
-                    <input type="hidden" name="id" value="<?php echo (int) $it['id']; ?>">
-                    <button type="submit" title="Subir" aria-label="Subir"<?php echo $i === 0 ? ' disabled' : ''; ?>>▲</button>
-                  </form>
-                  <form method="post">
-                    <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
-                    <input type="hidden" name="accion" value="mover">
-                    <input type="hidden" name="dir" value="abajo">
-                    <input type="hidden" name="id" value="<?php echo (int) $it['id']; ?>">
-                    <button type="submit" title="Bajar" aria-label="Bajar"<?php echo $i === count($items) - 1 ? ' disabled' : ''; ?>>▼</button>
-                  </form>
-                </div>
+                <button type="button" class="asa" title="Arrastrar para mover"
+                        aria-label="Mover <?php echo htmlspecialchars($it['nombre'], ENT_QUOTES); ?>. Arrastrá, o usá las flechas del teclado.">
+                  <?php echo ui_icono('arrastrar', 18); ?>
+                </button>
               </td>
             <?php endif; ?>
             <td><?php if ($it['imagen_ext']): ?>
@@ -423,5 +431,111 @@ ui_panel_inicio('Cargar STL', $yo, 'Cargar STL', '../');
         </tbody>
       </table>
     </div>
+
+    <?php if ($cat_sel === '' && count($items) > 1): ?>
+    <script>
+    /**
+     * Arrastrar para ordenar los modelos.
+     *
+     * Se usan eventos de puntero y no el arrastre nativo del navegador porque el
+     * nativo no existe en el celular: con puntero, el mismo codigo anda con el
+     * mouse y con el dedo.
+     *
+     * Mientras se arrastra solo se mueven filas en pantalla; al soltar se manda
+     * la lista entera de una y la pagina se recarga con el orden ya guardado.
+     */
+    (function () {
+      var tabla = document.querySelector('.lista tbody');
+      var form  = document.getElementById('fOrden');
+      if (!tabla || !form) return;
+
+      var fila = null, idMovido = 0, ordenAlAgarrar = '';
+
+      function ordenActual() {
+        return Array.prototype.map.call(tabla.querySelectorAll('tr[data-id]'), function (t) {
+          return t.dataset.id;
+        }).join(',');
+      }
+
+      function limpiarMarcas() {
+        tabla.querySelectorAll('tr').forEach(function (t) {
+          t.classList.remove('destino', 'destino-fin');
+        });
+      }
+
+      function guardar() {
+        var caja = document.getElementById('ordenIds');
+        caja.innerHTML = '';
+        tabla.querySelectorAll('tr[data-id]').forEach(function (t) {
+          var i = document.createElement('input');
+          i.type = 'hidden'; i.name = 'ids[]'; i.value = t.dataset.id;
+          caja.appendChild(i);
+        });
+        document.getElementById('ordenMovido').value = idMovido;
+        form.submit();
+      }
+
+      // --- Arrastrar con el mouse o con el dedo ---
+      tabla.addEventListener('pointerdown', function (ev) {
+        var asa = ev.target.closest('.asa');
+        if (!asa) return;
+        ev.preventDefault();
+        fila = asa.closest('tr');
+        idMovido = parseInt(fila.dataset.id, 10) || 0;
+        ordenAlAgarrar = ordenActual();
+        fila.classList.add('arrastrando');
+      });
+
+      document.addEventListener('pointermove', function (ev) {
+        if (!fila) return;
+        limpiarMarcas();
+        // Sobre que fila esta el dedo, y de que mitad
+        var otras = Array.prototype.slice.call(tabla.querySelectorAll('tr[data-id]'));
+        for (var i = 0; i < otras.length; i++) {
+          var t = otras[i];
+          if (t === fila) continue;
+          var r = t.getBoundingClientRect();
+          if (ev.clientY >= r.top && ev.clientY <= r.bottom) {
+            var arriba = ev.clientY < r.top + r.height / 2;
+            t.classList.add(arriba ? 'destino' : 'destino-fin');
+            // Se mueve ya, para que se vea a donde va a quedar
+            if (arriba) t.parentNode.insertBefore(fila, t);
+            else t.parentNode.insertBefore(fila, t.nextSibling);
+            break;
+          }
+        }
+      });
+
+      function soltar() {
+        if (!fila) return;
+        fila.classList.remove('arrastrando');
+        limpiarMarcas();
+        var cambio = ordenActual() !== ordenAlAgarrar;
+        fila = null;
+        // Un toque suelto en el asa, sin arrastrar, no tiene que recargar la
+        // pagina: en el celular es facil rozarlo sin querer
+        if (cambio) guardar();
+      }
+      document.addEventListener('pointerup', soltar);
+      document.addEventListener('pointercancel', soltar);
+
+      // --- Teclado, para quien no puede arrastrar ---
+      tabla.addEventListener('keydown', function (ev) {
+        var asa = ev.target.closest('.asa');
+        if (!asa) return;
+        if (ev.key !== 'ArrowUp' && ev.key !== 'ArrowDown') return;
+        ev.preventDefault();
+        var t = asa.closest('tr');
+        var vecino = ev.key === 'ArrowUp' ? t.previousElementSibling : t.nextElementSibling;
+        if (!vecino || !vecino.dataset.id) return;
+        if (ev.key === 'ArrowUp') t.parentNode.insertBefore(t, vecino);
+        else t.parentNode.insertBefore(vecino, t);
+        idMovido = parseInt(t.dataset.id, 10) || 0;
+        guardar();
+      });
+    })();
+    </script>
+    <?php endif; ?>
+
     <?php endif; ?>
 <?php ui_panel_fin(); ?>
