@@ -340,7 +340,7 @@ $og_alt = $en
     /* ---- Navegacion (vidrio) ---- */
     .nav{position:sticky;top:0;z-index:10;background:var(--nav-bg);backdrop-filter:blur(14px);
          -webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--nav-bd)}
-    .nav .cont{max-width:none;padding:0 36px;display:flex;align-items:center;
+    .nav .cont{max-width:none;padding:0 clamp(24px,4vw,64px);display:flex;align-items:center;
          justify-content:space-between;height:104px;gap:14px}
     .nav .marca img{height:84px;width:auto;display:block}
     .nav nav{display:flex;align-items:center;gap:20px}
@@ -572,7 +572,7 @@ $og_alt = $en
 
     /* ---- Footer ---- */
     footer{border-top:1px solid var(--bd-suave);padding:0 0 32px;background:var(--fondo)}
-    footer .cont{max-width:none;padding:0 36px}
+    footer .cont{max-width:none;padding:0 clamp(24px,4vw,64px)}
     .footer-grilla{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;
       padding:52px 0 40px}
     .footer-marca img{height:92px;width:auto}
@@ -610,7 +610,7 @@ $og_alt = $en
       .nav nav{gap:14px}
     }
     @media (max-width:680px){
-      .nav .cont, footer .cont{padding:0 20px}
+      .nav .cont, footer .cont{padding:0 20px}   /* en el celular, igual que el resto */
       .nav nav a.link-seccion{display:none}
       .hero{padding:56px 0 44px}
       section{padding:56px 0}
