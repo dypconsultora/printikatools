@@ -22,7 +22,7 @@ es gratuita y no requiere registro.
 - Presupuestos profesionales con PDF y envío por WhatsApp
 - Catálogo de productos con costo, precio y ganancia
 - Clientes vinculados a sus presupuestos
-- Stock de filamento con descuento automático al marcar un presupuesto como vendido
+- Stock de filamento e insumos, para llevar el control de lo que queda
 - Ventas y estadísticas mes a mes
 - Librería de modelos STL y recursos en video y PDF
 

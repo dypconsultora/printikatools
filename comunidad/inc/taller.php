@@ -329,72 +329,24 @@ function taller_tipos_rollo() {
     return ['PLA', 'PETG', 'ABS', 'TPU', 'Resina', 'Otro'];
 }
 
-/** Mapea el material de la calculadora al tipo de rollo del stock. */
-function taller_material_a_tipo($material) {
-    $directos = ['PLA', 'PETG', 'ABS', 'TPU', 'Resina'];
-    if (in_array($material, $directos, true)) return $material;
-    if ($material === 'Wood-PLA') return 'PLA';
-    return 'Otro';
-}
-
-/** Descuenta del stock (FIFO por rollo más viejo) los gramos de un presupuesto vendido. */
-function taller_stock_descontar($usuario_id, $presupuesto_id) {
-    $db = com_db();
-    // Evitar doble descuento si ya se registró
-    $stmt = $db->prepare('SELECT COUNT(*) c FROM stock_descuentos WHERE presupuesto_id=?');
-    $stmt->execute([(int) $presupuesto_id]);
-    if ((int) $stmt->fetch()['c'] > 0) return;
-
-    $stmt = $db->prepare('SELECT cantidad, datos_json FROM presupuesto_items WHERE presupuesto_id=?');
-    $stmt->execute([(int) $presupuesto_id]);
-    foreach ($stmt->fetchAll() as $item) {
-        $datos = $item['datos_json'] ? json_decode($item['datos_json'], true) : null;
-        $gramos = (int) round((float) ($datos['peso_g'] ?? 0) * (int) $item['cantidad']);
-        if ($gramos <= 0) continue;
-        $tipo = taller_material_a_tipo($datos['material'] ?? '');
-
-        $rollos = $db->prepare('SELECT id, peso_disponible FROM rollos
-                                 WHERE usuario_id=? AND tipo=? AND peso_disponible > 0
-                                 ORDER BY creado_en ASC, id ASC');
-        $rollos->execute([(int) $usuario_id, $tipo]);
-        foreach ($rollos->fetchAll() as $rollo) {
-            if ($gramos <= 0) break;
-            $usar = min($gramos, (int) $rollo['peso_disponible']);
-            $db->prepare('UPDATE rollos SET peso_disponible = peso_disponible - ? WHERE id=?')
-               ->execute([$usar, (int) $rollo['id']]);
-            $db->prepare('INSERT INTO stock_descuentos (usuario_id, presupuesto_id, rollo_id, gramos) VALUES (?,?,?,?)')
-               ->execute([(int) $usuario_id, (int) $presupuesto_id, (int) $rollo['id'], $usar]);
-            $gramos -= $usar;
-        }
-        // Si no alcanzó el stock, el resto queda sin descontar
-    }
-}
-
-/** Devuelve al stock lo descontado por un presupuesto (al volverlo a pendiente). */
-function taller_stock_restaurar($usuario_id, $presupuesto_id) {
-    $db = com_db();
-    $stmt = $db->prepare('SELECT rollo_id, gramos FROM stock_descuentos WHERE presupuesto_id=? AND usuario_id=?');
-    $stmt->execute([(int) $presupuesto_id, (int) $usuario_id]);
-    foreach ($stmt->fetchAll() as $d) {
-        $db->prepare('UPDATE rollos SET peso_disponible = LEAST(peso_original, peso_disponible + ?) WHERE id=?')
-           ->execute([(int) $d['gramos'], (int) $d['rollo_id']]);
-    }
-    $db->prepare('DELETE FROM stock_descuentos WHERE presupuesto_id=? AND usuario_id=?')
-       ->execute([(int) $presupuesto_id, (int) $usuario_id]);
-}
-
-/** Registra el cambio de estado manteniendo la fecha de venta y el stock. */
+/**
+ * Registra el cambio de estado del presupuesto.
+ *
+ * El stock NO se toca. Antes, marcar un presupuesto como vendido descontaba
+ * solo los gramos de los rollos, y volverlo a pendiente los devolvia. Se saco a
+ * pedido de Adriana: el stock es una planilla que ella lleva a ojo, y que el
+ * sistema le moviera los numeros por su cuenta hacia que dejara de coincidir
+ * con lo que ella veia en el estante.
+ */
 function taller_cambiar_estado($usuario_id, $presupuesto_id, $estado) {
     if ($estado === 'vendido') {
         com_db()->prepare("UPDATE presupuestos SET estado='vendido', vendido_en=COALESCE(vendido_en, NOW()),
                            actualizado_en=NOW() WHERE id=? AND usuario_id=?")
             ->execute([(int) $presupuesto_id, (int) $usuario_id]);
-        taller_stock_descontar($usuario_id, $presupuesto_id);
     } else {
         com_db()->prepare("UPDATE presupuestos SET estado='pendiente', vendido_en=NULL,
                            actualizado_en=NOW() WHERE id=? AND usuario_id=?")
             ->execute([(int) $presupuesto_id, (int) $usuario_id]);
-        taller_stock_restaurar($usuario_id, $presupuesto_id);
     }
 }
 

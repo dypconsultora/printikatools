@@ -25,7 +25,7 @@ Monedas disponibles: ARS (Mercado Pago) y USD (PayPal).
   - Presupuestos profesionales con exportación a PDF
   - Catálogo de productos con costo, precio y ganancia
   - Gestión de clientes vinculada a los presupuestos
-  - Stock de filamento con descuento automático al vender
+  - Stock de filamento e insumos del taller
   - Ventas y estadísticas mes a mes
   - Librería de modelos STL
   - Soporte técnico prioritario y por Telegram

@@ -1,7 +1,10 @@
 <?php
 /**
- * Stock Materiales: rollos de filamento (con descuento automático al marcar
- * un presupuesto como vendido) y otros insumos del taller.
+ * Stock Materiales: rollos de filamento e insumos del taller.
+ *
+ * Es una planilla y nada mas: no se conecta con los presupuestos ni con la
+ * calculadora. Los numeros los lleva la persona a mano, que es lo unico que
+ * puede coincidir con lo que hay de verdad en el estante.
  */
 require_once __DIR__ . '/inc/auth.php';
 require_once __DIR__ . '/inc/ui.php';
@@ -141,7 +144,8 @@ ui_panel_inicio('Stock Materiales', $u, 'Stock Materiales');
 ?>
     <style>.contenido{max-width:none}</style>
     <h1>Stock Materiales</h1>
-    <p class="bajada">Llevá el control de tus rollos de filamento e insumos del taller.</p>
+    <p class="bajada">Llevá el control de tus rollos de filamento e insumos del taller.
+      Los vas actualizando vos a medida que imprimís.</p>
 
     <?php if ($aviso): ?><div class="msg ok"><?php echo ui_icono('check', 16); ?><span><?php echo htmlspecialchars($aviso); ?></span></div><?php endif; ?>
     <?php if ($error): ?><div class="msg bad"><?php echo ui_icono('alerta', 16); ?><span><?php echo htmlspecialchars($error); ?></span></div><?php endif; ?>
@@ -235,8 +239,8 @@ ui_panel_inicio('Stock Materiales', $u, 'Stock Materiales');
       <div class="vacio">
         <div class="circ"><?php echo ui_icono('cajas', 26); ?></div>
         <h2>Todavía no tenés rollos cargados</h2>
-        <p>Tocá "Agregar rollo" para sumar tu primer filamento.
-           Después vas a poder descontar stock automáticamente al marcar un presupuesto como vendido.</p>
+        <p>Tocá "Agregar rollo" para sumar tu primer filamento y llevar la cuenta
+           de lo que te queda.</p>
       </div>
     <?php else: ?>
       <div class="tabla-caja">

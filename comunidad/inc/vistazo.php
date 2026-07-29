@@ -64,14 +64,14 @@ function vistazo_secciones() {
         ],
         'stock' => [
             'titulo'  => 'Stock de materiales',
-            'gancho'  => 'Cuánto filamento te queda, y cuánto te costó de verdad.',
-            'detalle' => 'Cargás cada rollo con lo que pagaste y el sistema descuenta lo que vas
-                          usando. Así el precio que cobrás sale de tu costo real, no de un cálculo
-                          de hace seis meses.',
+            'gancho'  => 'Cuánto filamento te queda y cuánto te costó cada rollo.',
+            'detalle' => 'Cargás cada rollo con lo que pagaste y vas anotando lo que gastás.
+                          De un vistazo sabés qué tenés, qué se está por acabar y a qué precio
+                          lo compraste, sin buscar la factura.',
             'items'   => [
                 'Cuánto queda de cada rollo',
-                'Aviso cuando se está por acabar',
-                'Tus costos reales alimentan la calculadora',
+                'Aviso cuando uno se está por acabar',
+                'Marca, tipo, color y lo que pagaste por kilo',
             ],
         ],
         'ventas' => [

@@ -205,7 +205,7 @@ $og_alt = $en
         'Calculadora de costos de impresión 3D en ARS, USD y EUR',
         'Presupuestos profesionales en PDF',
         'Gestión de clientes',
-        'Stock de filamento con descuento automático',
+        'Stock de filamento e insumos del taller',
         'Ventas y estadísticas del taller',
         'Librería de modelos STL',
       ],
@@ -929,7 +929,7 @@ $og_alt = $en
           <div class="caja">
             <span class="ico-caja"><?php echo ui_icono('stock', 20); ?></span>
             <h3>Stock <span class="chip activo">Disponible</span></h3>
-            <p>Rollos e insumos controlados, con descuento automático al vender.</p>
+            <p>Rollos e insumos controlados, para saber siempre qué te queda.</p>
           </div>
           <div class="caja">
             <span class="ico-caja"><?php echo ui_icono('libreria', 20); ?></span>

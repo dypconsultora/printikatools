@@ -310,12 +310,12 @@
     'Se completa solo al hacer un presupuesto': 'Fills itself in as you make a quote',
     // Stock
     'Stock de materiales': 'Materials stock',
-    'Cuánto filamento te queda, y cuánto te costó de verdad.': 'How much filament you have left, and what it really cost you.',
-    'Cargás cada rollo con lo que pagaste y el sistema descuenta lo que vas usando. Así el precio que cobrás sale de tu costo real, no de un cálculo de hace seis meses.':
-      'Enter each spool with what you paid and the system subtracts what you use. That way your price comes from your real cost, not from a calculation you did six months ago.',
+    'Cuánto filamento te queda y cuánto te costó cada rollo.': 'How much filament you have left and what each spool cost you.',
+    'Cargás cada rollo con lo que pagaste y vas anotando lo que gastás. De un vistazo sabés qué tenés, qué se está por acabar y a qué precio lo compraste, sin buscar la factura.':
+      'Enter each spool with what you paid and note down what you use. At a glance you know what you have, what is running out and what you paid for it, without digging up the receipt.',
     'Cuánto queda de cada rollo': 'How much is left of each spool',
-    'Aviso cuando se está por acabar': 'A heads-up when one is running out',
-    'Tus costos reales alimentan la calculadora': 'Your real costs feed the calculator',
+    'Aviso cuando uno se está por acabar': 'A heads-up when one is running out',
+    'Marca, tipo, color y lo que pagaste por kilo': 'Brand, type, colour and what you paid per kilo',
     // Ventas
     'Lo que vendiste, lo que cobraste y lo que te falta cobrar.': 'What you sold, what you got paid, and what is still owed.',
     'Cada venta con su cliente, su fecha y su estado de pago. Sin planilla aparte y sin acordarte de memoria quién te debe.':
