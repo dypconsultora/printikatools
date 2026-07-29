@@ -65,6 +65,8 @@ ui_tarjeta_inicio('Código de acceso');
     <?php if ($aviso): ?><div class="msg ok"><?php echo ui_icono('check', 16); ?><span><?php echo htmlspecialchars($aviso); ?></span></div><?php endif; ?>
     <?php if ($error): ?><div class="msg bad"><?php echo ui_icono('alerta', 16); ?><span><?php echo htmlspecialchars($error); ?></span></div><?php endif; ?>
 
+    <?php ui_aviso_spam(); ?>
+
     <style>
       #codigo{text-align:center;font-size:30px;letter-spacing:12px;font-weight:700;
               font-variant-numeric:tabular-nums;padding-left:12px}

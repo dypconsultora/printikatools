@@ -2642,7 +2642,7 @@ PRECIO FINAL: ${price}${meliInfo}
         const r = await res.json();
         if (!r || !r.ok) throw new Error((r && r.error) || 'Error');
         cerrarNews();
-        showToast('Gracias! Te vamos a avisar de las novedades.');
+        showToast('Gracias! Te mandamos un correo: si no lo ves, mira en Correo no deseado.');
       } catch (e) {
         showToast('No se pudo enviar: ' + e.message);
         btn.disabled = false;

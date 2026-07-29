@@ -42,9 +42,11 @@ ui_tarjeta_inicio('Confirmá tu correo');
     <?php if ($aviso): ?><div class="msg ok"><?php echo ui_icono('check', 16); ?><span><?php echo htmlspecialchars($aviso); ?></span></div><?php endif; ?>
     <?php if ($error): ?><div class="msg bad"><?php echo ui_icono('alerta', 16); ?><span><?php echo htmlspecialchars($error); ?></span></div><?php endif; ?>
 
+    <?php ui_aviso_spam(); ?>
+
     <div class="msg warn" style="margin-top:14px">
       <?php echo ui_icono('alerta', 16); ?>
-      <span>Hasta que confirmes, la cuenta queda en espera. Revisá también la carpeta de correo no deseado.</span>
+      <span>Hasta que confirmes, la cuenta queda en espera.</span>
     </div>
 
     <form method="post" style="margin-top:6px">

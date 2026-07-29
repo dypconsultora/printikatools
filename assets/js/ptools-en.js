@@ -238,7 +238,7 @@
     'Enviarme el enlace': 'Send me the link',
     '¿Te acordaste?': 'Remembered it?',
     'Revisá tu correo': 'Check your email',
-    'El enlace vence en 2 horas. Mirá también la carpeta de correo no deseado.': 'The link expires in 2 hours. Check your spam folder too.',
+    'El enlace vence en 2 horas.': 'The link expires in 2 hours.',
     'Volver a ingresar': 'Back to log in',
     'Escribí un email válido.': 'Enter a valid email.',
     'Demasiados intentos. Esperá 15 minutos y probá de nuevo.': 'Too many attempts. Wait 15 minutes and try again.',
@@ -256,7 +256,10 @@
     'La contraseña debe tener al menos 8 caracteres.': 'The password must be at least 8 characters.',
     // Verificación de correo
     'Confirmá tu correo': 'Confirm your email',
-    'Hasta que confirmes, la cuenta queda en espera. Revisá también la carpeta de correo no deseado.': 'Until you confirm, your account stays on hold. Check your spam folder too.',
+    'Hasta que confirmes, la cuenta queda en espera.': 'Until you confirm, your account stays on hold.',
+    // El aviso de spam: va en toda pantalla que deja esperando un correo
+    '¿No te llegó? Mirá en la carpeta de Correo no deseado o Spam: a veces cae ahí. Si lo encontrás, marcalo como «No es spam» y los próximos te van a llegar bien.':
+      'Did not get it? Check your Spam or Junk folder — it sometimes lands there. If you find it, mark it as “Not spam” and the next ones will arrive fine.',
     'Reenviar el correo': 'Resend the email',
     'Te reenviamos el correo de confirmación.': 'We resent the confirmation email.',
     'Recién te enviamos un correo. Esperá un par de minutos antes de pedir otro.': 'We just sent you an email. Wait a couple of minutes before asking for another.',

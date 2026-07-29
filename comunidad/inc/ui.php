@@ -313,6 +313,32 @@ function ui_tarjeta_inicio($titulo) { ?>
     <img class="logo logo-claro" src="<?php echo ui_base(); ?>/assets/img/printika-tools.svg" alt="Printika Tools">
 <?php }
 
+/**
+ * Aviso de "mira en correo no deseado".
+ *
+ * Va en TODA pantalla que deja a la persona esperando un correo. Los mensajes
+ * automaticos caen en spam mas seguido de lo que uno cree, y quien no lo sabe
+ * cree que el sistema no le mando nada y abandona ahi mismo.
+ *
+ * Se pide ademas que marquen "No es spam": eso le ensena al correo del
+ * destinatario que los proximos van a la bandeja de siempre.
+ */
+function ui_aviso_spam() { ?>
+  <style>
+    /* .msg.warn ya define color, asi que hace falta el mismo peso para ganarle */
+    .msg.aviso-spam{margin-top:14px;background:var(--accent-tinte);
+                    border-color:rgba(45,183,250,.3);color:var(--accent)}
+    .msg.aviso-spam .ico{flex-shrink:0;display:flex;margin-top:1px}
+    .msg.aviso-spam span{font-weight:500}
+  </style>
+  <div class="msg warn aviso-spam">
+    <span class="ico"><?php echo ui_icono('correo', 17); ?></span>
+    <?php // Una sola frase, sin etiquetas adentro: el traductor al inglés
+          // busca coincidencias exactas y un <strong> en el medio se la parte ?>
+    <span>¿No te llegó? Mirá en la carpeta de Correo no deseado o Spam: a veces cae ahí. Si lo encontrás, marcalo como «No es spam» y los próximos te van a llegar bien.</span>
+  </div>
+<?php }
+
 function ui_tarjeta_fin() { ?>
   </main>
   </div>

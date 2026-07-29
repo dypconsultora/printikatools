@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded',function(){
     'Cotizacion guardada correctamente':'Quote saved successfully','Cotizacion cargada':'Quote loaded',
     'Cotizacion eliminada':'Quote deleted','Resumen copiado al portapapeles':'Summary copied to clipboard',
     'Valores reiniciados':'Values reset','Ingresa un email valido':'Enter a valid email',
-    'Gracias! Te vamos a avisar de las novedades.':'Thanks! We will keep you posted.',
+    'Gracias! Te mandamos un correo: si no lo ves, mira en Correo no deseado.':'Thanks! We sent you an email — if you do not see it, check your Spam folder.',
     'Escribi el nombre del producto en el campo de arriba':'Type the product name in the field above',
     'Producto actualizado en tu catalogo':'Product updated in your catalog',
     'Producto creado en tu catalogo':'Product created in your catalog'

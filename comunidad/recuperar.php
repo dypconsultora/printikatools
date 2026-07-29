@@ -38,7 +38,8 @@ ui_tarjeta_inicio('Recuperar contraseña');
     <p class="sub">Si <strong><?php echo htmlspecialchars($email); ?></strong> tiene una cuenta,
        le enviamos un enlace para crear una contraseña nueva.</p>
     <div class="msg ok"><?php echo ui_icono('check', 16); ?>
-      <span>El enlace vence en 2 horas. Mirá también la carpeta de correo no deseado.</span></div>
+      <span>El enlace vence en 2 horas.</span></div>
+    <?php ui_aviso_spam(); ?>
     <p class="pie"><a href="login.php">Volver a ingresar</a></p>
 
 <?php else: ?>

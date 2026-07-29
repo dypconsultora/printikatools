@@ -80,6 +80,8 @@ ui_tarjeta_inicio('Confirmación de correo');
       <input type="hidden" name="accion" value="reenviar">
       <button class="btn" type="submit" style="width:100%;margin-top:16px">Enviarme un enlace nuevo</button>
     </form>
+    <?php else: ?>
+      <?php ui_aviso_spam(); ?>
     <?php endif; ?>
 
 <?php else: ?>
