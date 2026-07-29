@@ -312,7 +312,7 @@ $og_alt = $en
          -webkit-font-smoothing:antialiased;overflow-x:hidden}
     a{color:var(--accent);text-decoration:none}
     .ico{flex-shrink:0}
-    .cont{max-width:1560px;margin:0 auto;padding:0 clamp(24px,4vw,64px)}
+    .cont{max-width:1560px;margin:0 auto;padding:0 clamp(28px,5.5vw,88px)}
     h1,h2,h3{font-family:var(--titulos)}
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--accent);
          color:var(--accent-ink);border:1px solid transparent;border-radius:var(--radio);padding:0 20px;
@@ -340,7 +340,7 @@ $og_alt = $en
     /* ---- Navegacion (vidrio) ---- */
     .nav{position:sticky;top:0;z-index:10;background:var(--nav-bg);backdrop-filter:blur(14px);
          -webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--nav-bd)}
-    .nav .cont{max-width:none;padding:0 clamp(24px,4vw,64px);display:flex;align-items:center;
+    .nav .cont{max-width:none;padding:0 clamp(28px,5.5vw,88px);display:flex;align-items:center;
          justify-content:space-between;height:104px;gap:14px}
     .nav .marca img{height:84px;width:auto;display:block}
     .nav nav{display:flex;align-items:center;gap:20px}
@@ -476,6 +476,9 @@ $og_alt = $en
     .foto-taller .flotante .punto{width:8px;height:8px;border-radius:99px;background:var(--ok);
         box-shadow:0 0 8px rgba(62,207,142,.8)}
     .foto-taller .flotante span{font-size:12.5px;font-weight:600}
+    /* Los beneficios entran desde la derecha: hasta que les toca estan
+       corridos y asomarian fuera de la pantalla. */
+    .comunidad{overflow-x:hidden}
     .beneficios{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-content:stretch;height:100%}
     .beneficio{display:flex;gap:14px;align-items:flex-start;background:var(--vidrio);
         border:1px solid var(--bd-suave);border-radius:var(--radio-g);padding:22px;
@@ -572,7 +575,7 @@ $og_alt = $en
 
     /* ---- Footer ---- */
     footer{border-top:1px solid var(--bd-suave);padding:0 0 32px;background:var(--fondo)}
-    footer .cont{max-width:none;padding:0 clamp(24px,4vw,64px)}
+    footer .cont{max-width:none;padding:0 clamp(28px,5.5vw,88px)}
     .footer-grilla{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;
       padding:52px 0 40px}
     .footer-marca img{height:92px;width:auto}
@@ -596,6 +599,15 @@ $og_alt = $en
 
     :is(a,button,input,summary):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
+
+    /* El margen ancho es para monitores grandes. Entre 1100 y 1400 el
+       encabezado no entra: ahi se achica un poco para que no se corte. */
+    @media (max-width:1400px){
+      /* Se achican los TRES juntos: si solo se achica el encabezado, el logo
+         deja de alinear con el titulo de abajo. */
+      .cont,.nav .cont,footer .cont{padding:0 clamp(28px,4vw,56px)}
+      .nav nav{gap:15px}
+    }
     @media (max-width:1100px){
       .nav nav a.link-seccion{display:none}
     }
