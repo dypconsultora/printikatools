@@ -10,6 +10,7 @@ comunidad/uploads/logos/*
 !comunidad/uploads/logos/.gitkeep
 comunidad/uploads/stl/*
 comunidad/uploads/tmp/*
+comunidad/uploads/backups/*
 comunidad/uploads/mp_log.txt
 comunidad/uploads/recursos/*
 comunidad/uploads/guias/*
