@@ -452,8 +452,9 @@ function ui_menu() {
         'Plataforma' => [
             ['calculadora',  'Calculadora',   'calculadora.php', true, false],
             ['libreria',     'Librería STL',  'libreria.php', true, true],
-            ['recursos',     'Recursos', [['pdf', 'PDF', 'recursos.php?tab=pdf'],
-                                          ['video', 'Videos', 'recursos.php?tab=videos']], true, false],
+            ['recursos',     'Recursos', [['video', 'YouTube', 'recursos.php?tab=youtube'],
+                                          ['video', 'Plataforma', 'recursos.php?tab=plataforma'],
+                                          ['video', 'Mantenimientos', 'recursos.php?tab=mantenimiento']], true, false],
         ],
         'Mi taller' => [
             ['presupuestos', 'Presupuestos',  'presupuestos.php', true, true],

@@ -257,6 +257,31 @@
     'Printika Pro Anual': 'Printika Pro Annual',
     '2 meses gratis': '2 months free',
     '2 meses sin cargo': '2 months at no cost',
+    // Faltantes encontrados barriendo la plataforma en ingles
+    'Todavía no tenés productos.': 'You do not have any products yet.',
+    'Todavía no tenés clientes. Cargá el primero con el formulario de arriba — o se crean solos al guardar un presupuesto.':
+      'You do not have any clients yet. Add the first one with the form above — or they get created on their own when you save a quote.',
+    'Color *': 'Colour *',
+    'Dejalo vacío para usar el correo de tu cuenta. Podés poner otro si preferís recibir los códigos en una casilla distinta.':
+      'Leave it empty to use your account email. You can enter another one if you prefer to get the codes in a different inbox.',
+    'Librería STL y soporte por Telegram': 'STL library and Telegram support',
+    // Recursos: las tres secciones de video
+    'Plataforma': 'Platform',
+    'Mantenimientos': 'Maintenance',
+    'Videos para mejorar tus impresiones y tu negocio 3D.': 'Videos to improve your prints and your 3D business.',
+    'Todavía no hay videos cargados': 'No videos yet',
+    'Muy pronto vas a encontrar acá videos y tutoriales sobre impresión 3D.':
+      'Very soon you will find videos and tutorials about 3D printing here.',
+    // Stock de materiales (los textos cambiaron al pasar a contar rollos)
+    'Llevá el control de tus rollos de filamento e insumos del taller. Los vas actualizando vos a medida que imprimís.':
+      'Keep track of your filament spools and workshop supplies. You update them yourself as you print.',
+    'Tocá "Agregar rollo" para sumar tu primer filamento y llevar la cuenta de lo que te queda.':
+      'Tap "Add spool" to add your first filament and keep track of what is left.',
+    'Cuántos rollos tenés': 'How many spools you have',
+    'De este filamento, en esta marca, tipo y color. Lo vas cambiando a medida que gastás o comprás.':
+      'Of this filament, in this brand, type and colour. You change it as you use or buy more.',
+    'rollo': 'spool', 'rollos': 'spools',
+    'Te queda uno': 'One left',
     // Tarjetas del panel que necesitan plan pago
     'Necesitás cuenta Pro': 'Pro account required',
     'Eso necesita cuenta Pro. Con el plan completo lo tenés, junto con todo Mi taller.':

@@ -1,6 +1,6 @@
 <?php
 /**
- * Recursos: PDFs para descargar y videos de YouTube, cargados por la
+ * Recursos: videos de YouTube en tres secciones, cargados por la
  * administración. Disponible para todos los usuarios logueados.
  */
 require_once __DIR__ . '/inc/auth.php';
@@ -12,34 +12,18 @@ $u = usuario_actual();
 taller_migrar();
 $db = com_db();
 
-// Descarga de un PDF (cuenta la descarga)
-if (preg_match('/^\d+$/', $_GET['descargar'] ?? '')) {
-    $stmt = $db->prepare('SELECT * FROM recursos_pdf WHERE id=? AND publicado=1');
-    $stmt->execute([(int) $_GET['descargar']]);
-    $item = $stmt->fetch();
-    if ($item && $item['acceso'] === 'pago' && !acceso_total()) {
-        header('Location: suscripcion.php?aviso=solo_pro');
-        exit;
-    }
-    $ruta = $item ? __DIR__ . '/uploads/recursos/pdf-' . $item['id'] . '.pdf' : '';
-    if ($item && is_readable($ruta)) {
-        $db->prepare('UPDATE recursos_pdf SET descargas = descargas + 1 WHERE id=?')->execute([(int) $item['id']]);
-        $nombre = trim(preg_replace('/\s+/u', ' ', preg_replace('/[^\w\s\-\.]/u', '', $item['titulo']))) ?: 'recurso';
-        header('Content-Type: application/pdf');
-        header('Content-Disposition: attachment; filename="' . $nombre . '.pdf"');
-        header('Content-Length: ' . filesize($ruta));
-        readfile($ruta);
-        exit;
-    }
-    header('Location: recursos.php?tab=pdf');
-    exit;
-}
-
-$tab = ($_GET['tab'] ?? '') === 'videos' ? 'videos' : 'pdf';
+// Tres secciones, todas de videos de YouTube. Los PDF se retiraron.
+$secciones = taller_secciones_recursos();
+$tab = isset($secciones[$_GET['tab'] ?? '']) ? $_GET['tab'] : 'youtube';
 $conTodo = acceso_total();
 
-$pdfs = $db->query('SELECT * FROM recursos_pdf WHERE publicado=1 ORDER BY creado_en DESC, id DESC')->fetchAll();
-$videos = $db->query('SELECT * FROM recursos_videos WHERE publicado=1 ORDER BY creado_en DESC, id DESC')->fetchAll();
+$stmt = $db->prepare('SELECT * FROM recursos_videos WHERE publicado=1 AND seccion=? ORDER BY creado_en DESC, id DESC');
+$stmt->execute([$tab]);
+$videos = $stmt->fetchAll();
+$cuentas = [];
+foreach ($db->query('SELECT seccion, COUNT(*) c FROM recursos_videos WHERE publicado=1 GROUP BY seccion') as $r) {
+    $cuentas[$r['seccion']] = (int) $r['c'];
+}
 
 function rec_tam($b) {
     if ($b >= 1048576) return number_format($b / 1048576, 1, ',', '.') . ' MB';
@@ -54,11 +38,11 @@ function rec_miniatura($v) {
     return 'https://img.youtube.com/vi/' . rawurlencode($v['youtube_id']) . '/hqdefault.jpg';
 }
 
-ui_panel_inicio('Recursos', $u, $tab === 'videos' ? 'Videos' : 'PDF');
+ui_panel_inicio('Recursos', $u, $secciones[$tab]);
 ?>
     <style>.contenido{max-width:none}</style>
     <h1>Recursos</h1>
-    <p class="bajada">Guías en PDF y videos para mejorar tus impresiones y tu negocio 3D.</p>
+    <p class="bajada">Videos para mejorar tus impresiones y tu negocio 3D.</p>
 
     <style>
       .tabs{display:flex;gap:26px;border-bottom:1px solid var(--bd-suave);margin-bottom:18px}
@@ -109,53 +93,14 @@ ui_panel_inicio('Recursos', $u, $tab === 'videos' ? 'Videos' : 'PDF');
     </style>
 
     <div class="tabs">
-      <a href="recursos.php?tab=pdf" class="<?php echo $tab === 'pdf' ? 'activa' : ''; ?>">
-        <?php echo ui_icono('pdf', 18); ?>PDF
-        <?php if ($pdfs): ?><span class="cant"><?php echo count($pdfs); ?></span><?php endif; ?>
-      </a>
-      <a href="recursos.php?tab=videos" class="<?php echo $tab === 'videos' ? 'activa' : ''; ?>">
-        <?php echo ui_icono('video', 18); ?>Videos
-        <?php if ($videos): ?><span class="cant"><?php echo count($videos); ?></span><?php endif; ?>
-      </a>
+      <?php foreach ($secciones as $clave => $nombre): ?>
+        <a href="recursos.php?tab=<?php echo $clave; ?>" class="<?php echo $tab === $clave ? 'activa' : ''; ?>">
+          <?php echo ui_icono('video', 18); ?><?php echo htmlspecialchars($nombre); ?>
+          <?php if (!empty($cuentas[$clave])): ?><span class="cant"><?php echo $cuentas[$clave]; ?></span><?php endif; ?>
+        </a>
+      <?php endforeach; ?>
     </div>
 
-<?php if ($tab === 'pdf'): ?>
-    <?php if (!$pdfs): ?>
-      <div class="vacio">
-        <div class="circ"><?php echo ui_icono('pdf', 26); ?></div>
-        <h2>Todavía no hay PDFs cargados</h2>
-        <p>Muy pronto vas a encontrar acá guías y material descargable.</p>
-      </div>
-    <?php else: ?>
-      <div class="rec-grid">
-        <?php foreach ($pdfs as $p): ?>
-          <?php $bloqueado = $p['acceso'] === 'pago' && !$conTodo; ?>
-          <div class="rec-c">
-            <div class="rec-img">
-              <?php if ($p['acceso'] === 'pago'): ?><span class="badge-pago"><?php echo ui_icono('candado', 12); ?>Suscriptores</span><?php endif; ?>
-              <?php if ($p['imagen_ext']): ?>
-                <img src="uploads/recursos/img-<?php echo (int) $p['id'] . '.' . htmlspecialchars($p['imagen_ext']); ?>"
-                     alt="<?php echo htmlspecialchars($p['titulo']); ?>" loading="lazy">
-              <?php else: ?><?php echo ui_icono('pdf', 34); ?><?php endif; ?>
-            </div>
-            <div class="cuerpo">
-              <h2><?php echo htmlspecialchars($p['titulo']); ?></h2>
-              <?php if ($p['descripcion']): ?><p class="desc"><?php echo htmlspecialchars($p['descripcion']); ?></p><?php endif; ?>
-              <span class="meta">PDF · <?php echo rec_tam((int) $p['tam_bytes']); ?>
-                · <?php echo taller_plural($p['descargas'], 'descarga', 'descargas', 'download', 'downloads'); ?></span>
-            </div>
-            <?php if ($bloqueado): ?>
-              <a class="btn-bloq" href="suscripcion.php"><?php echo ui_icono('candado', 14); ?> Disponible en el plan completo</a>
-            <?php else: ?>
-              <a class="btn" href="recursos.php?descargar=<?php echo (int) $p['id']; ?>">
-                <?php echo ui_icono('descargar', 15); ?> Descargar</a>
-            <?php endif; ?>
-          </div>
-        <?php endforeach; ?>
-      </div>
-    <?php endif; ?>
-
-<?php else: ?>
     <?php if (!$videos): ?>
       <div class="vacio">
         <div class="circ"><?php echo ui_icono('video', 26); ?></div>
@@ -165,10 +110,11 @@ ui_panel_inicio('Recursos', $u, $tab === 'videos' ? 'Videos' : 'PDF');
     <?php else: ?>
       <div class="rec-grid">
         <?php foreach ($videos as $v): ?>
-          <?php $bloqueado = $v['acceso'] === 'pago' && !$conTodo; ?>
+          <?php // Plataforma la ve cualquiera: son los videos de como usar el sistema
+                $bloqueado = !taller_seccion_libre($tab) && $v['acceso'] === 'pago' && !$conTodo; ?>
           <div class="rec-c">
             <div class="rec-img">
-              <?php if ($v['acceso'] === 'pago'): ?><span class="badge-pago"><?php echo ui_icono('candado', 12); ?>Suscriptores</span><?php endif; ?>
+              <?php if (!taller_seccion_libre($tab) && $v['acceso'] === 'pago'): ?><span class="badge-pago"><?php echo ui_icono('candado', 12); ?>Suscriptores</span><?php endif; ?>
               <img src="<?php echo htmlspecialchars(rec_miniatura($v)); ?>"
                    alt="<?php echo htmlspecialchars($v['titulo']); ?>" loading="lazy">
               <?php if ($bloqueado): ?>
@@ -216,5 +162,4 @@ ui_panel_inicio('Recursos', $u, $tab === 'videos' ? 'Videos' : 'PDF');
       document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrar(); });
     })();
     </script>
-<?php endif; ?>
 <?php ui_panel_fin(); ?>

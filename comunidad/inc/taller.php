@@ -314,6 +314,17 @@ function taller_migrar() {
         PRIMARY KEY (id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+    // En que solapa de Recursos va el video. Los que ya estaban quedan en
+    // "youtube", que es la solapa de siempre (antes se llamaba Videos).
+    $stmt = $db->prepare("SELECT COUNT(*) c FROM information_schema.COLUMNS
+                           WHERE TABLE_SCHEMA = DATABASE()
+                             AND TABLE_NAME = 'recursos_videos' AND COLUMN_NAME = 'seccion'");
+    $stmt->execute();
+    if (!(int) $stmt->fetch()['c']) {
+        $db->exec("ALTER TABLE recursos_videos
+                   ADD COLUMN seccion VARCHAR(20) NOT NULL DEFAULT 'youtube' AFTER titulo");
+    }
+
     // Quién ve cada recurso: 'todos' (incluye plan gratis) o 'pago'
     foreach (['recursos_pdf', 'recursos_videos'] as $t) {
         $col = $db->query("SELECT COUNT(*) c FROM information_schema.columns
@@ -441,6 +452,23 @@ const TALLER_MESES_EN = ['', 'January', 'February', 'March', 'April', 'May', 'Ju
  */
 function taller_idioma() {
     return (($_COOKIE['ptools_idioma'] ?? '') === 'en') ? 'en' : 'es';
+}
+
+/**
+ * Las tres secciones de Recursos, todas de videos de YouTube.
+ * La clave es lo que se guarda; el valor, como se llama en pantalla.
+ *
+ * "plataforma" se ve con cualquier plan, incluido el gratuito: son los videos
+ * que explican como usar el sistema, y esconderselos a quien todavia no pago no
+ * tiene sentido.
+ */
+function taller_secciones_recursos() {
+    return ['youtube' => 'YouTube', 'plataforma' => 'Plataforma', 'mantenimiento' => 'Mantenimientos'];
+}
+
+/** true si esa seccion la ve cualquiera, sin importar el plan. */
+function taller_seccion_libre($seccion) {
+    return $seccion === 'plataforma';
 }
 
 /**

@@ -1,6 +1,6 @@
 <?php
 /**
- * Cargar recursos: PDFs descargables y videos de YouTube para la sección
+ * Cargar recursos: videos de YouTube para la sección
  * Recursos que ven los usuarios. Archivos en uploads/recursos/ (fuera de git).
  */
 require_once __DIR__ . '/../inc/auth.php';
@@ -13,7 +13,9 @@ taller_migrar();
 $db = com_db();
 
 $dir = dirname(__DIR__) . '/uploads/recursos';
-$tab = ($_GET['tab'] ?? '') === 'videos' ? 'videos' : 'pdf';
+// La solapa es una de las tres secciones de video; los PDF se retiraron
+$secciones = taller_secciones_recursos();
+$tab = isset($secciones[$_GET['tab'] ?? '']) ? $_GET['tab'] : 'youtube';
 $aviso = '';
 $error = '';
 
@@ -51,70 +53,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!com_csrf_ok($_POST['csrf'] ?? '')) {
         $error = 'La sesión expiró, probá de nuevo.';
 
-    } elseif ($accion === 'subir_pdf') {
-        $tab = 'pdf';
-        $id     = (int) ($_POST['id'] ?? 0);
-        $titulo = mb_substr(trim($_POST['titulo'] ?? ''), 0, 150);
-        $desc   = mb_substr(trim($_POST['descripcion'] ?? ''), 0, 300);
-        $acceso = ($_POST['acceso'] ?? '') === 'pago' ? 'pago' : 'todos';
-        $arch   = $_FILES['archivo'] ?? null;
-        $hay_arch = !empty($arch['tmp_name']) && is_uploaded_file($arch['tmp_name']);
-        $mime   = $hay_arch ? (string) @mime_content_type($arch['tmp_name']) : '';
-        if ($titulo === '') {
-            $error = 'Poné el título del PDF.';
-        } elseif ($id === 0 && !$hay_arch) {
-            $error = 'Elegí el archivo PDF.';
-        } elseif ($hay_arch && $mime !== 'application/pdf') {
-            $error = 'El archivo tiene que ser un PDF.';
-        } elseif ($hay_arch && $arch['size'] > 30 * 1024 * 1024) {
-            $error = 'El PDF no puede superar los 30 MB.';
-        } else {
-            $img_ext = admin_img_ext('imagen', $error);
-            if ($error === '' && $id > 0) {
-                // Edición: solo pisa lo que se vuelva a cargar
-                $stmt = $db->prepare('SELECT * FROM recursos_pdf WHERE id=?');
-                $stmt->execute([$id]);
-                if (!($it = $stmt->fetch())) {
-                    $error = 'El PDF ya no existe.';
-                } else {
-                    if (!is_dir($dir)) mkdir($dir, 0755, true);
-                    $tam = (int) $it['tam_bytes'];
-                    if ($hay_arch && move_uploaded_file($arch['tmp_name'], "$dir/pdf-$id.pdf")) {
-                        $tam = (int) $arch['size'];
-                    }
-                    $ext = $it['imagen_ext'];
-                    if ($img_ext !== '' && move_uploaded_file($_FILES['imagen']['tmp_name'], "$dir/img-$id.$img_ext")) {
-                        if ($ext !== '' && $ext !== $img_ext) @unlink("$dir/img-$id.$ext");
-                        $ext = $img_ext;
-                    }
-                    $db->prepare('UPDATE recursos_pdf SET titulo=?, descripcion=?, imagen_ext=?, tam_bytes=?, acceso=? WHERE id=?')
-                       ->execute([$titulo, $desc, $ext, $tam, $acceso, $id]);
-                    $aviso = "«{$titulo}» actualizado.";
-                }
-            } elseif ($error === '') {
-                if (!is_dir($dir)) mkdir($dir, 0755, true);
-                $db->prepare('INSERT INTO recursos_pdf (titulo, descripcion, imagen_ext, tam_bytes, acceso, creado_en)
-                              VALUES (?, ?, ?, ?, ?, NOW())')
-                   ->execute([$titulo, $desc, $img_ext, (int) $arch['size'], $acceso]);
-                $id = (int) $db->lastInsertId();
-                $ok1 = move_uploaded_file($arch['tmp_name'], "$dir/pdf-$id.pdf");
-                $ok2 = $img_ext === '' || move_uploaded_file($_FILES['imagen']['tmp_name'], "$dir/img-$id.$img_ext");
-                if ($ok1 && $ok2) {
-                    $aviso = "«{$titulo}» cargado en Recursos.";
-                } else {
-                    $db->prepare('DELETE FROM recursos_pdf WHERE id=?')->execute([$id]);
-                    $error = 'No se pudo guardar el archivo. Probá de nuevo.';
-                }
-            }
-        }
-
     } elseif ($accion === 'subir_video') {
-        $tab = 'videos';
         $id     = (int) ($_POST['id'] ?? 0);
+        $seccion = isset($secciones[$_POST['seccion'] ?? '']) ? $_POST['seccion'] : 'youtube';
+        $tab    = $seccion;
         $titulo = mb_substr(trim($_POST['titulo'] ?? ''), 0, 150);
         $desc   = mb_substr(trim($_POST['descripcion'] ?? ''), 0, 300);
         $ytid   = admin_youtube_id($_POST['youtube'] ?? '');
-        $acceso = ($_POST['acceso'] ?? '') === 'pago' ? 'pago' : 'todos';
+        // Plataforma se ve con cualquier plan: ahi no hay opcion de "solo suscriptores"
+        $acceso = (!taller_seccion_libre($seccion) && ($_POST['acceso'] ?? '') === 'pago') ? 'pago' : 'todos';
         if ($titulo === '') {
             $error = 'Poné el título del video.';
         } elseif ($ytid === '') {
@@ -139,14 +86,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $ext = $img_ext;
                         }
                     }
-                    $db->prepare('UPDATE recursos_videos SET titulo=?, descripcion=?, youtube_id=?, imagen_ext=?, acceso=? WHERE id=?')
-                       ->execute([$titulo, $desc, $ytid, $ext, $acceso, $id]);
+                    $db->prepare('UPDATE recursos_videos SET titulo=?, seccion=?, descripcion=?, youtube_id=?, imagen_ext=?, acceso=? WHERE id=?')
+                       ->execute([$titulo, $seccion, $desc, $ytid, $ext, $acceso, $id]);
                     $aviso = "«{$titulo}» actualizado.";
                 }
             } elseif ($error === '') {
-                $db->prepare('INSERT INTO recursos_videos (titulo, descripcion, youtube_id, imagen_ext, acceso, creado_en)
-                              VALUES (?, ?, ?, ?, ?, NOW())')
-                   ->execute([$titulo, $desc, $ytid, $img_ext, $acceso]);
+                $db->prepare('INSERT INTO recursos_videos (titulo, seccion, descripcion, youtube_id, imagen_ext, acceso, creado_en)
+                              VALUES (?, ?, ?, ?, ?, ?, NOW())')
+                   ->execute([$titulo, $seccion, $desc, $ytid, $img_ext, $acceso]);
                 $id = (int) $db->lastInsertId();
                 if ($img_ext !== '') {
                     if (!is_dir($dir)) mkdir($dir, 0755, true);
@@ -156,27 +103,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-    } elseif ($accion === 'publicar_pdf' || $accion === 'publicar_video') {
-        $tabla = $accion === 'publicar_pdf' ? 'recursos_pdf' : 'recursos_videos';
-        $tab = $accion === 'publicar_pdf' ? 'pdf' : 'videos';
-        $db->prepare("UPDATE $tabla SET publicado = 1 - publicado WHERE id=?")
+    } elseif ($accion === 'publicar_video') {
+        $tab = isset($secciones[$_POST['tab'] ?? '']) ? $_POST['tab'] : 'youtube';
+        $db->prepare("UPDATE recursos_videos SET publicado = 1 - publicado WHERE id=?")
            ->execute([(int) ($_POST['id'] ?? 0)]);
         $aviso = 'Visibilidad actualizada.';
 
-    } elseif ($accion === 'eliminar_pdf') {
-        $tab = 'pdf';
-        $id = (int) ($_POST['id'] ?? 0);
-        $stmt = $db->prepare('SELECT * FROM recursos_pdf WHERE id=?');
-        $stmt->execute([$id]);
-        if ($it = $stmt->fetch()) {
-            @unlink("$dir/pdf-$id.pdf");
-            if ($it['imagen_ext']) @unlink("$dir/img-$id." . $it['imagen_ext']);
-            $db->prepare('DELETE FROM recursos_pdf WHERE id=?')->execute([$id]);
-            $aviso = 'PDF eliminado.';
-        }
-
     } elseif ($accion === 'eliminar_video') {
-        $tab = 'videos';
+        $tab = isset($secciones[$_POST['tab'] ?? '']) ? $_POST['tab'] : 'youtube';
         $id = (int) ($_POST['id'] ?? 0);
         $stmt = $db->prepare('SELECT * FROM recursos_videos WHERE id=?');
         $stmt->execute([$id]);
@@ -189,28 +123,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Edición: abrir el formulario con los datos del recurso elegido
-$editar_pdf = null;
 $editar_video = null;
 if (preg_match('/^\d+$/', $_GET['editar'] ?? '')) {
-    if ($tab === 'pdf') {
-        $stmt = $db->prepare('SELECT * FROM recursos_pdf WHERE id=?');
-        $stmt->execute([(int) $_GET['editar']]);
-        $editar_pdf = $stmt->fetch() ?: null;
-    } else {
-        $stmt = $db->prepare('SELECT * FROM recursos_videos WHERE id=?');
-        $stmt->execute([(int) $_GET['editar']]);
-        $editar_video = $stmt->fetch() ?: null;
-    }
+    $stmt = $db->prepare('SELECT * FROM recursos_videos WHERE id=?');
+    $stmt->execute([(int) $_GET['editar']]);
+    $editar_video = $stmt->fetch() ?: null;
+    if ($editar_video) $tab = $editar_video['seccion'];
 }
 
-$pdfs = $db->query('SELECT * FROM recursos_pdf ORDER BY creado_en DESC, id DESC')->fetchAll();
-$videos = $db->query('SELECT * FROM recursos_videos ORDER BY creado_en DESC, id DESC')->fetchAll();
+// Cada solapa muestra solo los videos de su seccion
+$stmt = $db->prepare('SELECT * FROM recursos_videos WHERE seccion=? ORDER BY creado_en DESC, id DESC');
+$stmt->execute([$tab]);
+$videos = $stmt->fetchAll();
+$cuentas = [];
+foreach ($db->query('SELECT seccion, COUNT(*) c FROM recursos_videos GROUP BY seccion') as $r) {
+    $cuentas[$r['seccion']] = (int) $r['c'];
+}
 
 ui_panel_inicio('Cargar recursos', $yo, 'Cargar recursos', '../');
 ?>
     <style>.contenido{max-width:none}</style>
     <h1>Cargar recursos</h1>
-    <p class="bajada">PDFs descargables y videos de YouTube para la sección Recursos de los usuarios.</p>
+    <p class="bajada">Videos de YouTube para la sección Recursos de los usuarios.
+      Lo que cargues en <strong>Plataforma</strong> lo ve cualquiera, incluido el plan gratuito.</p>
 
     <?php if ($aviso): ?><div class="msg ok"><?php echo ui_icono('check', 16); ?><span><?php echo htmlspecialchars($aviso); ?></span></div><?php endif; ?>
     <?php if ($error): ?><div class="msg bad"><?php echo ui_icono('alerta', 16); ?><span><?php echo htmlspecialchars($error); ?></span></div><?php endif; ?>
@@ -241,89 +176,14 @@ ui_panel_inicio('Cargar recursos', $yo, 'Cargar recursos', '../');
     </style>
 
     <div class="tabs">
-      <a href="recursos.php?tab=pdf" class="<?php echo $tab === 'pdf' ? 'activa' : ''; ?>">
-        <?php echo ui_icono('pdf', 18); ?>PDF
-        <?php if ($pdfs): ?><span class="cant"><?php echo count($pdfs); ?></span><?php endif; ?>
-      </a>
-      <a href="recursos.php?tab=videos" class="<?php echo $tab === 'videos' ? 'activa' : ''; ?>">
-        <?php echo ui_icono('video', 18); ?>Videos
-        <?php if ($videos): ?><span class="cant"><?php echo count($videos); ?></span><?php endif; ?>
-      </a>
+      <?php foreach ($secciones as $clave => $nombre): ?>
+        <a href="recursos.php?tab=<?php echo $clave; ?>" class="<?php echo $tab === $clave ? 'activa' : ''; ?>">
+          <?php echo ui_icono('video', 18); ?><?php echo htmlspecialchars($nombre); ?>
+          <?php if (!empty($cuentas[$clave])): ?><span class="cant"><?php echo $cuentas[$clave]; ?></span><?php endif; ?>
+        </a>
+      <?php endforeach; ?>
     </div>
 
-<?php if ($tab === 'pdf'): ?>
-    <form class="alta" method="post" enctype="multipart/form-data">
-      <h2><?php echo $editar_pdf ? 'Editar PDF' : 'Nuevo PDF'; ?></h2>
-      <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
-      <input type="hidden" name="accion" value="subir_pdf">
-      <input type="hidden" name="id" value="<?php echo (int) ($editar_pdf['id'] ?? 0); ?>">
-      <div class="fila">
-        <span><label for="p-titulo">Título *</label>
-          <input id="p-titulo" type="text" name="titulo" maxlength="150" required
-                 placeholder="Guía de calibración de la cama"
-                 value="<?php echo htmlspecialchars($editar_pdf['titulo'] ?? ''); ?>"></span>
-        <span><label for="p-desc">Descripción corta</label>
-          <input id="p-desc" type="text" name="descripcion" maxlength="300"
-                 placeholder="Paso a paso para nivelar la cama en 10 minutos"
-                 value="<?php echo htmlspecialchars($editar_pdf['descripcion'] ?? ''); ?>"></span>
-      </div>
-      <label for="p-acceso" style="margin-top:10px">¿Quién lo puede ver?</label>
-      <select id="p-acceso" name="acceso" style="max-width:340px">
-        <option value="todos" <?php echo ($editar_pdf['acceso'] ?? 'todos') === 'todos' ? 'selected' : ''; ?>>Todos (incluido el plan gratuito)</option>
-        <option value="pago" <?php echo ($editar_pdf['acceso'] ?? '') === 'pago' ? 'selected' : ''; ?>>Solo suscriptores pagos</option>
-      </select>
-      <div class="fila3">
-        <span><label for="p-arch">Archivo PDF <?php echo $editar_pdf ? '(solo si querés reemplazarlo)' : '* (máx. 30 MB)'; ?></label>
-          <input id="p-arch" type="file" name="archivo" accept="application/pdf" <?php echo $editar_pdf ? '' : 'required'; ?>></span>
-        <span><label for="p-img">Imagen de portada <?php echo $editar_pdf ? '(solo si querés reemplazarla)' : '(PNG/JPG/WebP)'; ?></label>
-          <input id="p-img" type="file" name="imagen" accept="image/png,image/jpeg,image/webp"></span>
-        <button class="btn" type="submit"><?php echo $editar_pdf ? 'Guardar cambios' : ui_icono('nube', 16) . ' Cargar PDF'; ?></button>
-      </div>
-      <?php if ($editar_pdf): ?>
-        <p class="ayuda" style="margin-top:10px"><a href="recursos.php?tab=pdf">Cancelar edición</a></p>
-      <?php endif; ?>
-    </form>
-
-    <?php if ($pdfs): ?>
-    <div class="lista">
-      <table>
-        <thead><tr><th></th><th>PDF</th><th>Acceso</th><th>Descargas</th><th>Estado</th><th style="text-align:right">Acciones</th></tr></thead>
-        <tbody>
-        <?php foreach ($pdfs as $it): ?>
-          <tr class="<?php echo $it['publicado'] ? '' : 'apagado'; ?>">
-            <td><?php if ($it['imagen_ext']): ?>
-              <img class="mini" src="../uploads/recursos/img-<?php echo (int) $it['id'] . '.' . htmlspecialchars($it['imagen_ext']); ?>" alt="">
-              <?php else: ?><span class="mini" style="display:flex;align-items:center;justify-content:center;color:var(--txt-3)"><?php echo ui_icono('pdf', 20); ?></span><?php endif; ?></td>
-            <td><strong><?php echo htmlspecialchars($it['titulo']); ?></strong>
-              <?php if ($it['descripcion']): ?><br><span style="font-size:12px;color:var(--txt-3)"><?php echo htmlspecialchars($it['descripcion']); ?></span><?php endif; ?></td>
-            <td><?php echo $it['acceso'] === 'pago' ? '<span style="color:var(--warn)">Suscriptores</span>' : 'Todos'; ?></td>
-            <td><?php echo (int) $it['descargas']; ?></td>
-            <td><?php echo $it['publicado'] ? '<span style="color:var(--ok)">Publicado</span>' : '<span style="color:var(--txt-3)">Oculto</span>'; ?></td>
-            <td>
-              <div class="acciones">
-                <a class="btn chico" href="recursos.php?tab=pdf&editar=<?php echo (int) $it['id']; ?>">Editar</a>
-                <form method="post">
-                  <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
-                  <input type="hidden" name="accion" value="publicar_pdf">
-                  <input type="hidden" name="id" value="<?php echo (int) $it['id']; ?>">
-                  <button class="btn chico" type="submit"><?php echo $it['publicado'] ? 'Ocultar' : 'Publicar'; ?></button>
-                </form>
-                <form method="post" onsubmit="return confirm('¿Eliminar este PDF y su archivo?')">
-                  <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
-                  <input type="hidden" name="accion" value="eliminar_pdf">
-                  <input type="hidden" name="id" value="<?php echo (int) $it['id']; ?>">
-                  <button class="btn chico peligro" type="submit">Eliminar</button>
-                </form>
-              </div>
-            </td>
-          </tr>
-        <?php endforeach; ?>
-        </tbody>
-      </table>
-    </div>
-    <?php endif; ?>
-
-<?php else: ?>
     <form class="alta" method="post" enctype="multipart/form-data">
       <h2><?php echo $editar_video ? 'Editar video' : 'Nuevo video de YouTube'; ?></h2>
       <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
@@ -344,11 +204,33 @@ ui_panel_inicio('Cargar recursos', $yo, 'Cargar recursos', '../');
                  placeholder="Tutorial rápido para mejorar la calidad de tus piezas"
                  value="<?php echo htmlspecialchars($editar_video['descripcion'] ?? ''); ?>"></span>
       </div>
-      <label for="v-acceso" style="margin-top:10px">¿Quién lo puede ver?</label>
-      <select id="v-acceso" name="acceso" style="max-width:340px">
-        <option value="todos" <?php echo ($editar_video['acceso'] ?? 'todos') === 'todos' ? 'selected' : ''; ?>>Todos (incluido el plan gratuito)</option>
-        <option value="pago" <?php echo ($editar_video['acceso'] ?? '') === 'pago' ? 'selected' : ''; ?>>Solo suscriptores pagos</option>
-      </select>
+      <div class="fila" style="margin-top:10px">
+        <span><label for="v-seccion">¿En qué sección va?</label>
+          <select id="v-seccion" name="seccion">
+            <?php foreach ($secciones as $clave => $nombre): ?>
+              <option value="<?php echo $clave; ?>"
+                <?php echo ($editar_video['seccion'] ?? $tab) === $clave ? 'selected' : ''; ?>>
+                <?php echo htmlspecialchars($nombre); ?></option>
+            <?php endforeach; ?>
+          </select>
+          <p class="ayuda">Plataforma la ve cualquiera, incluido el plan gratuito.</p></span>
+        <span id="cajaAcceso"><label for="v-acceso">¿Quién lo puede ver?</label>
+          <select id="v-acceso" name="acceso">
+            <option value="todos" <?php echo ($editar_video['acceso'] ?? 'todos') === 'todos' ? 'selected' : ''; ?>>Todos (incluido el plan gratuito)</option>
+            <option value="pago" <?php echo ($editar_video['acceso'] ?? '') === 'pago' ? 'selected' : ''; ?>>Solo suscriptores pagos</option>
+          </select>
+          <p class="ayuda">&nbsp;</p></span>
+      </div>
+      <script>
+      // En Plataforma no hay nada que elegir: siempre la ve todo el mundo.
+      // Se esconde la opcion para no ofrecer algo que el servidor va a ignorar.
+      (function () {
+        var sec = document.getElementById('v-seccion');
+        var caja = document.getElementById('cajaAcceso');
+        function ver() { caja.style.visibility = sec.value === 'plataforma' ? 'hidden' : 'visible'; }
+        sec.addEventListener('change', ver); ver();
+      })();
+      </script>
       <div class="fila3">
         <span><label for="v-img">Imagen de muestra <?php echo $editar_video ? '(solo si querés reemplazarla)' : '(opcional)'; ?></label>
           <input id="v-img" type="file" name="imagen" accept="image/png,image/jpeg,image/webp">
@@ -386,16 +268,18 @@ ui_panel_inicio('Cargar recursos', $yo, 'Cargar recursos', '../');
             <td><?php echo $it['publicado'] ? '<span style="color:var(--ok)">Publicado</span>' : '<span style="color:var(--txt-3)">Oculto</span>'; ?></td>
             <td>
               <div class="acciones">
-                <a class="btn chico" href="recursos.php?tab=videos&editar=<?php echo (int) $it['id']; ?>">Editar</a>
+                <a class="btn chico" href="recursos.php?tab=<?php echo htmlspecialchars($it['seccion']); ?>&editar=<?php echo (int) $it['id']; ?>">Editar</a>
                 <form method="post">
                   <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
                   <input type="hidden" name="accion" value="publicar_video">
+                  <input type="hidden" name="tab" value="<?php echo htmlspecialchars($tab); ?>">
                   <input type="hidden" name="id" value="<?php echo (int) $it['id']; ?>">
                   <button class="btn chico" type="submit"><?php echo $it['publicado'] ? 'Ocultar' : 'Publicar'; ?></button>
                 </form>
                 <form method="post" onsubmit="return confirm('¿Eliminar este video de la lista?')">
                   <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
                   <input type="hidden" name="accion" value="eliminar_video">
+                  <input type="hidden" name="tab" value="<?php echo htmlspecialchars($tab); ?>">
                   <input type="hidden" name="id" value="<?php echo (int) $it['id']; ?>">
                   <button class="btn chico peligro" type="submit">Eliminar</button>
                 </form>
@@ -407,5 +291,4 @@ ui_panel_inicio('Cargar recursos', $yo, 'Cargar recursos', '../');
       </table>
     </div>
     <?php endif; ?>
-<?php endif; ?>
 <?php ui_panel_fin(); ?>
