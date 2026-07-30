@@ -109,12 +109,12 @@ ui_panel_inicio('Estadísticas', $u, 'Estadísticas');
       <div class="res-caja ing">
         <div class="cab"><i>↗</i><small>Ingresos</small></div>
         <b><?php echo taller_precio($ingresos); ?></b>
-        <div class="sub"><?php echo $ci; ?> movimiento<?php echo $ci === 1 ? '' : 's'; ?></div>
+        <div class="sub"><?php echo taller_plural($ci, 'movimiento', 'movimientos', 'entry', 'entries'); ?></div>
       </div>
       <div class="res-caja gas">
         <div class="cab"><i>↘</i><small>Gastos</small></div>
         <b><?php echo taller_precio($gastos); ?></b>
-        <div class="sub"><?php echo $cg; ?> movimiento<?php echo $cg === 1 ? '' : 's'; ?></div>
+        <div class="sub"><?php echo taller_plural($cg, 'movimiento', 'movimientos', 'entry', 'entries'); ?></div>
       </div>
     </div>
 

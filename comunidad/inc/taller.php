@@ -443,6 +443,21 @@ function taller_idioma() {
     return (($_COOKIE['ptools_idioma'] ?? '') === 'en') ? 'en' : 'es';
 }
 
+/**
+ * Numero mas palabra, en singular o plural y en el idioma activo.
+ * Uso: taller_plural(3, 'movimiento', 'movimientos', 'entry', 'entries')
+ *
+ * Estos textos los arma PHP pegando el numero con la palabra, y el traductor
+ * de JavaScript no los puede agarrar porque busca frases exactas y el numero
+ * cambia en cada fila. Por eso el idioma se resuelve aca, como con los meses.
+ */
+function taller_plural($n, $es_uno, $es_varios, $en_uno, $en_varios) {
+    $n = (int) $n;
+    $en = taller_idioma() === 'en';
+    $palabra = $n === 1 ? ($en ? $en_uno : $es_uno) : ($en ? $en_varios : $es_varios);
+    return $n . ' ' . $palabra;
+}
+
 /** Nombre del mes en el idioma activo. */
 function taller_mes($n) {
     $n = (int) $n;

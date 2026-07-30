@@ -147,7 +147,7 @@ ui_panel_inicio('Librería STL', $u, 'Librería STL');
               <h2><?php echo htmlspecialchars($it['nombre']); ?></h2>
               <span class="meta"><?php echo htmlspecialchars($it['categoria'] ?: 'General'); ?>
                 · <?php echo stl_tam((int) $it['tam_bytes']); ?>
-                · <?php echo (int) $it['descargas']; ?> descarga<?php echo (int) $it['descargas'] === 1 ? '' : 's'; ?></span>
+                · <?php echo taller_plural($it['descargas'], 'descarga', 'descargas', 'download', 'downloads'); ?></span>
             </div>
             <a class="btn" href="libreria.php?descargar=<?php echo (int) $it['id']; ?>">
               <?php echo ui_icono('descargar', 15); ?> Descargar</a>

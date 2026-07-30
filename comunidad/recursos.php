@@ -142,7 +142,7 @@ ui_panel_inicio('Recursos', $u, $tab === 'videos' ? 'Videos' : 'PDF');
               <h2><?php echo htmlspecialchars($p['titulo']); ?></h2>
               <?php if ($p['descripcion']): ?><p class="desc"><?php echo htmlspecialchars($p['descripcion']); ?></p><?php endif; ?>
               <span class="meta">PDF · <?php echo rec_tam((int) $p['tam_bytes']); ?>
-                · <?php echo (int) $p['descargas']; ?> descarga<?php echo (int) $p['descargas'] === 1 ? '' : 's'; ?></span>
+                · <?php echo taller_plural($p['descargas'], 'descarga', 'descargas', 'download', 'downloads'); ?></span>
             </div>
             <?php if ($bloqueado): ?>
               <a class="btn-bloq" href="suscripcion.php"><?php echo ui_icono('candado', 14); ?> Disponible en el plan completo</a>
