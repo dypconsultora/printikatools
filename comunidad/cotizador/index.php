@@ -1586,10 +1586,9 @@ body.en-panel #newsModal { display: none !important; }
       Depreciacion de la Maquina
       <span class="badge">PRO</span>
     </div>
-    <?php // Por ahora solo dentro del panel: Adriana lo quiere ver funcionando
-          // ahi antes de que salga en la calculadora publica. Para publicarlo,
-          // borrar este if (y su endif) y queda en las dos.
-          if ($enPanel): ?>
+    <?php // Aprobado el 2026-07-31: ya sale tambien en el cotizador publico.
+          // Para quien no es PRO la seccion entera queda bloqueada sola (mas
+          // abajo, 'pro-locked'), asi que este combo hereda ese bloqueo. ?>
     <div class="field" style="margin-bottom:.9rem">
       <label for="depPrinterModel">Modelo de impresora</label>
       <select id="depPrinterModel">
@@ -1602,7 +1601,6 @@ body.en-panel #newsModal { display: none !important; }
         Elegí tu modelo y completamos los tres valores. Son de referencia, de lista:
         si la compraste a otro precio, cambialos abajo.</div>
     </div>
-    <?php endif; ?>
     <div class="field-grid">
       <div class="field">
         <label for="printerCost">Costo impresora <span class="unit" id="printerCostUnit">($)</span></label>
