@@ -15,6 +15,8 @@ require_once __DIR__ . '/auth.php';
 $enPanel = false;
 $panelCsrf = '';
 $panelMoneda = 'ARS';
+require_once __DIR__ . '/impresoras.php';
+
 if (isset($_GET['panel'])) {
     require_once dirname(__DIR__) . '/inc/auth.php';
     $usuarioPanel = usuario_actual();
@@ -1525,28 +1527,11 @@ body.en-panel #newsModal { display: none !important; }
       <label for="printerModel">Modelo de impresora</label>
       <select id="printerModel">
         <option value="">Otro / Personalizado</option>
-          <option value="Bambu Lab A1 Mini (45 W)">Bambu Lab A1 Mini (45 W)</option>
-          <option value="Bambu Lab A1 (95 W)">Bambu Lab A1 (95 W)</option>
-          <option value="Bambu Lab P1P (80 W)">Bambu Lab P1P (80 W)</option>
-          <option value="Bambu Lab P1S (100 W)">Bambu Lab P1S (100 W)</option>
-          <option value="Bambu Lab P2S (130 W)">Bambu Lab P2S (130 W)</option>
-          <option value="Bambu Lab X1 Carbon (120 W)">Bambu Lab X1 Carbon (120 W)</option>
-          <option value="Bambu Lab H2S (210 W)">Bambu Lab H2S (210 W)</option>
-          <option value="Bambu Lab H2D (210 W)">Bambu Lab H2D (210 W)</option>
-          <option value="Bambu Lab H2C (210 W)">Bambu Lab H2C (210 W)</option>
-          <option value="Prusa MK3S+ (80 W)">Prusa MK3S+ (80 W)</option>
-          <option value="Prusa MK4 (100 W)">Prusa MK4 (100 W)</option>
-          <option value="Creality Ender 3 V2 (110 W)">Creality Ender 3 V2 (110 W)</option>
-          <option value="Creality Ender 3 S1 (120 W)">Creality Ender 3 S1 (120 W)</option>
-          <option value="Creality K1 (100 W)">Creality K1 (100 W)</option>
-          <option value="Creality K1C (100 W)">Creality K1C (100 W)</option>
-          <option value="Creality K1 Max (200 W)">Creality K1 Max (200 W)</option>
-          <option value="Anycubic Kobra 2 (75 W)">Anycubic Kobra 2 (75 W)</option>
-          <option value="Anycubic Vyper (80 W)">Anycubic Vyper (80 W)</option>
-          <option value="SnapMaker U1 (130 W)">SnapMaker U1 (130 W)</option>
-          <option value="Elegoo Saturn 3 (resina) (75 W)">Elegoo Saturn 3 (resina) (75 W)</option>
-          <option value="Elegoo Saturn 4 (resina) (75 W)">Elegoo Saturn 4 (resina) (75 W)</option>
-          <option value="Voron 2.4 (350mm DIY) (225 W)">Voron 2.4 (350mm DIY) (225 W)</option>
+          <?php // Las dos listas salen de la misma ficha (impresoras.php): asi no se
+                // pueden desincronizar los watts de una con los precios de la otra
+                foreach (cot_impresoras_js() as $imp): ?>
+            <option value="<?php echo htmlspecialchars($imp['n']); ?>"><?php echo htmlspecialchars($imp['n']); ?></option>
+          <?php endforeach; ?>
       </select>
       <div style="font-size:.78rem;color:var(--text-secondary,#8888a0);margin-top:.4rem">
         Elegí tu modelo y autocompletamos el consumo (W). Si no está en la lista, dejá "Otro / Personalizado".</div>
@@ -1601,6 +1586,23 @@ body.en-panel #newsModal { display: none !important; }
       Depreciacion de la Maquina
       <span class="badge">PRO</span>
     </div>
+    <?php // Por ahora solo dentro del panel: Adriana lo quiere ver funcionando
+          // ahi antes de que salga en la calculadora publica. Para publicarlo,
+          // borrar este if (y su endif) y queda en las dos.
+          if ($enPanel): ?>
+    <div class="field" style="margin-bottom:.9rem">
+      <label for="depPrinterModel">Modelo de impresora</label>
+      <select id="depPrinterModel">
+        <option value="">Otro / Personalizado</option>
+        <?php foreach (cot_impresoras_js() as $imp): ?>
+          <option value="<?php echo htmlspecialchars($imp['n']); ?>"><?php echo htmlspecialchars($imp['n']); ?></option>
+        <?php endforeach; ?>
+      </select>
+      <div style="font-size:.78rem;color:var(--text-secondary,#8888a0);margin-top:.4rem">
+        Elegí tu modelo y completamos los tres valores. Son de referencia, de lista:
+        si la compraste a otro precio, cambialos abajo.</div>
+    </div>
+    <?php endif; ?>
     <div class="field-grid">
       <div class="field">
         <label for="printerCost">Costo impresora <span class="unit" id="printerCostUnit">($)</span></label>
@@ -2029,15 +2031,59 @@ body.en-panel #newsModal { display: none !important; }
   });
 
   // Bind all inputs to recalculate
-  // Modelo de impresora: autocompleta el consumo detectando el "(NNN W)" del nombre
-  function aplicarModeloImpresora() {
+  // ---- Fichas de las impresoras ----
+  // Vienen del servidor (comunidad/cotizador/impresoras.php), que es el unico
+  // lugar donde estan escritos los consumos, precios y vidas utiles.
+  const FICHAS = <?php echo json_encode(cot_impresoras_js(), JSON_UNESCAPED_UNICODE); ?>;
+  const fichaDe = (nombre) => FICHAS.find(f => f.n === nombre) || null;
+
+  /**
+   * Completa los tres campos de Depreciacion con los datos de la impresora.
+   * Los deja EDITABLES: son de referencia, y cada uno la compro a su precio.
+   */
+  function cargarDepreciacion(nombre) {
+    const f = fichaDe(nombre);
+    if (!f) return;
+    const mon = currency.code || 'ARS';
+    if ($('printerCost'))     $('printerCost').value     = f.c[mon] != null ? f.c[mon] : f.c.ARS;
+    if ($('printerLifespan')) $('printerLifespan').value = f.v;
+    if ($('maintenanceCost')) $('maintenanceCost').value = f.m[mon] != null ? f.m[mon] : f.m.ARS;
+  }
+
+  // Modelo de impresora en Costos de Electricidad: pone el consumo y, de paso,
+  // los datos de Depreciacion, que es la misma maquina
+  function aplicarModeloImpresora(tocado) {
     const sel = $('printerModel');
     if (!sel) return;
-    const m = (sel.value || '').match(/\((\d+)\s*W\)/i);
-    if (m) { $('printerWatts').value = m[1]; $('printerWatts').disabled = true; }
+    const f = fichaDe(sel.value);
+    if (f) { $('printerWatts').value = f.w; $('printerWatts').disabled = true; }
     else { $('printerWatts').disabled = false; }
+    // Solo al elegirlo a mano: al abrir la pagina no se pisa lo que la persona
+    // ya habia guardado en Depreciacion
+    if (tocado && f) {
+      cargarDepreciacion(sel.value);
+      const dep = $('depPrinterModel');
+      if (dep) dep.value = sel.value;
+    }
   }
   window.aplicarModeloImpresora = aplicarModeloImpresora;
+
+  // El mismo combo, arriba de Depreciacion
+  if ($('depPrinterModel')) {
+    $('depPrinterModel').addEventListener('change', () => {
+      const v = $('depPrinterModel').value;
+      if (!v) return;                       // "Otro / Personalizado": no toca nada
+      cargarDepreciacion(v);
+      // Y la de arriba acompana, que es la misma maquina
+      const elec = $('printerModel');
+      if (elec && elec.value !== v) {
+        elec.value = v;
+        try { localStorage.setItem('calc3d_modelo_impresora', v); } catch (e) {}
+        aplicarModeloImpresora(false);
+      }
+      calculate();
+    });
+  }
   if ($('printerModel')) {
     try {
       const guardado = localStorage.getItem('calc3d_modelo_impresora');
@@ -2046,7 +2092,7 @@ body.en-panel #newsModal { display: none !important; }
     aplicarModeloImpresora();
     $('printerModel').addEventListener('change', () => {
       try { localStorage.setItem('calc3d_modelo_impresora', $('printerModel').value); } catch (e) {}
-      aplicarModeloImpresora();
+      aplicarModeloImpresora(true);
       calculate();
     });
   }
