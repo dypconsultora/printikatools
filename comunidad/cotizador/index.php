@@ -1611,6 +1611,7 @@ body.en-panel #newsModal { display: none !important; }
       <div class="field">
         <label for="printerLifespan">Vida util <span class="unit">(horas)</span></label>
         <input type="number" id="printerLifespan" value="2000" min="1" step="100">
+        <div id="vidaEnAnios" style="font-size:.74rem;color:var(--text-secondary,#8888a0);margin-top:.3rem"></div>
       </div>
       <div class="field">
         <label for="maintenanceCost">Mantenimiento anual <span class="unit" id="maintenanceCostUnit">($)</span></label>
@@ -2048,6 +2049,10 @@ body.en-panel #newsModal { display: none !important; }
     if ($('printerCost'))     $('printerCost').value     = f.c[mon] != null ? f.c[mon] : f.c.ARS;
     if ($('printerLifespan')) $('printerLifespan').value = f.v;
     if ($('maintenanceCost')) $('maintenanceCost').value = f.m[mon] != null ? f.m[mon] : f.m.ARS;
+    // A cuantos anos equivalen esas horas con un uso normal: ayuda a saber si
+    // el numero cierra con como usa la maquina cada uno
+    const anios = $('vidaEnAnios');
+    if (anios) anios.textContent = f.d ? 'Con un uso normal, unos ' + f.d + '.' : '';
   }
 
   // Modelo de impresora en Costos de Electricidad: pone el consumo y, de paso,
@@ -2072,7 +2077,10 @@ body.en-panel #newsModal { display: none !important; }
   if ($('depPrinterModel')) {
     $('depPrinterModel').addEventListener('change', () => {
       const v = $('depPrinterModel').value;
-      if (!v) return;                       // "Otro / Personalizado": no toca nada
+      if (!v) {                             // "Otro / Personalizado": no toca los numeros
+        if ($('vidaEnAnios')) $('vidaEnAnios').textContent = '';
+        return;
+      }
       cargarDepreciacion(v);
       // Y la de arriba acompana, que es la misma maquina
       const elec = $('printerModel');
