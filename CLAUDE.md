@@ -204,6 +204,15 @@ el idioma en que estaba la persona, **una sola vez**. En el pie de ese correo ha
 enlace de baja **firmado** (`com_baja_token()`): al tocarlo la dirección se borra sola.
 Los correos de la cuenta (confirmar, código de acceso) **no** llevan baja.
 
+**Términos y Condiciones** (`terminos/index.php`, y `/en/terminos/` con el mismo truco que
+la landing) es la única pantalla donde el texto en inglés está escrito **adentro del
+archivo**, al lado del castellano, en vez de pasar por `guias-en.json`. El diccionario
+traduce frase por frase y un texto legal largo se desincroniza al primer retoque. Usa el
+marco de las guías (`guia_inicio()` / `guia_fin()`), así que hereda encabezado y pie.
+La fecha de "Última actualización" es la variable `$actualizado`, **a mano**: tiene que
+decir cuándo cambió el texto de verdad, no la fecha de hoy. El enlace vive en el bloque
+"Plataforma" de los tres pies (portada, guías y plataforma).
+
 **Al guardar algo que además manda un correo, guardar primero.** Un correo que falla se
 reenvía desde el panel; una dirección perdida no se recupera. Ya pasó al revés.
 
