@@ -79,17 +79,21 @@ printikatools/
 │   └── img/               Logos (hay versión castellano e inglés) y favicon
 ├── comunidad/             LA PLATAFORMA (login, taller, panel)
 │   ├── inc/
-│   │   ├── bootstrap.php  Config, PDO, cabeceras de seguridad, precios
-│   │   ├── auth.php       Sesión, registro, verificación por mail, 2FA
+│   │   ├── bootstrap.php  Config, PDO, cabeceras, precios, firma de enlaces
+│   │   ├── auth.php       Sesión, registro, verificación por mail, 2FA, plan pendiente
 │   │   ├── ui.php         Header, menú lateral, footer, iconos: TODA la pantalla
-│   │   ├── taller.php     Migraciones + helpers (meses, idioma)
+│   │   ├── taller.php     Migraciones + helpers (meses, idioma, plurales)
 │   │   ├── correo.php     Plantilla HTML de los mails y envío por SMTP
+│   │   ├── vistazo.php    Qué se le muestra al plan gratis en cada candado
 │   │   ├── mp.php         Mercado Pago
 │   │   ├── guias.php      Bloques de las guías (texto / imagen / YouTube)
 │   │   └── idioma.php     Traductor de la landing
-│   ├── cotizador/         La calculadora pública (código viejo, sesión propia)
+│   ├── cotizador/         LA CALCULADORA (ver abajo: es también la del panel)
+│   │   └── impresoras.php Ficha de cada impresora: watts, precio, vida útil
 │   ├── admin/             Panel de administración (solo rol admin)
 │   └── uploads/           STL, recursos, imágenes de guías, backups
+├── baja.php               Darse de baja de novedades (enlace firmado del correo)
+├── novedades.php          Recibe el correo del banner de la portada
 ├── lib/PHPMailer/         Envío por SMTP
 └── config.php             Carga el .env (SMTP). El .env NO va a git.
 ```
@@ -153,6 +157,64 @@ perfiles de ahorro). Antes cortaba todas las animaciones y la página quedaba
 muerta. Ahora se conservan las apariciones hechas **solo con opacidad** y se
 dejan afuera los movimientos, que son los que de verdad marean.
 
+## Las pantallas, y por qué son como son
+
+Cosas que del código solo no se deducen, y que si se "arreglan" sin saber se rompen.
+
+**La calculadora del panel ES el cotizador.** `comunidad/calculadora.php` son 25
+líneas que lo embeben en un marco con `?panel=1`. **No hay dos calculadoras**: todo
+cambio sale en las dos a la vez. Para probar algo adentro antes de publicarlo se
+envuelve en `if ($enPanel)`. Dentro del panel el usuario es PRO automáticamente;
+afuera hay una prueba abierta hasta el 2026-09-02 (`PRO_TRIAL_HASTA`), y cuando venza
+las secciones PRO se bloquean solas con la clase `pro-locked`.
+
+**Las impresoras** tienen su ficha en `comunidad/cotizador/impresoras.php`: watts,
+precio, vida útil y mantenimiento anual, **en pesos**, relevados por Adriana. Es el
+único lugar donde están esos números; las dos listas de la pantalla (Electricidad y
+Depreciación) se arman desde ahí, así que no pueden desincronizarse. Elegir la
+impresora en cualquiera de las dos completa la otra. Los valores en dólares y euros
+se calculan solos con `COT_USD_ARS` / `COT_EUR_ARS`, que **hay que actualizar cada
+tanto**: el selector de moneda de la calculadora solo cambia el símbolo, no convierte.
+
+**Recursos** son tres solapas, **todas de videos de YouTube**: YouTube, Plataforma y
+Mantenimientos. Los PDF se retiraron de la pantalla, pero la tabla `recursos_pdf` y
+los archivos **siguen ahí** (sacar la pantalla se deshace; borrar los datos no).
+**Plataforma se ve con cualquier plan**, incluido el gratuito: son los videos de cómo
+usar el sistema. Por eso ahí el selector de "quién lo puede ver" se esconde y el
+servidor fuerza el acceso a `todos` aunque llegue otra cosa.
+
+**Stock de materiales** es **solo visual**: no toca los presupuestos ni la calculadora.
+Antes marcar un presupuesto como vendido descontaba gramos solo; se sacó porque a ella
+le desarmaba una planilla que lleva a ojo. La columna "Disponible" es **cuántos rollos
+hay** de esa marca, tipo y color, no gramos. Las columnas de peso quedaron en la tabla
+sin usarse, a propósito.
+
+**Librería STL**: siempre **cuatro por fila** (abajo de 1200 px baja de a una). El
+orden lo decide Adriana arrastrando las filas en Cargar STL, y se guarda en la columna
+`orden`; la fecha solo desempata a los que nunca se movieron.
+
+**Emails captados** (`admin/emails.php`) junta las direcciones del popup del cotizador
+y del banner de la portada. Cada una recibe el correo de bienvenida con los planes, en
+el idioma en que estaba la persona, **una sola vez**. En el pie de ese correo hay un
+enlace de baja **firmado** (`com_baja_token()`): al tocarlo la dirección se borra sola.
+Los correos de la cuenta (confirmar, código de acceso) **no** llevan baja.
+
+**Al guardar algo que además manda un correo, guardar primero.** Un correo que falla se
+reenvía desde el panel; una dirección perdida no se recupera. Ya pasó al revés.
+
+## El celular
+
+- **La plataforma**: el menú lateral es un **cajón** que entra desde el costado, con
+  una barra fija arriba. Antes se apilaba encima del contenido y había que bajar
+  821 px para llegar al título.
+- **La portada**: los enlaces de sección no entran, así que hay un menú desplegable
+  con todo (incluidos Guías, Precios, FAQ y la Calculadora, que antes desaparecían).
+  El corte está en **1240 px, no en 1100**: en castellano las palabras son más largas
+  y el encabezado se desbordaba entre 1101 y 1250.
+- Al tocar cualquier cosa, **medir contra la base de datos, no contra la pantalla**.
+  El arrastre de la Librería STL movía la fila a la vista pero no guardaba, y eso solo
+  se vio comparando con la base.
+
 ## Estilo del código
 
 - **Comentarios en castellano**, y explican *por qué*, no *qué*. Sin acentos en los
@@ -206,7 +268,40 @@ cuerpo cuenta el motivo. Ejemplos reales del repo:
 - Links reales de PayPal para la landing en inglés (US$15 / US$150).
 - Probar una subida de STL real de los archivos que antes se cortaban.
 - Hacer un pago de prueba de punta a punta y confirmar que el webhook activa la cuenta.
+- **Avisar cuándo volver a mostrar el plan mensual** (ver arriba).
+- Confirmar si el mantenimiento de las impresoras es anual: su planilla dice anual y
+  los números solo cierran así (2–9% del precio por año), pero al pasarla dijo
+  "mensual". Cargado como **anual**.
+- **Crear una casilla en printikatools.com.** Los correos salen desde
+  `consultas@printika3d.com` mientras todo el contenido dice printikatools.com, y ese
+  desajuste es de las señales de spam más fuertes que hay. printikatools.com ya tiene
+  SPF, DKIM y DMARC: solo falta la casilla y cambiar el remitente en el `.env`.
+
+**Ofrecido y esperando su respuesta:**
+- Traducir el **panel de administración**, que sigue entero en castellano (~100
+  textos). No se hizo porque es la única que lo usa.
+- Una pantalla en el panel para que ella misma edite precios de impresoras y el tipo
+  de cambio, sin depender de nadie.
+- Achicado automático de la foto de portada de los STL al subirla (hoy hay que
+  llevarla a 800×600 a mano; el sistema no la achica).
 
 **Opcionales:**
 - Pedir indexación en Search Console de `/guias/` y de la primera guía.
 - Enriquecer la primera guía con un error común y una anécdota propia.
+
+## Cómo trabajar en este proyecto
+
+Lo que funcionó en las sesiones anteriores, y conviene repetir:
+
+- **Probar mirando, no suponiendo.** Levantar un PHP local, abrir la pantalla y
+  medirla. Varios errores aparecieron solo así: el campo de 21 px de alto en el
+  celular, el arrastre que no guardaba, la clase CSS repetida que deformaba otra cosa.
+- **Barrer en vez de ir de a uno.** Cuando ella reporta un texto sin traducir o una
+  pantalla que se desborda, buscar TODOS los casos iguales de una pasada. Siempre
+  aparecen más.
+- **Limpiar los datos de prueba** antes de cerrar, y no dejar servidores corriendo.
+- **Nunca mandar correos de prueba a direcciones inventadas**: salen de verdad por su
+  SMTP y le llegan avisos falsos a la casilla.
+- Al terminar cada cosa: `php -l`, mirar la pantalla, commit en castellano explicando
+  **el porqué**, `git push origin main`, esperar los ~4 minutos y **confirmar en
+  producción**.
