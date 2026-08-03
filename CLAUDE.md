@@ -4,6 +4,12 @@ Sitio y plataforma de **printikatools.com**: herramientas + comunidad de impresi
 Lo maneja **Adriana** (no programadora). Este archivo es el resumen del proyecto para
 arrancar una sesión nueva sin tener que redescubrir todo.
 
+> ⚠️ **Este archivo es público**: se sirve en `printikatools.com/CLAUDE.md` y no se
+> puede tapar (un `.htaccess` en la raíz rompe el deploy entero). Escribir acá las
+> reglas y el porqué, **nunca** claves, rutas exactas de lo sensible ni nada que le
+> sirva a alguien que quiera entrar. Las notas privadas de Adriana van a su bóveda de
+> Obsidian, que está fuera del repositorio a propósito.
+
 ## Cómo hablarle a Adriana
 
 - **Castellano rioplatense, de vos.** Nada de "tú" ni de español neutro.
@@ -114,11 +120,10 @@ El servidor **se actualiza solo** desde la rama `main` de GitHub, y tarda ~4 min
 2. Un `.htaccess` **dentro de una subcarpeta sí funciona** (probado en producción:
    `guias/.htaccess`).
 3. **El deploy no borra archivos.** Si se borra algo del repo, en el servidor queda.
-   Por eso los instaladores viejos son "muñones" que responden 410 en lugar de estar
-   borrados.
-4. **No restaurar nunca** `cotizador/install.php`, `comunidad/instalar.php` ni
-   `cotizador/login.php`. Son muñones 410 a propósito; el original está en el historial
-   de git si alguna vez hace falta mirarlo.
+   Por eso lo que se dio de baja quedó como archivos que responden 410 en vez de
+   borrarse.
+4. **No revivir nada que hoy responda 410.** Están así a propósito; si alguna vez hace
+   falta mirar el original, está en el historial de git.
 
 ## Los dos idiomas
 
@@ -244,11 +249,10 @@ cuerpo cuenta el motivo. Ejemplos reales del repo:
 - **Credenciales por chat, jamás.** El Access Token de Mercado Pago lo carga ella
   directo en el panel. Si alguna vez lo pega en el chat, hay que decirle que lo
   regenere.
-- `comunidad/uploads/backups/` está **cerrada al navegador** con su propio
-  `.htaccess`, porque el dump `.sql` tiene los correos y las contraseñas cifradas de
-  todos los usuarios. Se bajan sólo desde `admin/backups.php`, con sesión de admin, y
-  sólo nombres que matcheen
-  `/^printikatools-(base|archivos)-[\w-]+\.(sql|zip)$/`.
+- La carpeta de copias de seguridad está **cerrada al navegador** con su propio
+  `.htaccess`, y las descargas pasan por el panel con sesión de admin y con el nombre
+  del archivo validado. **No aflojar ninguna de las tres cosas**: lo que hay adentro
+  es lo más sensible del sistema.
 - Los archivos grandes (STL) **suben en pedazos de 2 MB** (`admin/stl_trozo.php`)
   porque el hosting corta las subidas largas. Tope: 200 MB.
 - El webhook de Mercado Pago **valida la firma** antes de activar nada.
@@ -288,6 +292,22 @@ cuerpo cuenta el motivo. Ejemplos reales del repo:
 **Opcionales:**
 - Pedir indexación en Search Console de `/guias/` y de la primera guía.
 - Enriquecer la primera guía con un error común y una anécdota propia.
+
+## La bóveda de Adriana (Obsidian)
+
+Sus notas viven en `/Users/adrianavallay/Desktop/DyP Web/dyp-wiki/dyp-wiki`, **fuera
+del repositorio a propósito**: todo lo que está adentro del repo se publica en
+internet, y ahí anota cosas del negocio.
+
+No se lee sola ni hay que leerla siempre. Si ella menciona una idea o un pendiente que
+tiene anotado, se le pide la ruta o se lee esa carpeta. Reparto:
+
+- **Ahí**: sus ideas, decisiones de negocio, pendientes que dependen de ella, datos.
+- **Acá**: cómo funciona el sistema y por qué. **Lo mismo no va en los dos lados**, o
+  se desincroniza.
+
+Si ella resuelve algo que estaba en su lista de pendientes, conviene recordarle que lo
+tache en `001 Pendientes.md`.
 
 ## Cómo trabajar en este proyecto
 
