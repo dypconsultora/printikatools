@@ -39,20 +39,69 @@ function mp_planes() {
 }
 
 /** Activa o renueva el plan pago de un usuario (cierra suscripciones previas). */
-function mp_activar_plan($usuario_id, $plan, $notas = '') {
+function mp_activar_plan($usuario_id, $plan, $notas = '', $preapproval = '') {
     $meses = $plan === 'anual' ? 12 : 1;
     $db = com_db();
     $db->prepare("UPDATE suscripciones SET estado='cancelada' WHERE usuario_id=?")
        ->execute([(int) $usuario_id]);
     // Unos días de gracia para que el cobro recurrente llegue antes del corte
-    $db->prepare("INSERT INTO suscripciones (usuario_id, estado, plan, desde, hasta, notas, creado_en)
-                  VALUES (?, 'activa', ?, CURDATE(), DATE_ADD(DATE_ADD(CURDATE(), INTERVAL ? MONTH), INTERVAL 3 DAY), ?, NOW())")
-       ->execute([(int) $usuario_id, $plan === 'anual' ? 'anual' : 'mensual', $meses, mb_substr($notas, 0, 255)]);
+    $db->prepare("INSERT INTO suscripciones (usuario_id, estado, plan, mp_preapproval, desde, hasta, notas, creado_en)
+                  VALUES (?, 'activa', ?, ?, CURDATE(), DATE_ADD(DATE_ADD(CURDATE(), INTERVAL ? MONTH), INTERVAL 3 DAY), ?, NOW())")
+       ->execute([(int) $usuario_id, $plan === 'anual' ? 'anual' : 'mensual',
+                  mb_substr($preapproval, 0, 64), $meses, mb_substr($notas, 0, 255)]);
 }
 
-/** Cancela el plan pago de un usuario (baja a gratis). */
-function mp_cancelar_plan($usuario_id) {
-    com_db()->prepare("UPDATE suscripciones SET estado='cancelada' WHERE usuario_id=?")
+/** La suscripción vigente de un usuario, o null. */
+function mp_suscripcion($usuario_id) {
+    $stmt = com_db()->prepare(
+        "SELECT * FROM suscripciones
+          WHERE usuario_id = ? AND estado = 'activa'
+            AND (hasta IS NULL OR hasta >= CURDATE())
+          ORDER BY (hasta IS NULL) DESC, hasta DESC LIMIT 1"
+    );
+    $stmt->execute([(int) $usuario_id]);
+    return $stmt->fetch() ?: null;
+}
+
+/**
+ * El número de la suscripción en Mercado Pago. Las que se dieron de alta antes
+ * de que existiera la columna lo tienen adentro de "notas" ("MP 123abc"), asi
+ * que esas también se pueden cancelar sin tocar la base a mano.
+ */
+function mp_preapproval_de($susc) {
+    $id = trim((string) ($susc['mp_preapproval'] ?? ''));
+    if ($id !== '') return $id;
+    $notas = (string) ($susc['notas'] ?? '');
+    return strncmp($notas, 'MP ', 3) === 0 ? trim(substr($notas, 3)) : '';
+}
+
+/**
+ * Le pide a Mercado Pago que deje de cobrar esta suscripción.
+ *
+ * Es lo PRIMERO que hay que hacer al dar de baja: si falla, no hay que marcar
+ * nada de nuestro lado, porque la persona se iria convencida de que no le
+ * cobran mas y al mes siguiente le llega el debito igual.
+ */
+function mp_cancelar_en_mp($preapproval) {
+    if ($preapproval === '' || !mp_conectado()) return false;
+    [$code, $resp] = mp_api('PUT', '/preapproval/' . rawurlencode($preapproval), ['status' => 'cancelled']);
+    // Un 404 quiere decir que alla ya no existe: para nosotros es lo mismo que cancelada
+    $ok = ($code >= 200 && $code < 300) || $code === 404;
+    mp_log("cancelar en MP $preapproval http=$code" . ($ok ? ' OK' : ' ' . json_encode($resp)));
+    return $ok;
+}
+
+/**
+ * Registra la baja: deja de renovarse, pero NO le saca el acceso.
+ *
+ * El plan sigue andando hasta "hasta", que es hasta donde la persona pago, y
+ * ese dia cae solo porque plan_usuario() ya exige hasta >= hoy. Cortar en el
+ * momento seria quedarse con dias pagos — con el plan anual, con meses — y es
+ * ademas lo contrario de lo que dicen los Terminos.
+ */
+function mp_baja_plan($usuario_id) {
+    com_db()->prepare("UPDATE suscripciones SET cancelada_en = CURDATE()
+                        WHERE usuario_id = ? AND estado = 'activa' AND cancelada_en IS NULL")
         ->execute([(int) $usuario_id]);
 }
 

@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $usuarios = com_db()->query(
-    "SELECT u.*, s.hasta AS susc_hasta, s.plan AS susc_plan,
+    "SELECT u.*, s.hasta AS susc_hasta, s.plan AS susc_plan, s.cancelada_en AS susc_baja,
             (s.id IS NOT NULL) AS susc_activa
        FROM usuarios u
   LEFT JOIN suscripciones s
@@ -157,7 +157,8 @@ ui_panel_inicio('Suscripciones', $yo, 'Suscripciones', '../');
           <?php if ($u['rol'] === 'admin'): ?>
             <span class="estado neutro">Siempre</span>
           <?php elseif ($u['susc_activa']): ?>
-            <span class="estado si"><?php echo ($u['susc_plan'] ?? '') === 'anual' ? 'Anual' : 'Mensual'; ?><?php echo $u['susc_hasta'] ? ' · vence ' . date('d/m/y', strtotime($u['susc_hasta'])) : ''; ?></span>
+            <?php // Pidio la baja: sigue pago hasta la fecha, pero ya no renueva ?>
+            <span class="estado <?php echo $u['susc_baja'] ? 'neutro' : 'si'; ?>"><?php echo ($u['susc_plan'] ?? '') === 'anual' ? 'Anual' : 'Mensual'; ?><?php echo $u['susc_baja'] ? ' · dio de baja' : ''; ?><?php echo $u['susc_hasta'] ? ($u['susc_baja'] ? ' · hasta ' : ' · vence ') . date('d/m/y', strtotime($u['susc_hasta'])) : ''; ?></span>
           <?php else: ?>
             <span class="estado no">Gratis</span>
           <?php endif; ?>

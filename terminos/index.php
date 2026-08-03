@@ -88,6 +88,9 @@ HTML],
   ['id' => 'baja', 'titulo' => '5. How to cancel', 'html' => <<<HTML
     <p>You can cancel whenever you want, without giving a reason and without calling anyone:</p>
     <ul>
+      <li><strong>From your own account</strong>, in Settings, under "Your subscription". One
+          button. We tell the payment platform to stop charging you and we send you a receipt
+          by email.</li>
       <li>From your account on the payment platform, in the subscriptions section, cancelling the
           Printika Tools subscription.</li>
       <li>Or by writing to us at <a href="mailto:{$mail}">{$mail}</a> or on
@@ -287,6 +290,9 @@ HTML],
   ['id' => 'baja', 'titulo' => '5. Cómo darla de baja', 'html' => <<<HTML
     <p>Podés darla de baja cuando quieras, sin dar explicaciones y sin llamar a nadie:</p>
     <ul>
+      <li><strong>Desde tu propia cuenta</strong>, en Configuración, en "Tu suscripción". Es un
+          botón. Le avisamos a la plataforma de pago que deje de cobrarte y te mandamos la
+          constancia por correo.</li>
       <li>Desde tu cuenta en la plataforma de pago, en la sección de suscripciones, cancelando la
           suscripción a Printika Tools.</li>
       <li>O escribiéndonos a <a href="mailto:{$mail}">{$mail}</a> o por

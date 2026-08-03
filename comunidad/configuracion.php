@@ -6,6 +6,8 @@
 require_once __DIR__ . '/inc/auth.php';
 require_once __DIR__ . '/inc/ui.php';
 require_once __DIR__ . '/inc/taller.php';
+require_once __DIR__ . '/inc/mp.php';
+require_once __DIR__ . '/inc/correo.php';
 
 requerir_miembro();
 $u = usuario_actual();
@@ -35,6 +37,89 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'dosfa
             $aviso = $activar
                 ? 'Doble factor activado. La próxima vez que entres te vamos a pedir un código.'
                 : 'Doble factor desactivado.';
+        }
+    }
+}
+
+/**
+ * Textos de "Tu suscripción", en los dos idiomas.
+ *
+ * No pasan por el traductor de JavaScript (ptools-en.js) porque llevan fechas
+ * adentro: una frase con la fecha del mes que viene nunca va a coincidir con
+ * una clave fija del diccionario. Van armados desde acá, como los meses de
+ * Estadísticas, leyendo el idioma de la cookie.
+ */
+$en_ui = taller_idioma() === 'en';
+$fmt_fecha = fn($f) => $f ? date($en_ui ? 'm/d/Y' : 'd/m/Y', strtotime($f)) : '';
+
+/**
+ * Baja de la suscripción.
+ *
+ * El orden importa: primero se le avisa a Mercado Pago, y recién si MP lo
+ * acepta se marca de nuestro lado. Al revés, alguien podría quedarse con el
+ * cartel de "diste de baja" mientras le sigue llegando el débito todos los
+ * meses. Si MP falla no se toca nada y se le dice que pruebe de nuevo.
+ */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'baja_susc') {
+    if (!com_csrf_ok($_POST['csrf'] ?? '')) {
+        $error = $en_ui ? 'Your session expired, please try again.' : 'La sesión expiró, probá de nuevo.';
+    } else {
+        $susc = mp_suscripcion($uid);
+        if (!$susc || !empty($susc['cancelada_en'])) {
+            $error = $en_ui ? 'We could not find an active subscription to cancel.'
+                            : 'No encontramos una suscripción activa para dar de baja.';
+        } else {
+            $pre = mp_preapproval_de($susc);
+            if ($pre !== '' && !mp_cancelar_en_mp($pre)) {
+                $error = $en_ui
+                    ? 'We could not reach Mercado Pago, so we cancelled nothing: we do not want to '
+                      . 'leave the charge running. Try again in a few minutes, or write to us and '
+                      . 'we will cancel it for you.'
+                    : 'No pudimos avisarle a Mercado Pago, así que no dimos de baja nada: '
+                      . 'no queremos dejarte con el cobro andando. Probá de nuevo en unos minutos '
+                      . 'o escribinos y la damos de baja nosotros.';
+            } else {
+                mp_baja_plan($uid);
+                $hasta_txt = $fmt_fecha($susc['hasta']);
+                $aviso = $en_ui
+                    ? 'Done, your subscription is cancelled. You will not be charged again.'
+                      . ($hasta_txt ? ' You keep the full plan until ' . $hasta_txt . '.' : '')
+                    : 'Listo, diste de baja tu suscripción. No se te cobra más.'
+                      . ($hasta_txt ? ' Seguís con el plan completo hasta el ' . $hasta_txt . '.' : '');
+
+                // La constancia se manda DESPUES de guardar: un correo que falla se
+                // reenvia, una baja que no quedo registrada le sigue cobrando a alguien.
+                if (correo_disponible()) {
+                    $plan_txt = ($susc['plan'] ?? '') === 'anual'
+                        ? ($en_ui ? 'Printika Pro Annual' : 'Printika Pro Anual')
+                        : 'Printika Pro';
+                    $titulo = $en_ui ? 'Your subscription was cancelled' : 'Diste de baja tu suscripción';
+                    $parrafos = $en_ui ? [
+                        'We registered the cancellation of your <strong>' . htmlspecialchars($plan_txt)
+                            . '</strong> plan on ' . $fmt_fecha(date('Y-m-d')) . '.',
+                        'You will not be charged again.' . ($hasta_txt
+                            ? ' Your full plan stays on until ' . $hasta_txt
+                              . '; that day your account moves to the Free plan and nothing you loaded gets deleted.'
+                            : ''),
+                        'If you change your mind, you can subscribe again whenever you want.',
+                    ] : [
+                        'Registramos la baja de tu plan <strong>' . htmlspecialchars($plan_txt)
+                            . '</strong> el ' . $fmt_fecha(date('Y-m-d')) . '.',
+                        'No se te va a cobrar más.' . ($hasta_txt
+                            ? ' Seguís con el plan completo hasta el ' . $hasta_txt
+                              . '; ese día tu cuenta pasa al plan Gratis y no se borra nada de lo que cargaste.'
+                            : ''),
+                        'Si cambiás de idea, podés volver a suscribirte cuando quieras.',
+                    ];
+                    $pie = $en_ui ? 'Keep this email as your cancellation receipt.'
+                                  : 'Guardá este correo como constancia de la baja.';
+                    $asunto = $en_ui ? 'Cancellation receipt · Printika Tools'
+                                     : 'Constancia de baja · Printika Tools';
+                    $html = correo_plantilla($titulo, $parrafos, null, $pie, '', $en_ui ? 'en' : 'es');
+                    $texto = strip_tags(implode("\n\n", $parrafos));
+                    correo_enviar($u['email'], $u['nombre'], $asunto, $html, $texto);
+                }
+            }
         }
     }
 }
@@ -104,6 +189,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === '') {
 }
 
 $logo_url = taller_logo_url($u);
+
+// Se lee despues de procesar el POST, para que al dar de baja la tarjeta ya se
+// vea dada de baja sin tener que recargar. El admin no tiene suscripcion.
+$plan_actual = plan_usuario();
+$susc_actual = in_array($plan_actual, ['mensual', 'anual'], true) ? mp_suscripcion($uid) : null;
+$susc_hasta  = $susc_actual ? $fmt_fecha($susc_actual['hasta']) : '';
+$susc_nombre = $plan_actual === 'anual'
+    ? ($en_ui ? 'Printika Pro Annual' : 'Printika Pro Anual')
+    : 'Printika Pro';
 
 ui_panel_inicio('Configuración', $u, 'Configuración');
 ?>
@@ -202,5 +296,77 @@ ui_panel_inicio('Configuración', $u, 'Configuración');
         <div class="pie-form"><button class="btn" type="submit">Guardar</button></div>
       </form>
     </div>
+
+    <?php if ($susc_actual): ?>
+    <style>
+      /* La baja no es una accion de todos los dias: el boton no compite con
+         los de guardar, pero se ve y no hay que ir a buscarla a otro lado */
+      .baja-btn{background:transparent;border:1px solid var(--bad);color:var(--bad)}
+      .baja-btn:hover{background:var(--bad-tinte);border-color:var(--bad)}
+    </style>
+    <div class="tarjeta-s" style="margin-top:20px;max-width:720px">
+      <h2><?php echo $en_ui ? 'Your subscription' : 'Tu suscripción'; ?></h2>
+      <?php if (!empty($susc_actual['cancelada_en'])):
+              $baja_txt = $fmt_fecha($susc_actual['cancelada_en']); ?>
+        <p class="nota">
+          <?php if ($en_ui): ?>
+            You cancelled your subscription on <strong><?php echo $baja_txt; ?></strong>.
+            You will not be charged again.
+            <?php if ($susc_hasta): ?>
+              You keep the full plan until <strong><?php echo $susc_hasta; ?></strong>; that day
+              your account moves to the Free plan and nothing you loaded gets deleted.
+            <?php endif; ?>
+          <?php else: ?>
+            Diste de baja tu suscripción el <strong><?php echo $baja_txt; ?></strong>.
+            No se te cobra más.
+            <?php if ($susc_hasta): ?>
+              Seguís con el plan completo hasta el <strong><?php echo $susc_hasta; ?></strong>;
+              ese día tu cuenta pasa al plan Gratis y no se borra nada de lo que cargaste.
+            <?php endif; ?>
+          <?php endif; ?>
+        </p>
+        <div class="pie-form"><a class="btn sec" href="suscripcion.php"><?php
+          echo $en_ui ? 'Subscribe again' : 'Volver a suscribirme'; ?></a></div>
+      <?php else: ?>
+        <p class="nota">
+          <?php if ($en_ui): ?>
+            Your <strong><?php echo $susc_nombre; ?></strong> plan is active<?php
+              echo $susc_hasta ? ' until ' . $susc_hasta : ''; ?>, and it renews on its own
+            through Mercado Pago.
+          <?php else: ?>
+            Tenés el plan <strong><?php echo $susc_nombre; ?></strong> activo<?php
+              echo $susc_hasta ? ' hasta el ' . $susc_hasta : ''; ?>, y se renueva solo
+            por Mercado Pago.
+          <?php endif; ?>
+        </p>
+        <p class="nota">
+          <?php if ($en_ui): ?>
+            If you cancel it, Mercado Pago stops charging you right away<?php
+              echo $susc_hasta ? ' and you keep the full plan until <strong>' . $susc_hasta . '</strong>' : ''; ?>.
+            There is no penalty and you can subscribe again whenever you want.
+          <?php else: ?>
+            Si lo das de baja, Mercado Pago deja de cobrarte enseguida<?php
+              echo $susc_hasta ? ' y conservás el plan completo hasta el <strong>' . $susc_hasta . '</strong>' : ''; ?>.
+            No hay penalidad y podés volver a suscribirte cuando quieras.
+          <?php endif; ?>
+        </p>
+        <?php
+        // El confirm es la ultima red antes de tocar el cobro de alguien: dice
+        // que pasa, no solo "¿estas seguro?"
+        $confirmar = $en_ui
+            ? 'Cancel your subscription? Mercado Pago stops charging you'
+              . ($susc_hasta ? ' and you keep the full plan until ' . $susc_hasta : '') . '.'
+            : '¿Dar de baja tu suscripción? Mercado Pago deja de cobrarte'
+              . ($susc_hasta ? ' y seguís con el plan completo hasta el ' . $susc_hasta : '') . '.';
+        ?>
+        <form method="post" onsubmit="return confirm('<?php echo htmlspecialchars($confirmar, ENT_QUOTES); ?>');">
+          <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
+          <input type="hidden" name="accion" value="baja_susc">
+          <div class="pie-form"><button class="btn baja-btn" type="submit"><?php
+            echo $en_ui ? 'Cancel my subscription' : 'Dar de baja mi suscripción'; ?></button></div>
+        </form>
+      <?php endif; ?>
+    </div>
+    <?php endif; ?>
     <?php taller_popup_moneda(); ?>
 <?php ui_panel_fin(); ?>

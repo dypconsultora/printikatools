@@ -59,11 +59,15 @@ $estadoMp = $preapproval['status'] ?? '';
 if ($uid <= 0) { mp_log('preapproval sin referencia de usuario'); exit; }
 
 if ($estadoMp === 'authorized') {
-    mp_activar_plan($uid, $plan, 'MP ' . ($preapproval['id'] ?? ''));
+    mp_activar_plan($uid, $plan, 'MP ' . ($preapproval['id'] ?? ''), (string) ($preapproval['id'] ?? ''));
     mp_log("plan $plan ACTIVADO/renovado uid=$uid");
 } elseif (in_array($estadoMp, ['cancelled', 'paused'], true)) {
-    mp_cancelar_plan($uid);
-    mp_log("plan CANCELADO uid=$uid (estado MP: $estadoMp)");
+    // Se registra la baja pero no se le corta el acceso: sigue hasta la fecha
+    // que ya pago. Da igual si la cancelo desde acá, desde Mercado Pago o si
+    // MP la corto por cobros fallidos — en ese ultimo caso "hasta" ya esta por
+    // vencerse, asi que se apaga sola en unos dias.
+    mp_baja_plan($uid);
+    mp_log("baja registrada uid=$uid (estado MP: $estadoMp) — el acceso sigue hasta la fecha paga");
 } else {
     mp_log("estado MP sin acción: $estadoMp uid=$uid");
 }

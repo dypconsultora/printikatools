@@ -212,6 +212,19 @@ function taller_migrar() {
         $db->exec("ALTER TABLE suscripciones ADD COLUMN plan VARCHAR(10) NOT NULL DEFAULT 'mensual' AFTER estado");
     }
 
+    // Baja desde la plataforma. Hacian falta dos cosas: el numero de la
+    // suscripcion en Mercado Pago (antes quedaba escrito adentro de "notas",
+    // que no es lugar para buscarlo) y la fecha en que la persona pidio la
+    // baja. Ojo con cancelada_en: NO corta el acceso. Marca que no se renueva
+    // mas, y el plan sigue hasta "hasta", que es hasta donde ya pago.
+    $col = $db->query("SELECT COUNT(*) c FROM information_schema.columns
+                       WHERE table_schema = DATABASE() AND table_name = 'suscripciones' AND column_name = 'cancelada_en'")->fetch();
+    if ((int) $col['c'] === 0) {
+        $db->exec("ALTER TABLE suscripciones
+            ADD COLUMN mp_preapproval VARCHAR(64) NOT NULL DEFAULT '' AFTER plan,
+            ADD COLUMN cancelada_en DATE NULL DEFAULT NULL AFTER mp_preapproval");
+    }
+
     $db->exec("CREATE TABLE IF NOT EXISTS stl_items (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         nombre VARCHAR(150) NOT NULL,

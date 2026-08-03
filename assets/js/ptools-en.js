@@ -267,6 +267,9 @@
     'Librería STL y soporte por Telegram': 'STL library and Telegram support',
     // Pie de la plataforma
     'Términos y Condiciones': 'Terms and Conditions',
+    // Ojo: la tarjeta "Tu suscripción" de Configuración NO se traduce acá.
+    // Sus frases llevan fechas adentro, asi que nunca coincidirian con una
+    // clave fija: se arman en los dos idiomas desde configuracion.php.
     // Recursos: las tres secciones de video
     'Plataforma': 'Platform',
     'Mantenimientos': 'Maintenance',
