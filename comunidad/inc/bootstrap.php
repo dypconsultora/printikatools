@@ -68,16 +68,18 @@ define('COMUNIDAD_PRECIO_ANUAL', 180000);
  * frecuentes, y el checkout deja de aceptarlo aunque alguien tenga guardado el
  * enlace viejo.
  *
- * PARA VOLVER A MOSTRARLO: cambiar false por true en la linea de abajo. Eso
- * alcanza para TODO el sitio. Las dos unicas excepciones son los archivos que
- * leen los buscadores con IA, que son de texto y no pasan por PHP: hay que
- * reponer a mano el plan mensual en llms.txt y en pricing.md (los dos tienen
- * una nota adentro recordandolo).
+ * Cambiar esta linea alcanza para TODO el sitio. Las dos unicas excepciones son
+ * los archivos que leen los buscadores con IA, que son de texto y no pasan por
+ * PHP: el plan mensual hay que sacarlo o reponerlo a mano en llms.txt y en
+ * pricing.md.
  *
- * A quien YA tiene el plan mensual no le pasa nada: le sigue funcionando, lo ve
- * en "Tu plan" y se le renueva igual. Esto solo saca el cartel de la vidriera.
+ * A quien YA tiene el plan mensual no le pasa nada en ninguno de los dos casos:
+ * le sigue funcionando, lo ve en "Tu plan" y se le renueva igual. Esto solo
+ * pone o saca el cartel de la vidriera.
+ *
+ * Estuvo en false del 2026-07-29 al 2026-08-03, a pedido de Adriana.
  */
-define('COMUNIDAD_MENSUAL_VISIBLE', false);
+define('COMUNIDAD_MENSUAL_VISIBLE', true);
 
 /**
  * true si al usuario hay que mostrarle el plan mensual: o porque esta a la

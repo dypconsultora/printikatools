@@ -28,12 +28,12 @@ arrancar una sesión nueva sin tener que redescubrir todo.
 | Pro mensual | ARS 18.000 | `COMUNIDAD_PRECIO_MENSUAL` en `comunidad/inc/bootstrap.php` |
 | Pro anual | ARS 180.000 | `COMUNIDAD_PRECIO_ANUAL` (2 meses de regalo) |
 
-> ⚠️ **El plan mensual está oculto** desde el 2026-07-29, a pedido de Adriana y por
-> unos días. El interruptor es `COMUNIDAD_MENSUAL_VISIBLE` en `bootstrap.php`: en
-> `true` vuelve a aparecer en todo el sitio. Las únicas dos excepciones, porque son
-> texto plano y no pasan por PHP, son `llms.txt` y `pricing.md`: ahí hay que reponerlo
-> a mano (los dos tienen una nota adentro). **Ella tiene que avisar cuándo volver a
-> mostrarlo.** A quien ya lo tenga contratado no le cambia nada.
+> **Los tres planes están a la venta.** El plan mensual se puede sacar y reponer con
+> `COMUNIDAD_MENSUAL_VISIBLE` en `bootstrap.php`; ese interruptor solo alcanza para
+> todo lo que arma PHP. Las dos excepciones son `llms.txt` y `pricing.md`, que son
+> texto plano: ahí hay que editarlo a mano en los dos sentidos. A quien ya lo tenga
+> contratado no le cambia nada en ningún caso. Estuvo oculto del 2026-07-29 al
+> 2026-08-03, a pedido de Adriana.
 
 **Qué entra en cada plan.** Gratis: calculadora y recursos, nada más. Pro: además la
 librería STL, todo Mi taller y el soporte por Telegram. Quién es Pro se marca con la
@@ -318,7 +318,6 @@ cuerpo cuenta el motivo. Ejemplos reales del repo:
 - Links reales de PayPal para la landing en inglés (US$15 / US$150).
 - Probar una subida de STL real de los archivos que antes se cortaban.
 - Hacer un pago de prueba de punta a punta y confirmar que el webhook activa la cuenta.
-- **Avisar cuándo volver a mostrar el plan mensual** (ver arriba).
 - Confirmar si el mantenimiento de las impresoras es anual: su planilla dice anual y
   los números solo cierran así (2–9% del precio por año), pero al pasarla dijo
   "mensual". Cargado como **anual**.
