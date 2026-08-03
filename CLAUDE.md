@@ -204,6 +204,17 @@ el idioma en que estaba la persona, **una sola vez**. En el pie de ese correo ha
 enlace de baja **firmado** (`com_baja_token()`): al tocarlo la dirección se borra sola.
 Los correos de la cuenta (confirmar, código de acceso) **no** llevan baja.
 
+**La baja de la suscripción no corta el acceso.** El botón está en Configuración > Tu
+suscripción. Primero se le manda a Mercado Pago la orden de cancelar el `preapproval`, y
+**recién si MP la acepta** se marca de nuestro lado: al revés, la persona se iría
+convencida de que no le cobran más y le seguiría llegando el débito. Lo que se marca es
+`cancelada_en`; el plan sigue andando hasta `hasta`, que es hasta donde pagó, y ese día
+cae solo porque `plan_usuario()` ya exige `hasta >= hoy`. **No convertirlo en un corte
+inmediato**: sería quedarse con días pagos —con el anual, con meses— y es lo contrario
+de lo que dicen los Términos. El webhook hace lo mismo cuando MP avisa "cancelled".
+El número de la suscripción en MP vive en `suscripciones.mp_preapproval`; las viejas lo
+tienen adentro de `notas` y `mp_preapproval_de()` lo rescata de ahí.
+
 **Términos y Condiciones** (`terminos/index.php`, y `/en/terminos/` con el mismo truco que
 la landing) es la única pantalla donde el texto en inglés está escrito **adentro del
 archivo**, al lado del castellano, en vez de pasar por `guias-en.json`. El diccionario
@@ -285,10 +296,13 @@ cuerpo cuenta el motivo. Ejemplos reales del repo:
 - Confirmar si el mantenimiento de las impresoras es anual: su planilla dice anual y
   los números solo cierran así (2–9% del precio por año), pero al pasarla dijo
   "mensual". Cargado como **anual**.
-- **Crear una casilla en printikatools.com.** Los correos salen desde
-  `consultas@printika3d.com` mientras todo el contenido dice printikatools.com, y ese
-  desajuste es de las señales de spam más fuertes que hay. printikatools.com ya tiene
-  SPF, DKIM y DMARC: solo falta la casilla y cambiar el remitente en el `.env`.
+- **Cambiar el remitente de los correos** al `.env` **del servidor**. La casilla
+  `consultas@printikatools.com` ya existe y el sitio ya la muestra como correo de
+  contacto, pero los correos siguen **saliendo** desde `consultas@printika3d.com`, y ese
+  desajuste es de las señales de spam más fuertes que hay. El `.env` no va a git ni lo
+  toca el deploy: hay que editarlo en el hosting (`SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`,
+  `MAIL_FROM_NAME`, `MAIL_TO`, `MAIL_TO_NAME` y `ALLOWED_ORIGIN`). La clave de la casilla
+  la carga ella, nunca por chat.
 
 **Ofrecido y esperando su respuesta:**
 - Traducir el **panel de administración**, que sigue entero en castellano (~100
