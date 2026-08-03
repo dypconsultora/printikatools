@@ -88,14 +88,17 @@ ui_panel_inicio('Suscripciones', $yo, 'Suscripciones', '../');
     <style>
       .panel{background:var(--surface);border:1px solid var(--bd-suave);border-radius:var(--radio-g);overflow:hidden}
       table{width:100%;border-collapse:collapse;font-size:13.5px}
-      th,td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--bd-suave);vertical-align:middle}
+      th,td{padding:10px 8px;text-align:left;border-bottom:1px solid var(--bd-suave);vertical-align:middle}
       th{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;
          color:var(--txt-3);background:var(--surface)}
       tr:last-child td{border-bottom:none}
       tbody tr{transition:background-color .15s ease}
       tbody tr:hover{background:var(--surface-2)}
-      td.email{color:var(--txt-2)}
-      td.fecha{color:var(--txt-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+      /* El correo se recorta si es muy largo: el nombre ya identifica a la
+         persona, y el correo entero aparece al pasar el mouse por encima.
+         Ese ancho es lo que le faltaba a la columna de acciones para entrar. */
+      td.email{color:var(--txt-2);max-width:128px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      td.fecha{color:var(--txt-2);font-variant-numeric:tabular-nums;white-space:nowrap;font-size:12.5px}
       .estado{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;
               padding:3px 10px;border-radius:99px;white-space:nowrap}
       .estado::before{content:'';width:6px;height:6px;border-radius:99px;background:currentColor}
@@ -103,7 +106,25 @@ ui_panel_inicio('Suscripciones', $yo, 'Suscripciones', '../');
       .estado.no{background:var(--bad-tinte);color:var(--bad)}
       .estado.neutro{background:var(--accent-tinte);color:var(--accent)}
       .rol-admin{display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-weight:500}
-      td .acciones{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+      /* Todo en una sola linea. Antes envolvia y en las filas con suscripcion
+         activa "Hacer admin" caia a un segundo renglon, que hacia mas alta la
+         fila y desalineaba la tabla entera. */
+      td .acciones{display:flex;gap:3px;align-items:center;flex-wrap:nowrap;justify-content:flex-end}
+      td .acciones form{display:flex;gap:4px;align-items:center;margin:0}
+      /* Los botones de la fila, un punto mas ajustados: es lo que faltaba
+         para que la fila entre entera en una notebook de 1440 */
+      td .acciones .btn.chico{padding:0 10px}
+      td .acciones input[type=date]{width:auto;min-width:112px;padding:0 5px}
+      /* El de admin va al final y mas discreto: es el que menos se usa */
+      td .acciones .btn-rol{height:28px;padding:0 9px;font-size:12px;white-space:nowrap;
+              margin-left:2px;color:var(--txt-3);border-color:var(--bd-suave)}
+      td .acciones .btn-rol:hover{color:var(--txt);border-color:var(--bd)}
+      /* Nunca envuelve. Cuando la pantalla no alcanza, la que se corre es la
+         tabla entera: se desliza a lo ancho, como ya hace el resto del panel.
+         Es preferible a partir el renglon, que hacia mas altas unas filas que
+         otras y desalineaba todo. */
+      .tabla-scroll{overflow-x:auto}
+      .tabla-scroll table{min-width:1000px}
       td form{display:inline-flex;gap:6px;align-items:center;margin:0}
       td input[type=date]{width:auto;height:32px;padding:0 8px;font-size:12.5px;border-radius:6px}
       .crear{background:var(--surface);border:1px solid var(--bd-suave);border-radius:var(--radio-g);
@@ -124,7 +145,7 @@ ui_panel_inicio('Suscripciones', $yo, 'Suscripciones', '../');
       <?php foreach ($usuarios as $u): ?>
       <tr>
         <td><strong><?php echo htmlspecialchars($u['nombre']); ?></strong></td>
-        <td class="email"><?php echo htmlspecialchars($u['email']); ?></td>
+        <td class="email" title="<?php echo htmlspecialchars($u['email'], ENT_QUOTES); ?>"><?php echo htmlspecialchars($u['email']); ?></td>
         <td>
           <?php if ($u['rol'] === 'admin'): ?>
             <span class="rol-admin"><?php echo ui_icono('admin', 14); ?>Admin</span>
@@ -149,7 +170,7 @@ ui_panel_inicio('Suscripciones', $yo, 'Suscripciones', '../');
               <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
               <input type="hidden" name="accion" value="activar">
               <input type="hidden" name="usuario_id" value="<?php echo (int) $u['id']; ?>">
-              <select name="plan" aria-label="Plan" style="width:auto;height:32px;padding:0 8px;font-size:12.5px;border-radius:6px">
+              <select name="plan" aria-label="Plan" style="width:auto;height:32px;padding:0 6px;font-size:12px;border-radius:6px">
                 <option value="mensual">Mensual</option>
                 <option value="anual">Anual</option>
               </select>
@@ -171,7 +192,7 @@ ui_panel_inicio('Suscripciones', $yo, 'Suscripciones', '../');
               <input type="hidden" name="accion" value="rol">
               <input type="hidden" name="usuario_id" value="<?php echo (int) $u['id']; ?>">
               <input type="hidden" name="rol" value="<?php echo $u['rol'] === 'admin' ? 'miembro' : 'admin'; ?>">
-              <button class="btn chico sec" type="submit"><?php echo $u['rol'] === 'admin' ? 'Quitar admin' : 'Hacer admin'; ?></button>
+              <button class="btn chico sec btn-rol" type="submit"><?php echo $u['rol'] === 'admin' ? 'Quitar admin' : 'Hacer admin'; ?></button>
             </form>
           <?php endif; ?>
           </div>
