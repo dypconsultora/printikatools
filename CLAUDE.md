@@ -250,6 +250,19 @@ La fecha de "Última actualización" es la variable `$actualizado`, **a mano**: 
 decir cuándo cambió el texto de verdad, no la fecha de hoy. El enlace vive en el bloque
 "Plataforma" de los tres pies (portada, guías y plataforma).
 
+**Mailing** (`admin/mailing.php` + `inc/mailing.php`) manda a la lista de Emails captados.
+Tres decisiones que **no hay que "simplificar"**: el envío va de a tandas de 15 pedidas
+desde el navegador, porque el hosting corta los procesos largos y 200 correos en un
+pedido no terminan nunca; la cola vive en `mailing_envios`, así que si se cierra la
+pestaña el envío se retoma donde iba y a nadie le llega dos veces; y la conexión al SMTP
+se abre **antes** del lote con `smtpConnect()`, porque si el fallo aparece adentro del
+`try` de cada correo se marcan todos como "error" y la lista queda quemada sin poder
+reintentarla. Tres fallos seguidos cortan la tanda: eso ya no es una dirección mala, es
+el servidor. Todos los correos llevan el enlace de baja firmado y las cabeceras
+`List-Unsubscribe`. **Ojo con el CSS del panel**: `.grupo` ya existe en `ui.php` (los
+títulos del menú lateral) y usarla acá deformaba el menú; por eso las clases propias van
+con prefijo `ml-`.
+
 **Al guardar algo que además manda un correo, guardar primero.** Un correo que falla se
 reenvía desde el panel; una dirección perdida no se recupera. Ya pasó al revés.
 

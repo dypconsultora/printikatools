@@ -322,6 +322,46 @@ function taller_migrar() {
                    ON DUPLICATE KEY UPDATE origen = 'registro'");
     }
 
+    /*
+     * Mailings: los envios masivos que se arman desde el panel.
+     *
+     * Son dos tablas y no una porque un envio NO entra en un solo pedido al
+     * servidor: el hosting corta los procesos largos, asi que se manda de a
+     * tandas y hace falta saber a quien ya se le mando. Si el navegador se
+     * cierra en el medio, la cola queda ahi y el envio se retoma donde iba.
+     */
+    $db->exec("CREATE TABLE IF NOT EXISTS mailings (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        asunto VARCHAR(200) NOT NULL,
+        titulo VARCHAR(200) NOT NULL DEFAULT '',
+        cuerpo LONGTEXT,
+        boton_texto VARCHAR(80) NOT NULL DEFAULT '',
+        boton_url VARCHAR(300) NOT NULL DEFAULT '',
+        html_propio LONGTEXT,
+        filtro VARCHAR(12) NOT NULL DEFAULT 'todos',
+        idioma VARCHAR(6) NOT NULL DEFAULT 'ambos',
+        estado VARCHAR(12) NOT NULL DEFAULT 'borrador',
+        total INT UNSIGNED NOT NULL DEFAULT 0,
+        enviados INT UNSIGNED NOT NULL DEFAULT 0,
+        fallados INT UNSIGNED NOT NULL DEFAULT 0,
+        creado_en DATETIME NOT NULL,
+        terminado_en DATETIME NULL DEFAULT NULL,
+        PRIMARY KEY (id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $db->exec("CREATE TABLE IF NOT EXISTS mailing_envios (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        mailing_id BIGINT UNSIGNED NOT NULL,
+        email VARCHAR(190) NOT NULL,
+        idioma VARCHAR(2) NOT NULL DEFAULT 'es',
+        estado VARCHAR(10) NOT NULL DEFAULT 'pendiente',
+        enviado_en DATETIME NULL DEFAULT NULL,
+        PRIMARY KEY (id),
+        KEY idx_cola (mailing_id, estado),
+        CONSTRAINT fk_menv_mailing FOREIGN KEY (mailing_id)
+            REFERENCES mailings(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
     $db->exec("CREATE TABLE IF NOT EXISTS recursos_pdf (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         titulo VARCHAR(150) NOT NULL,

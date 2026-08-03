@@ -487,6 +487,7 @@ function ui_menu_admin() {
         ['recursos',     'Cargar recursos', 'admin/recursos.php', true, false],
         ['cursos',       'Guías',        'admin/guias.php', true, false],
         ['correo',       'Emails captados', 'admin/emails.php', true, false],
+        ['telegram',     'Mailing',      'admin/mailing.php', true, false],
         ['ventas',       'Mercado Pago', 'admin/mercadopago.php', true, false],
         ['descargar',    'Backups',      'admin/backups.php', true, false],
     ];
