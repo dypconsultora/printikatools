@@ -304,6 +304,24 @@ function taller_migrar() {
         $db->exec("ALTER TABLE novedades_emails ADD COLUMN idioma VARCHAR(2) NOT NULL DEFAULT 'es'");
     }
 
+    // De donde salio cada direccion: cotizador, banner o registro.
+    //
+    // Hace falta por una razon concreta: el correo de bienvenida invita a
+    // crearse una cuenta gratis, asi que mandarselo a alguien que ya se
+    // registro queda mal. Con esto el panel los distingue y no se los manda.
+    $stmt = $db->prepare("SELECT COUNT(*) c FROM information_schema.COLUMNS
+                           WHERE TABLE_SCHEMA = DATABASE()
+                             AND TABLE_NAME = 'novedades_emails' AND COLUMN_NAME = 'origen'");
+    $stmt->execute();
+    if (!(int) $stmt->fetch()['c']) {
+        $db->exec("ALTER TABLE novedades_emails ADD COLUMN origen VARCHAR(12) NOT NULL DEFAULT 'cotizador'");
+        // Los que ya se habian registrado antes de que esto existiera tambien
+        // son direcciones captadas: se suman de una. La administradora no.
+        $db->exec("INSERT INTO novedades_emails (email, creado_en, idioma, origen)
+                   SELECT email, creado_en, 'es', 'registro' FROM usuarios WHERE rol <> 'admin'
+                   ON DUPLICATE KEY UPDATE origen = 'registro'");
+    }
+
     $db->exec("CREATE TABLE IF NOT EXISTS recursos_pdf (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         titulo VARCHAR(150) NOT NULL,
@@ -455,6 +473,29 @@ const TALLER_MESES = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
 
 const TALLER_MESES_EN = ['', 'January', 'February', 'March', 'April', 'May', 'June',
                          'July', 'August', 'September', 'October', 'November', 'December'];
+
+/**
+ * Anota una direccion en Emails captados.
+ *
+ * La usan las tres puertas por las que entra gente: el popup del cotizador, el
+ * banner de la portada y el registro de una cuenta.
+ *
+ * Si la direccion ya estaba no se duplica. Vale el ultimo idioma en el que la
+ * vimos, y el origen "registro" le gana a cualquier otro y no se pisa nunca:
+ * una vez que la persona tiene cuenta, ya no hay que invitarla a crearse una.
+ */
+function taller_captar_email($email, $idioma = 'es', $origen = 'cotizador') {
+    $email = mb_strtolower(trim((string) $email));
+    if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 190) {
+        return false;
+    }
+    com_db()->prepare(
+        "INSERT INTO novedades_emails (email, creado_en, idioma, origen) VALUES (?, NOW(), ?, ?)
+         ON DUPLICATE KEY UPDATE idioma = VALUES(idioma),
+                                 origen = IF(VALUES(origen) = 'registro', 'registro', origen)"
+    )->execute([$email, $idioma === 'en' ? 'en' : 'es', $origen]);
+    return true;
+}
 
 /**
  * Idioma elegido, visto desde el servidor.

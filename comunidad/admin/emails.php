@@ -20,6 +20,11 @@ const EMAILS_POR_PAGINA = 50;
 $aviso = '';
 $error = '';
 
+/** Como se llama cada origen en pantalla. */
+function em_origen_txt($origen) {
+    return ['registro' => 'Se registró', 'banner' => 'Banner portada'][$origen] ?? 'Cotizador';
+}
+
 /** Los ids que llegaron tildados, ya limpios. */
 function em_ids_marcados() {
     $ids = array_map('intval', (array) ($_POST['ids'] ?? []));
@@ -65,12 +70,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $error = 'El envío de correos no está configurado (falta el .env con el SMTP).';
                 } else {
                     $huecos = implode(',', array_fill(0, count($ids), '?'));
-                    $filas = $db->prepare("SELECT id, email, idioma FROM novedades_emails WHERE id IN ($huecos)");
+                    $filas = $db->prepare("SELECT id, email, idioma, origen FROM novedades_emails WHERE id IN ($huecos)");
                     $filas->execute($ids);
 
                     $enviados = 0;
                     $fallados = 0;
+                    $con_cuenta = 0;
                     foreach ($filas->fetchAll() as $f) {
+                        // La bienvenida invita a crearse una cuenta gratis: a quien
+                        // ya se registro no se le manda, queda mal.
+                        if ($f['origen'] === 'registro') { $con_cuenta++; continue; }
                         // Cada uno en el idioma en el que se anoto, no siempre en castellano
                         if (correo_bienvenida_novedades($f['email'], $f['idioma'])) {
                             $db->prepare('UPDATE novedades_emails SET bienvenida_en = NOW() WHERE id = ?')
@@ -81,6 +90,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     }
                     $aviso = "Se envió la bienvenida a $enviados " . ($enviados === 1 ? 'dirección.' : 'direcciones.');
+                    if ($con_cuenta) {
+                        $aviso .= $con_cuenta === 1
+                            ? ' A 1 la salteamos porque ya tiene cuenta: ese correo invita a crearse una.'
+                            : " A $con_cuenta las salteamos porque ya tienen cuenta: ese correo invita a crearse una.";
+                    }
                     if ($fallados) $error = "A $fallados no se les pudo enviar.";
                 }
             }
@@ -104,15 +118,16 @@ if (isset($_GET['csv'])) {
     header('Content-Disposition: attachment; filename="emails-novedades.csv"');
     echo "\xEF\xBB\xBF";                                   // para que Excel lea los acentos
     $out = fopen('php://output', 'w');
-    fputcsv($out, ['Email', 'Idioma', 'Fecha', 'Bienvenida'], ';', '"', '');
-    $stmt = $db->prepare("SELECT email, idioma, creado_en, bienvenida_en FROM novedades_emails $where ORDER BY creado_en DESC");
+    fputcsv($out, ['Email', 'Idioma', 'Origen', 'Fecha', 'Bienvenida'], ';', '"', '');
+    $stmt = $db->prepare("SELECT email, idioma, origen, creado_en, bienvenida_en FROM novedades_emails $where ORDER BY creado_en DESC");
     $stmt->execute($args);
     foreach ($stmt as $r) {
         fputcsv($out, [
             $r['email'],
             $r['idioma'] === 'en' ? 'Inglés' : 'Castellano',
+            em_origen_txt($r['origen']),
             $r['creado_en'],
-            $r['bienvenida_en'] ?: 'sin enviar',
+            $r['origen'] === 'registro' ? 'ya tiene cuenta' : ($r['bienvenida_en'] ?: 'sin enviar'),
         ], ';', '"', '');
     }
     fclose($out);
@@ -124,7 +139,11 @@ $stmt->execute($args);
 $total = (int) $stmt->fetch()['c'];
 
 $tot_general = (int) $db->query('SELECT COUNT(*) c FROM novedades_emails')->fetch()['c'];
-$tot_sin     = (int) $db->query('SELECT COUNT(*) c FROM novedades_emails WHERE bienvenida_en IS NULL')->fetch()['c'];
+// Los que ya tienen cuenta no cuentan como "les falta la bienvenida": ese
+// correo los invita a registrarse, y ya lo hicieron
+$tot_sin     = (int) $db->query("SELECT COUNT(*) c FROM novedades_emails
+                                  WHERE bienvenida_en IS NULL AND origen <> 'registro'")->fetch()['c'];
+$tot_cuenta  = (int) $db->query("SELECT COUNT(*) c FROM novedades_emails WHERE origen = 'registro'")->fetch()['c'];
 
 $paginas = max(1, (int) ceil($total / EMAILS_POR_PAGINA));
 $pagina  = min($paginas, max(1, (int) ($_GET['p'] ?? 1)));
@@ -132,7 +151,7 @@ $desde   = ($pagina - 1) * EMAILS_POR_PAGINA;
 
 // El LIMIT va interpolado porque son enteros ya calculados: MySQL no acepta
 // parámetros en LIMIT cuando las consultas no se emulan
-$stmt = $db->prepare("SELECT id, email, idioma, creado_en, bienvenida_en FROM novedades_emails
+$stmt = $db->prepare("SELECT id, email, idioma, origen, creado_en, bienvenida_en FROM novedades_emails
                       $where ORDER BY creado_en DESC LIMIT $desde, " . EMAILS_POR_PAGINA);
 $stmt->execute($args);
 $lista = $stmt->fetchAll();
@@ -151,8 +170,10 @@ ui_panel_inicio('Emails captados', $yo, 'Emails captados', '../');
 ?>
     <style>.contenido{max-width:none}</style>
     <h1>Emails captados</h1>
-    <p class="bajada">Las direcciones que deja la gente en el popup del cotizador. Cada una recibe
-      un correo de bienvenida con los planes; acá podés ver quién lo recibió y limpiar la lista.</p>
+    <p class="bajada">Todas las direcciones que entran al sitio: el popup del cotizador, el banner
+      de la portada y quienes crean una cuenta. Las dos primeras reciben el correo de bienvenida
+      con los planes; a quienes ya se registraron no se les manda, porque ese correo justamente
+      invita a crearse una cuenta.</p>
 
     <?php if ($aviso): ?><div class="msg ok"><?php echo ui_icono('check', 16); ?><span><?php echo htmlspecialchars($aviso); ?></span></div><?php endif; ?>
     <?php if ($error): ?><div class="msg bad"><?php echo ui_icono('alerta', 16); ?><span><?php echo htmlspecialchars($error); ?></span></div><?php endif; ?>
@@ -185,7 +206,10 @@ ui_panel_inicio('Emails captados', $yo, 'Emails captados', '../');
       .estado::before{content:'';width:6px;height:6px;border-radius:99px;background:currentColor}
       .estado.si{background:var(--ok-tinte);color:var(--ok)}
       .estado.no{background:var(--accent-tinte);color:var(--accent)}
+      .estado.neutro{background:var(--surface-2);color:var(--txt-3)}
       .idi{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--txt-3)}
+      .orig{font-size:12px;color:var(--txt-2);white-space:nowrap}
+      .orig.cuenta{color:var(--ok);font-weight:600}
       .acciones-lote{display:flex;gap:8px;align-items:center;flex-wrap:wrap;
                      padding:12px 16px;border-bottom:1px solid var(--bd-suave);background:var(--surface-2)}
       .acciones-lote .cuenta{font-size:13px;color:var(--txt-2)}
@@ -202,6 +226,7 @@ ui_panel_inicio('Emails captados', $yo, 'Emails captados', '../');
 
     <div class="kpis">
       <div class="kpi"><small>Direcciones en la lista</small><b style="color:var(--accent)"><?php echo $tot_general; ?></b></div>
+      <div class="kpi"><small>Ya se registraron</small><b style="color:var(--ok)"><?php echo $tot_cuenta; ?></b></div>
       <div class="kpi"><small>Sin correo de bienvenida</small><b><?php echo $tot_sin; ?></b></div>
     </div>
 
@@ -230,7 +255,7 @@ ui_panel_inicio('Emails captados', $yo, 'Emails captados', '../');
       <div class="panel"><p class="vacio">
         <?php echo $busca !== ''
             ? 'Ninguna dirección coincide con «' . htmlspecialchars($busca) . '».'
-            : 'Todavía nadie dejó su email en el popup del cotizador.'; ?>
+            : 'Todavía nadie dejó su email ni creó una cuenta.'; ?>
       </p></div>
     <?php else: ?>
 
@@ -253,7 +278,7 @@ ui_panel_inicio('Emails captados', $yo, 'Emails captados', '../');
         <table>
           <thead><tr>
             <th class="check"><input type="checkbox" id="todos" title="Marcar todas"></th>
-            <th>Email</th><th>Idioma</th><th>Bienvenida</th><th>Fecha</th><th class="acc"></th>
+            <th>Email</th><th>Idioma</th><th>Origen</th><th>Bienvenida</th><th>Fecha</th><th class="acc"></th>
           </tr></thead>
           <tbody>
           <?php foreach ($lista as $r): ?>
@@ -261,7 +286,12 @@ ui_panel_inicio('Emails captados', $yo, 'Emails captados', '../');
               <td class="check"><input type="checkbox" class="uno" name="ids[]" value="<?php echo (int) $r['id']; ?>"></td>
               <td><?php echo htmlspecialchars($r['email']); ?></td>
               <td><span class="idi"><?php echo $r['idioma'] === 'en' ? 'ENG' : 'ESP'; ?></span></td>
-              <td><?php if ($r['bienvenida_en']): ?>
+              <td><span class="orig<?php echo $r['origen'] === 'registro' ? ' cuenta' : ''; ?>"><?php
+                    echo htmlspecialchars(em_origen_txt($r['origen'])); ?></span></td>
+              <td><?php if ($r['origen'] === 'registro'): ?>
+                    <?php // No corresponde: ese correo invita a crear la cuenta que ya tiene ?>
+                    <span class="estado neutro">Ya tiene cuenta</span>
+                  <?php elseif ($r['bienvenida_en']): ?>
                     <span class="estado si">Enviada <?php echo date('d/m/y', strtotime($r['bienvenida_en'])); ?></span>
                   <?php else: ?>
                     <span class="estado no">Sin enviar</span>

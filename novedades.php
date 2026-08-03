@@ -58,9 +58,7 @@ if (!com_db_ok()) {
 
 try {
     taller_migrar();   // crea la tabla y sus columnas si es la primera vez
-    com_db()->prepare('INSERT INTO novedades_emails (email, creado_en, idioma) VALUES (?, NOW(), ?)
-                       ON DUPLICATE KEY UPDATE idioma = VALUES(idioma)')
-            ->execute([$email, $idioma]);
+    taller_captar_email($email, $idioma, 'banner');
 } catch (Throwable $e) {
     error_log('[novedades] guardar: ' . $e->getMessage());
     nov_error(500, $en ? 'We could not save it. Try again.' : 'No pudimos guardarlo. Probá de nuevo.');

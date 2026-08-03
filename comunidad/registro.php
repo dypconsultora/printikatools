@@ -5,6 +5,7 @@
  */
 require_once __DIR__ . '/inc/auth.php';
 require_once __DIR__ . '/inc/ui.php';
+require_once __DIR__ . '/inc/taller.php';   // taller_captar_email()
 
 // Sitio en acceso anticipado: sin la clave, todo lleva al "proximamente".
 if (!com_preview_ok() && usuario_actual() === null) {
@@ -61,6 +62,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             com_sesion();
             session_regenerate_id(true);
             $_SESSION['uid'] = $nuevo_id;
+
+            // Quien se registra tambien es una direccion captada: va a la misma
+            // lista que el popup del cotizador y el banner de la portada. En su
+            // propio try porque si esto falla la cuenta ya esta creada y no hay
+            // que arruinarle el registro por una lista de correo.
+            try {
+                taller_migrar();
+                taller_captar_email($email, taller_idioma(), 'registro');
+            } catch (Throwable $e) {
+                error_log('[registro] captar email: ' . $e->getMessage());
+            }
 
             // Correo de confirmación con el logo de Printika
             com_verif_enviar([

@@ -162,9 +162,11 @@ HTML],
     <p>The Agency for Access to Public Information, as the supervisory body of Act No. 25,326, has
        the power to hear complaints and claims brought by people whose rights are affected by
        breaches of the rules in force on personal data protection.</p>
-    <p><strong>News emails.</strong> Every one of them carries an unsubscribe link in the footer,
-       and one click is enough. Emails about your account (confirming your address, access codes,
-       payment notices) cannot be unsubscribed from, because they are part of the service.</p>
+    <p><strong>News emails.</strong> Your address goes on our news list if you leave it on the site
+       or if you create an account. Every one of those emails carries an unsubscribe link in the
+       footer, and one click is enough: you leave the list and your account is untouched. Emails
+       about your account (confirming your address, access codes, payment notices) cannot be
+       unsubscribed from, because they are part of the service.</p>
     <p><strong>Cookies.</strong> We only use the ones the site needs to work: your session, the
        language you chose and the light or dark theme. There are no advertising cookies and no
        third-party trackers.</p>
@@ -369,9 +371,11 @@ HTML],
        25.326, tiene la atribución de atender las denuncias y reclamos que interpongan quienes
        resulten afectados en sus derechos por incumplimiento de las normas vigentes en materia de
        protección de datos personales.</p>
-    <p><strong>Correos de novedades.</strong> Todos llevan un enlace de baja en el pie, y con un
-       clic alcanza. Los correos de tu cuenta (confirmar la dirección, códigos de acceso, avisos de
-       pago) no se pueden dar de baja porque son parte del servicio.</p>
+    <p><strong>Correos de novedades.</strong> Tu dirección entra en nuestra lista de novedades si
+       la dejás en el sitio o si creás una cuenta. Todos esos correos llevan un enlace de baja en
+       el pie, y con un clic alcanza: salís de la lista y tu cuenta no se toca. Los correos de tu
+       cuenta (confirmar la dirección, códigos de acceso, avisos de pago) no se pueden dar de baja
+       porque son parte del servicio.</p>
     <p><strong>Cookies.</strong> Usamos solo las que el sitio necesita para funcionar: tu sesión, el
        idioma que elegiste y el modo día o noche. No hay cookies de publicidad ni rastreadores de
        terceros.</p>

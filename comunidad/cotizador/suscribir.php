@@ -103,6 +103,7 @@ try {
         creado_en DATETIME NOT NULL,
         bienvenida_en DATETIME NULL DEFAULT NULL,
         idioma VARCHAR(2) NOT NULL DEFAULT 'es',
+        origen VARCHAR(12) NOT NULL DEFAULT 'cotizador',
         PRIMARY KEY (id),
         UNIQUE KEY uq_email (email)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
