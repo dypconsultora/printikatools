@@ -198,9 +198,16 @@ sin usarse, a propósito.
 orden lo decide Adriana arrastrando las filas en Cargar STL, y se guarda en la columna
 `orden`; la fecha solo desempata a los que nunca se movieron.
 
-**Emails captados** (`admin/emails.php`) junta las direcciones del popup del cotizador
-y del banner de la portada. Cada una recibe el correo de bienvenida con los planes, en
-el idioma en que estaba la persona, **una sola vez**. En el pie de ese correo hay un
+**Emails captados** (`admin/emails.php`) junta las direcciones de las **tres** puertas:
+el popup del cotizador, el banner de la portada y **el registro de una cuenta**. Las tres
+dan de alta con la misma función, `taller_captar_email()`, que además guarda de dónde
+salió cada una en la columna `origen`. Esa columna no es decorativa: el correo de
+bienvenida invita a crearse una cuenta gratis, así que **a los de `origen = 'registro'`
+no se les manda** — el panel los muestra como "Ya tiene cuenta", el contador de "sin
+bienvenida" los deja afuera y, si igual quedan marcados en un envío, se saltean. Si
+alguien dejó el mail en el cotizador y después se registró, su origen pasa a `registro`
+y **no vuelve atrás**. A los otros dos orígenes les llega el correo de bienvenida con los
+planes, en el idioma en que estaba la persona, **una sola vez**. En el pie de ese correo hay un
 enlace de baja **firmado** (`com_baja_token()`): al tocarlo la dirección se borra sola.
 Los correos de la cuenta (confirmar, código de acceso) **no** llevan baja.
 
