@@ -159,7 +159,7 @@ ui_panel_inicio('Suscripciones', $yo, 'Suscripciones', '../');
           <?php elseif ($u['susc_activa']): ?>
             <span class="estado si"><?php echo ($u['susc_plan'] ?? '') === 'anual' ? 'Anual' : 'Mensual'; ?><?php echo $u['susc_hasta'] ? ' · vence ' . date('d/m/y', strtotime($u['susc_hasta'])) : ''; ?></span>
           <?php else: ?>
-            <span class="estado no">Inactiva</span>
+            <span class="estado no">Gratis</span>
           <?php endif; ?>
         </td>
         <td class="fecha"><?php echo $u['ultimo_login'] ? date('d/m/y H:i', strtotime($u['ultimo_login'])) : '—'; ?></td>

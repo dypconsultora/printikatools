@@ -282,6 +282,7 @@
       'Of this filament, in this brand, type and colour. You change it as you use or buy more.',
     'rollo': 'spool', 'rollos': 'spools',
     'Te queda uno': 'One left',
+    'Gratis': 'Free',
     // Tarjetas del panel que necesitan plan pago
     'Necesitás cuenta Pro': 'Pro account required',
     'Eso necesita cuenta Pro. Con el plan completo lo tenés, junto con todo Mi taller.':
