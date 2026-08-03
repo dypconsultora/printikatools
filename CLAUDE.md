@@ -211,6 +211,25 @@ planes, en el idioma en que estaba la persona, **una sola vez**. En el pie de es
 enlace de baja **firmado** (`com_baja_token()`): al tocarlo la dirección se borra sola.
 Los correos de la cuenta (confirmar, código de acceso) **no** llevan baja.
 
+**Borrar una cuenta desde Suscripciones** es definitivo y se lleva todo: la base tiene
+las claves en cascada (presupuestos, clientes, productos, stock, ventas, suscripciones) y
+la pantalla además le saca la dirección de Emails captados y el logo del disco. **La
+propia cuenta no se puede borrar**, ni marcándola ni forzando el id: quedaría el panel sin
+nadie que pueda entrar. Detalle de armado: el formulario del borrado vive **fuera** de la
+tabla y las tildes se le enganchan con `form="borrar-lote"`. Si envolviera la tabla, los
+formularios que ya tiene cada fila (activar, desactivar, rol) quedarían anidados y el
+navegador los tira.
+
+**El aviso de correo mal escrito** (`com_email_sugerencia()`) usa dos criterios distintos,
+y conviene no unificarlos: si el nombre del dominio está bien y falla el final
+(`gmail.con`, `gmail.co`) avisa, **pero si el final es un país de verdad (`yahoo.es`) no
+toca nada**; y si el nombre está mal, compara con `levenshtein` y tolerancia 2, que es lo
+que cuesta una transposición tipo "gmial". Hay una lista de dominios reales que caen cerca
+(`ymail.com`, `email.com`) para no acusarlos. El aviso principal es en vivo en el
+formulario; el del servidor es para navegadores con el JavaScript bloqueado y **frena una
+sola vez**: si mandan la misma dirección de nuevo, pasa. Un dominio raro pero real no
+puede quedar afuera por un aviso.
+
 **La baja de la suscripción no corta el acceso.** El botón está en Configuración > Tu
 suscripción. Primero se le manda a Mercado Pago la orden de cancelar el `preapproval`, y
 **recién si MP la acepta** se marca de nuestro lado: al revés, la persona se iría
