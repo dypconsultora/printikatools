@@ -51,6 +51,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } elseif ($accion === 'desactivar' && $uid) {
                 com_db()->prepare("UPDATE suscripciones SET estado = 'cancelada' WHERE usuario_id = ?")->execute([$uid]);
                 $aviso = 'Suscripción desactivada.';
+            } elseif ($accion === 'borrar_varios') {
+                /**
+                 * Borrado definitivo de cuentas.
+                 *
+                 * Se lleva puesto todo lo de esa persona: la base tiene las
+                 * claves en cascada (presupuestos, clientes, productos, stock,
+                 * ventas, suscripciones), y aca ademas se saca su direccion de
+                 * Emails captados y su logo del disco. Si no, quedaria dando
+                 * vueltas justo lo que se quiso borrar.
+                 */
+                $ids = array_values(array_filter(
+                    array_map('intval', (array) ($_POST['ids'] ?? [])), fn($n) => $n > 0));
+                // Nunca la cuenta con la que se esta mirando la pantalla: seria
+                // borrarse a si misma y quedarse afuera del panel
+                $ids = array_values(array_diff($ids, [(int) $yo['id']]));
+
+                if (!$ids) {
+                    $error = 'No marcaste ninguna cuenta (tu propia cuenta no se puede borrar).';
+                } else {
+                    $huecos = implode(',', array_fill(0, count($ids), '?'));
+                    $stmt = com_db()->prepare("SELECT id, nombre, email, logo_ext FROM usuarios WHERE id IN ($huecos)");
+                    $stmt->execute($ids);
+                    $victimas = $stmt->fetchAll();
+
+                    foreach ($victimas as $v) {
+                        if (($v['logo_ext'] ?? '') !== '') {
+                            @unlink(taller_logo_dir() . '/logo-' . (int) $v['id'] . '.' . $v['logo_ext']);
+                        }
+                    }
+
+                    com_db()->prepare("DELETE FROM usuarios WHERE id IN ($huecos)")->execute($ids);
+
+                    // La direccion tambien sale de Emails captados: si no, la que
+                    // se anoto mal seguiria en la lista despues de borrar la cuenta
+                    $correos = array_column($victimas, 'email');
+                    if ($correos) {
+                        $h2 = implode(',', array_fill(0, count($correos), '?'));
+                        com_db()->prepare("DELETE FROM novedades_emails WHERE email IN ($h2)")->execute($correos);
+                    }
+
+                    $n = count($victimas);
+                    $aviso = $n === 1
+                        ? 'Se borró la cuenta de «' . $victimas[0]['nombre'] . '» y todos sus datos.'
+                        : "Se borraron $n cuentas y todos sus datos.";
+                }
+
             } elseif ($accion === 'rol' && $uid) {
                 if ($uid === (int) $yo['id']) {
                     $error = 'No podés cambiar tu propio rol.';
@@ -124,7 +170,19 @@ ui_panel_inicio('Suscripciones', $yo, 'Suscripciones', '../');
          Es preferible a partir el renglon, que hacia mas altas unas filas que
          otras y desalineaba todo. */
       .tabla-scroll{overflow-x:auto}
-      .tabla-scroll table{min-width:1000px}
+      /* 40px mas que antes: es lo que ocupa la columna de las tildes. Sin esto
+         los nombres se partian en dos renglones y volvia la fila alta que se
+         habia arreglado. */
+      .tabla-scroll table{min-width:1040px}
+      td.usuario{white-space:nowrap}
+      th.check,td.check{width:40px;padding-right:0}
+      .check input[type=checkbox]{width:17px;height:17px;margin:0;cursor:pointer;accent-color:var(--accent)}
+      .check .vos{color:var(--txt-3)}
+      .acciones-lote{display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+                     padding:12px 16px;border-bottom:1px solid var(--bd-suave);background:var(--surface-2)}
+      .acciones-lote .cuenta{font-size:13px;color:var(--txt-2);min-width:150px}
+      .acciones-lote .ayuda-lote{font-size:12.5px;color:var(--txt-3)}
+      .acciones-lote .btn[disabled]{opacity:.45;pointer-events:none}
       td form{display:inline-flex;gap:6px;align-items:center;margin:0}
       td input[type=date]{width:auto;height:32px;padding:0 8px;font-size:12.5px;border-radius:6px}
       .crear{background:var(--surface);border:1px solid var(--bd-suave);border-radius:var(--radio-g);
@@ -136,15 +194,47 @@ ui_panel_inicio('Suscripciones', $yo, 'Suscripciones', '../');
       @media (max-width:900px){ .crear .fila{grid-template-columns:1fr} .tabla-scroll{overflow-x:auto} }
     </style>
 
-    <div class="panel tabla-scroll">
+    <?php
+    // El formulario del borrado vive FUERA de la tabla y las tildes se le
+    // enganchan con form="borrar-lote". Si envolviera la tabla, los formularios
+    // que ya tiene cada fila (activar, desactivar, rol) quedarian anidados y el
+    // navegador los tira: dejarian de funcionar los botones que ya andaban.
+    ?>
+    <form method="post" id="borrar-lote" style="display:none">
+      <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
+      <input type="hidden" name="accion" value="borrar_varios">
+    </form>
+
+    <div class="panel">
+    <div class="acciones-lote">
+      <span class="cuenta" id="cuenta">Ninguna seleccionada</span>
+      <button class="btn chico peligro" type="submit" form="borrar-lote" id="btn-borrar" disabled
+              onclick="return confirm('Se borran las cuentas marcadas y TODO lo que tengan cargado: presupuestos, clientes, productos, stock, ventas y su dirección en Emails captados.\n\nEsto no se puede deshacer. ¿Seguimos?')">
+        <?php echo ui_icono('basura', 15); ?> Borrar seleccionadas
+      </button>
+      <span class="ayuda-lote">Marcá una o varias cuentas para borrarlas.</span>
+    </div>
+    <div class="tabla-scroll">
     <table>
       <thead>
-      <tr><th>Usuario</th><th>Email</th><th>Rol</th><th>Suscripción</th><th>Último ingreso</th><th>Acciones</th></tr>
+      <tr><th class="check"><input type="checkbox" id="todos" title="Marcar todas"></th>
+          <th>Usuario</th><th>Email</th><th>Rol</th><th>Suscripción</th><th>Último ingreso</th><th>Acciones</th></tr>
       </thead>
       <tbody>
       <?php foreach ($usuarios as $u): ?>
       <tr>
-        <td><strong><?php echo htmlspecialchars($u['nombre']); ?></strong></td>
+        <td class="check">
+          <?php // La propia cuenta no se puede marcar: borrarse a si misma
+                // dejaria el panel sin nadie que pueda entrar
+                if ((int) $u['id'] !== (int) $yo['id']): ?>
+            <input type="checkbox" class="uno" name="ids[]" form="borrar-lote"
+                   value="<?php echo (int) $u['id']; ?>"
+                   aria-label="Marcar a <?php echo htmlspecialchars($u['nombre'], ENT_QUOTES); ?>">
+          <?php else: ?>
+            <span class="vos" title="Es tu propia cuenta">—</span>
+          <?php endif; ?>
+        </td>
+        <td class="usuario"><strong><?php echo htmlspecialchars($u['nombre']); ?></strong></td>
         <td class="email" title="<?php echo htmlspecialchars($u['email'], ENT_QUOTES); ?>"><?php echo htmlspecialchars($u['email']); ?></td>
         <td>
           <?php if ($u['rol'] === 'admin'): ?>
@@ -203,6 +293,34 @@ ui_panel_inicio('Suscripciones', $yo, 'Suscripciones', '../');
       </tbody>
     </table>
     </div>
+    </div>
+
+    <script>
+      (function () {
+        var todos  = document.getElementById('todos');
+        var unos   = Array.prototype.slice.call(document.querySelectorAll('.uno'));
+        var cuenta = document.getElementById('cuenta');
+        var boton  = document.getElementById('btn-borrar');
+
+        function actualizar() {
+          var n = unos.filter(function (c) { return c.checked; }).length;
+          cuenta.textContent = n === 0 ? 'Ninguna seleccionada'
+                             : n === 1 ? '1 cuenta seleccionada'
+                                       : n + ' cuentas seleccionadas';
+          // Deshabilitado mientras no haya nada marcado: asi el boton de borrar
+          // no invita a tocarlo sin querer
+          boton.disabled = n === 0;
+          todos.checked = n > 0 && n === unos.length;
+          todos.indeterminate = n > 0 && n < unos.length;
+        }
+        todos.addEventListener('change', function () {
+          unos.forEach(function (c) { c.checked = todos.checked; });
+          actualizar();
+        });
+        unos.forEach(function (c) { c.addEventListener('change', actualizar); });
+        actualizar();
+      })();
+    </script>
 
     <div class="crear">
       <h2>Crear usuario</h2>

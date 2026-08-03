@@ -580,3 +580,74 @@ function com_csrf_ok($token) {
     com_sesion();
     return !empty($_SESSION['csrf']) && hash_equals($_SESSION['csrf'], (string) $token);
 }
+
+/**
+ * Proveedores de correo masivos y los dominios reales que se les parecen.
+ *
+ * Una sola lista para los dos lados: la usa com_email_sugerencia() en el
+ * servidor y tambien el aviso en vivo del formulario de registro, que la recibe
+ * en JSON. Si se agrega un dominio, se agrega una sola vez.
+ */
+function com_email_dominios() {
+    return [
+        // Contra estos se compara. Van solo los grandes, sin las variantes por
+        // pais: gmail.es o yahoo.it existen de verdad y meterlas aca haria que
+        // se confundan entre ellas.
+        'conocidos' => ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com',
+                        'icloud.com', 'live.com'],
+        // Dominios de verdad que caen a uno o dos caracteres de los de arriba.
+        // Sin esta lista, a alguien de ymail.com le diriamos que quiso escribir
+        // gmail.com, que es peor que no avisar nada.
+        'reales'    => ['ymail.com', 'email.com', 'mail.com', 'gmx.com', 'aol.com',
+                        'me.com', 'mac.com', 'yahoo.es', 'yahoo.co.uk', 'yahoo.co.jp',
+                        'yahoo.com.ar', 'yahoo.com.br', 'yahoo.com.mx', 'hotmail.es',
+                        'hotmail.com.ar', 'hotmail.cl', 'outlook.es', 'outlook.com.ar',
+                        'live.com.ar', 'live.cl', 'icloud.com.ar'],
+        // Finales tipicos de quien quiso escribir ".com". Un dominio sin punto
+        // ('') tambien entra: nadie tiene una casilla en "@gmail" a secas.
+        'colas_malas' => ['', '.co', '.con', '.cm', '.om', '.comm', '.cmo', '.ocm',
+                          '.xom', '.vom', '.cim', '.coom', '.copm', '.cpm', '.c0m'],
+    ];
+}
+
+/**
+ * Si el dominio del correo parece mal escrito, devuelve la direccion corregida.
+ * Si esta bien (o no se puede saber), devuelve cadena vacia.
+ *
+ * Existe porque ya paso: alguien se anoto con "@gmaill.com", nunca le llego el
+ * correo de confirmacion, y termino registrandose de nuevo con otra direccion.
+ * Quedaron dos cuentas y una inservible.
+ *
+ * Solo se mete con los proveedores masivos. Un dominio propio raro es raro pero
+ * valido, y avisar de mas es peor que no avisar.
+ */
+function com_email_sugerencia($email) {
+    $email  = trim((string) $email);
+    $arroba = strrpos($email, '@');
+    if ($arroba === false) return '';
+
+    $antes = substr($email, 0, $arroba + 1);
+    $dom   = mb_strtolower(substr($email, $arroba + 1));
+    $d     = com_email_dominios();
+    if ($dom === '' || in_array($dom, $d['conocidos'], true) || in_array($dom, $d['reales'], true)) {
+        return '';
+    }
+
+    $punto = strpos($dom, '.');
+    $raiz  = $punto === false ? $dom : substr($dom, 0, $punto);
+    $cola  = $punto === false ? ''   : substr($dom, $punto);
+
+    foreach ($d['conocidos'] as $bueno) {
+        $raiz_buena = substr($bueno, 0, strpos($bueno, '.'));
+        if ($raiz === $raiz_buena) {
+            // El nombre esta bien escrito y lo unico raro es el final. Se avisa
+            // solo si ese final es uno de los errores tipicos: yahoo.es o
+            // gmail.fr son direcciones de verdad y no hay que tocarlas.
+            return in_array($cola, $d['colas_malas'], true) ? $antes . $bueno : '';
+        }
+        // Dos de distancia porque el error mas comun son dos letras cambiadas
+        // de lugar ("gmial", "hotamil") y para levenshtein eso cuenta doble
+        if (levenshtein($dom, $bueno) <= 2) return $antes . $bueno;
+    }
+    return '';
+}

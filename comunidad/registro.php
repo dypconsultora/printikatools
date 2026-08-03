@@ -44,6 +44,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Ingresá tu nombre.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'El email no es válido.';
+    } elseif (($sug = com_email_sugerencia($email)) !== ''
+              && ($_SESSION['reg_email_avisado'] ?? '') !== $email) {
+        // Un dominio que parece mal escrito frena el alta UNA vez. Si la persona
+        // manda la misma direccion de nuevo, se toma como que esta bien y sigue:
+        // el aviso no puede ser una pared para alguien con un dominio raro pero
+        // real. La red de verdad es el aviso en vivo de mas abajo; esto es para
+        // cuando el navegador tiene el JavaScript bloqueado.
+        $_SESSION['reg_email_avisado'] = $email;
+        $error = 'Revisá el correo: ¿no será <strong>' . htmlspecialchars($sug) . '</strong>? '
+               . 'Si está mal escrito nunca te va a llegar el correo de confirmación y la cuenta '
+               . 'queda inservible. Corregilo y mandalo de nuevo — o, si está bien así, volvé a '
+               . 'enviarlo igual y seguimos.';
     } elseif (strlen($pass) < 8) {
         $error = 'La contraseña debe tener al menos 8 caracteres.';
     } elseif ($pass !== $pass2) {
@@ -129,6 +141,7 @@ ui_tarjeta_inicio('Crear cuenta');
         <label for="email">Email</label>
         <input type="email" id="email" name="email" required
                value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
+        <p class="sug-email" id="sugEmail" hidden></p>
         <label for="password">Contraseña (mínimo 8 caracteres)</label>
         <?php ui_campo_password('password', 'password', 'minlength="8" required autocomplete="new-password"'); ?>
         <label for="password2">Repetir contraseña</label>
@@ -138,5 +151,88 @@ ui_tarjeta_inicio('Crear cuenta');
       <p class="pie">¿Ya tenés cuenta?
         <a href="login.php<?php echo $plan !== 'gratis' ? '?plan=' . urlencode($plan) : ''; ?>">Ingresá</a>
         <?php if ($plan !== 'gratis'): ?>y seguís con este plan<?php endif; ?></p>
+
+      <style>
+        .sug-email{margin:-8px 0 14px;font-size:13px;color:var(--warn,#f0b23c);line-height:1.5}
+        .sug-email .sug-btn{background:none;border:0;padding:0;font:inherit;font-weight:700;
+                            color:var(--accent);text-decoration:underline;cursor:pointer}
+      </style>
+      <script>
+      /*
+       * Aviso en vivo cuando el dominio del correo parece mal escrito.
+       *
+       * Es la misma comprobacion que hace el servidor en com_email_sugerencia(),
+       * pero aca alcanza a avisarle ANTES de mandar el formulario, asi no pierde
+       * lo que ya escribio. Las listas vienen de PHP para no tener dos copias
+       * que se desincronicen.
+       */
+      (function () {
+        var campo = document.getElementById('email');
+        var caja  = document.getElementById('sugEmail');
+        if (!campo || !caja) return;
+        var D = <?php echo json_encode(com_email_dominios(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
+
+        function distancia(a, b) {
+          var fila = [], i, j, tmp, ant;
+          for (j = 0; j <= b.length; j++) fila[j] = j;
+          for (i = 1; i <= a.length; i++) {
+            ant = fila[0]; fila[0] = i;
+            for (j = 1; j <= b.length; j++) {
+              tmp = fila[j];
+              fila[j] = Math.min(fila[j] + 1, fila[j - 1] + 1,
+                                 ant + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1));
+              ant = tmp;
+            }
+          }
+          return fila[b.length];
+        }
+
+        function sugerir(email) {
+          var arroba = email.lastIndexOf('@');
+          if (arroba < 0) return '';
+          var antes = email.slice(0, arroba + 1);
+          var dom   = email.slice(arroba + 1).toLowerCase().trim();
+          if (!dom || D.conocidos.indexOf(dom) >= 0 || D.reales.indexOf(dom) >= 0) return '';
+
+          var punto = dom.indexOf('.');
+          var raiz  = punto < 0 ? dom : dom.slice(0, punto);
+          var cola  = punto < 0 ? ''  : dom.slice(punto);
+
+          for (var k = 0; k < D.conocidos.length; k++) {
+            var bueno = D.conocidos[k];
+            var raizBuena = bueno.slice(0, bueno.indexOf('.'));
+            if (raiz === raizBuena) {
+              return D.colas_malas.indexOf(cola) >= 0 ? antes + bueno : '';
+            }
+            if (distancia(dom, bueno) <= 2) return antes + bueno;
+          }
+          return '';
+        }
+
+        function revisar() {
+          var s = sugerir(campo.value);
+          if (!s) { caja.hidden = true; return; }
+          // Se arma con nodos y no con innerHTML: lo que va adentro sale de lo
+          // que la persona escribio
+          caja.textContent = '¿Quisiste decir ';
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'sug-btn';
+          b.textContent = s;
+          b.addEventListener('click', function () {
+            campo.value = s;
+            caja.hidden = true;
+            campo.focus();
+          });
+          caja.appendChild(b);
+          caja.appendChild(document.createTextNode('?'));
+          caja.hidden = false;
+        }
+
+        campo.addEventListener('blur', revisar);
+        campo.addEventListener('input', function () { caja.hidden = true; });
+        if (campo.value) revisar();     // vuelve del servidor con el correo puesto
+      })();
+      </script>
     <?php endif; ?>
 <?php ui_tarjeta_fin(); ?>
