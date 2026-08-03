@@ -281,6 +281,9 @@ function ui_tarjeta_inicio($titulo) { ?>
   .pie-sitio .abajo{border-top:1px solid var(--bd-suave);padding-top:20px;
       display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
       font-size:12.5px;color:var(--txt-3)}
+  /* El credito de diseno es un enlace, pero se lee como el resto del pie */
+  .pie-sitio .abajo a{font-size:12.5px;color:var(--txt-3)}
+  .pie-sitio .abajo a:hover{color:var(--txt-2)}
   @media (max-width:900px){ .pie-sitio .grilla{grid-template-columns:1fr 1fr} }
   @media (max-width:600px){ .pie-sitio .grilla{grid-template-columns:1fr} }
 </style>
@@ -411,6 +414,10 @@ function ui_tarjeta_fin() { ?>
           <li><a href="<?php echo ui_base(); ?>/guias/">Guías</a></li>
           <li><a href="<?php echo ui_base(); ?>/#herramientas">Herramientas</a></li>
           <li><a href="<?php echo ui_base(); ?>/#planes">Precios</a></li>
+          <?php // El idioma de la plataforma vive en la cookie: el enlace tiene que
+                // caer en la version que la persona esta leyendo, no siempre en la castellana
+                $ptTerminos = (($_COOKIE['ptools_idioma'] ?? '') === 'en') ? '/en/terminos/' : '/terminos/'; ?>
+          <li><a href="<?php echo ui_base() . $ptTerminos; ?>">Términos y Condiciones</a></li>
         </ul>
       </div>
       <div>
@@ -431,7 +438,7 @@ function ui_tarjeta_fin() { ?>
     </div>
     <div class="abajo">
       <p>© <?php echo date('Y'); ?> Printika Tools. Todos los derechos reservados.</p>
-      <p>Hecho con impresoras 3D en Argentina</p>
+      <p><a class="credito" href="https://dypconsultora.com.ar/" target="_blank" rel="noopener">Design DyP Consultora</a></p>
     </div>
   </footer>
 </body>

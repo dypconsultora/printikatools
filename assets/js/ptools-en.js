@@ -265,6 +265,8 @@
     'Dejalo vacío para usar el correo de tu cuenta. Podés poner otro si preferís recibir los códigos en una casilla distinta.':
       'Leave it empty to use your account email. You can enter another one if you prefer to get the codes in a different inbox.',
     'Librería STL y soporte por Telegram': 'STL library and Telegram support',
+    // Pie de la plataforma
+    'Términos y Condiciones': 'Terms and Conditions',
     // Recursos: las tres secciones de video
     'Plataforma': 'Platform',
     'Mantenimientos': 'Maintenance',

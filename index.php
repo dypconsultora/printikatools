@@ -665,6 +665,10 @@ $og_alt = $en
     .footer-pie{border-top:1px solid var(--bd-suave);padding-top:22px;display:flex;align-items:center;
         justify-content:space-between;gap:12px;flex-wrap:wrap}
     .footer-pie p{font-size:13px;color:var(--txt-3)}
+    /* El credito de diseno es un enlace, pero tiene que leerse como el resto
+       del pie: sin el celeste de los enlaces, que ahi abajo grita */
+    .footer-pie a{color:var(--txt-3);text-decoration:none}
+    .footer-pie a:hover{color:var(--txt-2)}
 
     :is(a,button,input,summary):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
@@ -1186,6 +1190,7 @@ $og_alt = $en
             <li><a href="#herramientas">Herramientas</a></li>
             <li><a href="#planes">Precios</a></li>
             <li><a href="#faq">FAQ</a></li>
+            <li><a href="<?php echo $en ? '/en/terminos/' : '/terminos/'; ?>">Términos y Condiciones</a></li>
           </ul>
         </div>
         <div>
@@ -1206,7 +1211,7 @@ $og_alt = $en
       </div>
       <div class="footer-pie">
         <p>© <?php echo date('Y'); ?> Printika Tools. <?php echo t('Todos los derechos reservados.'); ?></p>
-        <p><?php echo t('Hecho con impresoras 3D en Argentina'); ?> · <span><?php echo t('Actualizado el'); ?> <time datetime="<?php echo date('Y-m-d'); ?>"><?php echo date($en ? 'm/d/Y' : 'd/m/Y'); ?></time></span></p>
+        <p><a class="credito" href="https://dypconsultora.com.ar/" target="_blank" rel="noopener">Design DyP Consultora</a></p>
       </div>
     </div>
   </footer>

@@ -238,6 +238,7 @@ function guia_fin() { $en = guias_en(); ?>
             <li><a href="<?php echo guias_en() ? '/en/' : '/'; ?>#herramientas">Herramientas</a></li>
             <li><a href="<?php echo guias_en() ? '/en/' : '/'; ?>#planes">Precios</a></li>
             <li><a href="<?php echo guias_en() ? '/en/' : '/'; ?>#faq">FAQ</a></li>
+            <li><a href="<?php echo guias_en() ? '/en/terminos/' : '/terminos/'; ?>">Términos y Condiciones</a></li>
           </ul>
         </div>
         <div>
@@ -258,7 +259,7 @@ function guia_fin() { $en = guias_en(); ?>
       </div>
       <div class="footer-pie">
         <p>© <?php echo date('Y'); ?> Printika Tools. <?php echo gt('Todos los derechos reservados.'); ?></p>
-        <p><?php echo gt('Hecho con impresoras 3D en Argentina'); ?></p>
+        <p><a class="credito" href="https://dypconsultora.com.ar/" target="_blank" rel="noopener">Design DyP Consultora</a></p>
       </div>
     </div>
   </footer>
