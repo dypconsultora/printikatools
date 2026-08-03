@@ -26,7 +26,7 @@ $actualizado_txt = $en
     ? date('F j, Y', strtotime($actualizado))
     : date('d/m/Y', strtotime($actualizado));
 
-$mail     = 'consultas@printika3d.com';
+$mail     = 'consultas@printikatools.com';
 $telegram = 'https://t.me/+N5f7IcWPXihhMWQx';
 $planes   = ($en ? '/en/' : '/') . '#planes';
 
