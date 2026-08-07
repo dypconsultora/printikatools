@@ -218,7 +218,7 @@ ui_panel_inicio('Suscripciones', $yo, 'Suscripciones', '../');
     <table>
       <thead>
       <tr><th class="check"><input type="checkbox" id="todos" title="Marcar todas"></th>
-          <th>Usuario</th><th>Email</th><th>Rol</th><th>Suscripción</th><th>Se registró</th><th>Acciones</th></tr>
+          <th>Usuario</th><th>Email</th><th>Rol</th><th>Suscripción</th><th>Último ingreso</th><th>Acciones</th></tr>
       </thead>
       <tbody>
       <?php foreach ($usuarios as $u): ?>
@@ -253,8 +253,9 @@ ui_panel_inicio('Suscripciones', $yo, 'Suscripciones', '../');
             <span class="estado no">Gratis</span>
           <?php endif; ?>
         </td>
-        <?php // Cuando se creo la cuenta, que es por lo que ya viene ordenada la tabla ?>
-        <td class="fecha"><?php echo $u['creado_en'] ? date('d/m/y H:i', strtotime($u['creado_en'])) : '—'; ?></td>
+        <?php // La ultima vez que entro, que es lo que se mira aca para saber quien
+              // sigue usando la plataforma. Cuando se registro esta en Emails captados. ?>
+        <td class="fecha"><?php echo $u['ultimo_login'] ? date('d/m/y H:i', strtotime($u['ultimo_login'])) : 'Nunca entró'; ?></td>
         <td>
           <div class="acciones">
           <?php if ($u['rol'] !== 'admin'): ?>
