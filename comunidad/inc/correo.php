@@ -55,17 +55,38 @@ function correo_plantilla($titulo, $parrafos, $boton = null, $pie = '', $extra =
     }
     $piehtml = $pie ? '<p style="margin:22px 0 0;font-size:12.5px;line-height:1.6;color:#8a95a8">' . $pie . '</p>' : '';
 
-    // Imagen ancha debajo del logo, de borde a borde. Solo la usan los mailings;
-    // los correos de la cuenta (confirmar, codigo) van sin foto a proposito: son
-    // avisos, no publicidad, y una imagen ahi solo hace mas pesado el mensaje.
-    // Lleva alt: con las imagenes bloqueadas, que es como llega la primera vez a
-    // mucha gente, se tiene que entender igual de que se trata.
-    $bannerhtml = $banner
-        ? '<tr><td style="padding:0;font-size:0;line-height:0">
-             <img src="' . $esc($banner) . '" alt="Printika Tools" width="560"
-                  style="display:block;width:100%;max-width:560px;height:auto;border:0">
-           </td></tr>'
-        : '';
+    /*
+     * El cuerpo del correo, en una o en tres filas.
+     *
+     * Sin imagen (todos los correos de la cuenta: confirmar, codigo de acceso,
+     * constancia de baja) va como siempre: una sola celda con el titulo arriba.
+     * Esos correos no llevan foto a proposito — son avisos, no publicidad.
+     *
+     * Con imagen van tres filas, y no una, porque la imagen tiene que salirse
+     * del margen de 34px del texto para quedar casi al ancho de la tarjeta. En
+     * una tabla de correo eso no se puede hacer desde adentro de la celda.
+     * Orden: titulo, imagen, texto.
+     *
+     * La imagen lleva alt: con las imagenes bloqueadas, que es como llega la
+     * primera vez a mucha gente, el correo se tiene que entender igual.
+     */
+    if ($banner) {
+        $centro = '<tr><td style="padding:30px 34px 0">
+          <h1 style="margin:0;font-size:21px;line-height:1.3;color:#131a27">' . $esc($titulo) . '</h1>
+        </td></tr>
+        <tr><td style="padding:18px 3px 0;font-size:0;line-height:0">
+          <img src="' . $esc($banner) . '" alt="Printika Tools" width="554"
+               style="display:block;width:100%;max-width:554px;height:auto;border:0;border-radius:8px">
+        </td></tr>
+        <tr><td style="padding:22px 34px 32px">
+          ' . $cuerpo . $btn . $piehtml . '
+        </td></tr>';
+    } else {
+        $centro = '<tr><td style="padding:32px 34px">
+          <h1 style="margin:0 0 18px;font-size:21px;line-height:1.3;color:#131a27">' . $esc($titulo) . '</h1>
+          ' . $cuerpo . $btn . $piehtml . '
+        </td></tr>';
+    }
 
     return '<!DOCTYPE html>
 <html lang="' . ($en ? 'en' : 'es') . '"><head><meta charset="UTF-8">
@@ -80,11 +101,7 @@ function correo_plantilla($titulo, $parrafos, $boton = null, $pie = '', $extra =
           <img src="cid:logoprintika" alt="Printika Tools" width="240"
                style="display:block;width:240px;max-width:70%;height:auto;border:0">
         </td></tr>
-        ' . $bannerhtml . '
-        <tr><td style="padding:32px 34px">
-          <h1 style="margin:0 0 18px;font-size:21px;line-height:1.3;color:#131a27">' . $esc($titulo) . '</h1>
-          ' . $cuerpo . $btn . $piehtml . '
-        </td></tr>
+        ' . $centro . '
         <tr><td style="background:#f6f9fd;padding:18px 34px;border-top:1px solid #e3eaf3">
           <p style="margin:0;font-size:12px;line-height:1.6;color:#8a95a8">
             Printika Tools · ' . $bajada . '<br>
