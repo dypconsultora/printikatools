@@ -177,8 +177,23 @@ function mailing_html($m, $email, $idioma = 'es') {
         $pie,
         '',
         $en ? 'en' : 'es',
-        $baja
+        $baja,
+        mailing_banner_url($m['banner_url'] ?? '')
     );
+}
+
+/**
+ * La direccion completa del banner.
+ *
+ * Se guarda empezando con "/" (una imagen nuestra) para que la vista previa
+ * funcione en cualquier servidor, pero al correo hay que mandarle la direccion
+ * entera: adentro de Gmail no existe "nuestro" servidor.
+ */
+function mailing_banner_url($url) {
+    $url = trim((string) $url);
+    if ($url === '') return '';
+    if (strncmp($url, '/', 1) === 0) return 'https://printikatools.com' . $url;
+    return preg_match('~^https?://~i', $url) ? $url : '';
 }
 
 /** Un mailing por id, o null. */
@@ -206,6 +221,7 @@ function mailing_guardar($d, $id = 0) {
         (string) ($d['cuerpo'] ?? ''),
         mb_substr(trim($d['boton_texto'] ?? ''), 0, 80),
         mb_substr(trim($d['boton_url'] ?? ''), 0, 300),
+        mb_substr(trim($d['banner_url'] ?? ''), 0, 300),
         (string) ($d['html_propio'] ?? ''),
         isset(mailing_filtros()[$d['filtro'] ?? '']) ? $d['filtro'] : 'todos',
         in_array($d['idioma'] ?? '', ['es', 'en'], true) ? $d['idioma'] : 'ambos',
@@ -213,13 +229,13 @@ function mailing_guardar($d, $id = 0) {
     if ($id > 0) {
         $campos[] = (int) $id;
         com_db()->prepare('UPDATE mailings SET asunto=?, titulo=?, cuerpo=?, boton_texto=?,
-                           boton_url=?, html_propio=?, filtro=?, idioma=? WHERE id=?')
+                           boton_url=?, banner_url=?, html_propio=?, filtro=?, idioma=? WHERE id=?')
             ->execute($campos);
         return (int) $id;
     }
     com_db()->prepare('INSERT INTO mailings (asunto, titulo, cuerpo, boton_texto, boton_url,
-                       html_propio, filtro, idioma, creado_en)
-                       VALUES (?,?,?,?,?,?,?,?, NOW())')->execute($campos);
+                       banner_url, html_propio, filtro, idioma, creado_en)
+                       VALUES (?,?,?,?,?,?,?,?,?, NOW())')->execute($campos);
     return (int) com_db()->lastInsertId();
 }
 
@@ -418,6 +434,7 @@ function mailing_semilla() {
         'cuerpo'      => preg_replace('/^    /m', '', $cuerpo),
         'boton_texto' => 'Entrar a mi cuenta',
         'boton_url'   => 'https://printikatools.com/comunidad/login.php',
+        'banner_url'  => '/assets/img/mailing/banner-calculadora.jpg',
         'filtro'      => 'nunca_entro',
         'idioma'      => 'es',
     ]);

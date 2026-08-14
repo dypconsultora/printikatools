@@ -29,12 +29,14 @@ if (isset($_GET['vista'])) {
     if (!$m) { http_response_code(404); exit('No existe'); }
     header('Content-Type: text/html; charset=utf-8');
     header('X-Robots-Tag: noindex');
-    // En el correo el logo va incrustado (cid:), que el navegador no sabe
-    // resolver: en la vista previa se apunta al archivo de verdad para que no
-    // aparezca una imagen rota y parezca que algo se rompió.
+    // Dos arreglos que son SOLO de la vista previa:
+    //   - el logo va incrustado en el correo (cid:) y el navegador no lo sabe
+    //     resolver: se apunta al archivo, para que no parezca que algo se rompió;
+    //   - las imágenes propias se guardan con la dirección completa porque adentro
+    //     de Gmail no existe "nuestro" servidor, pero acá se miran del de al lado.
     echo str_replace(
-        'src="cid:logoprintika"',
-        'src="../../assets/img/printika-tools-mail.png"',
+        ['src="cid:logoprintika"', 'src="https://printikatools.com/assets/'],
+        ['src="../../assets/img/printika-tools-mail.png"', 'src="../../assets/'],
         mailing_html($m, $yo['email'], $m['idioma'] === 'en' ? 'en' : 'es')
     );
     exit;
@@ -259,6 +261,13 @@ ui_panel_inicio('Mailing', $yo, 'Mailing', '../');
                      value="<?php echo htmlspecialchars($f['boton_url'] ?? ''); ?>"></span>
           </div>
           <p class="ayuda">Si dejás los dos vacíos, el correo sale sin botón.</p>
+
+          <label for="ban">Imagen de arriba (opcional)</label>
+          <input id="ban" type="text" name="banner_url" maxlength="300"
+                 placeholder="/assets/img/mailing/banner-calculadora.jpg"
+                 value="<?php echo htmlspecialchars($f['banner_url'] ?? ''); ?>">
+          <p class="ayuda">Va ancha, justo debajo del logo. Puede ser una imagen del sitio
+            (empezando con <code>/</code>) o una dirección completa. Vacío = sin imagen.</p>
 
           <details style="margin-top:16px">
             <summary style="cursor:pointer;font-size:13.5px;color:var(--txt-2)">Pegar un HTML propio</summary>

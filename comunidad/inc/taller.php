@@ -349,6 +349,14 @@ function taller_migrar() {
         PRIMARY KEY (id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+    // Imagen ancha arriba del texto. Se agrego despues, asi que va por separado.
+    $col = $db->query("SELECT COUNT(*) c FROM information_schema.columns
+                       WHERE table_schema = DATABASE() AND table_name = 'mailings'
+                         AND column_name = 'banner_url'")->fetch();
+    if ((int) $col['c'] === 0) {
+        $db->exec("ALTER TABLE mailings ADD COLUMN banner_url VARCHAR(300) NOT NULL DEFAULT '' AFTER boton_url");
+    }
+
     $db->exec("CREATE TABLE IF NOT EXISTS mailing_envios (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         mailing_id BIGINT UNSIGNED NOT NULL,

@@ -23,7 +23,7 @@ function correo_disponible() { return correo_config() !== null; }
  * botón grande. Tablas y estilos en línea porque es lo único que
  * renderizan bien Gmail, Outlook y compañía.
  */
-function correo_plantilla($titulo, $parrafos, $boton = null, $pie = '', $extra = '', $idioma = 'es', $baja = '') {
+function correo_plantilla($titulo, $parrafos, $boton = null, $pie = '', $extra = '', $idioma = 'es', $baja = '', $banner = '') {
     $esc = fn($t) => htmlspecialchars($t, ENT_QUOTES, 'UTF-8');
     $en  = $idioma === 'en';
     $bajada = $en ? '3D printing tools and community'
@@ -55,6 +55,18 @@ function correo_plantilla($titulo, $parrafos, $boton = null, $pie = '', $extra =
     }
     $piehtml = $pie ? '<p style="margin:22px 0 0;font-size:12.5px;line-height:1.6;color:#8a95a8">' . $pie . '</p>' : '';
 
+    // Imagen ancha debajo del logo, de borde a borde. Solo la usan los mailings;
+    // los correos de la cuenta (confirmar, codigo) van sin foto a proposito: son
+    // avisos, no publicidad, y una imagen ahi solo hace mas pesado el mensaje.
+    // Lleva alt: con las imagenes bloqueadas, que es como llega la primera vez a
+    // mucha gente, se tiene que entender igual de que se trata.
+    $bannerhtml = $banner
+        ? '<tr><td style="padding:0;font-size:0;line-height:0">
+             <img src="' . $esc($banner) . '" alt="Printika Tools" width="560"
+                  style="display:block;width:100%;max-width:560px;height:auto;border:0">
+           </td></tr>'
+        : '';
+
     return '<!DOCTYPE html>
 <html lang="' . ($en ? 'en' : 'es') . '"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -68,6 +80,7 @@ function correo_plantilla($titulo, $parrafos, $boton = null, $pie = '', $extra =
           <img src="cid:logoprintika" alt="Printika Tools" width="240"
                style="display:block;width:240px;max-width:70%;height:auto;border:0">
         </td></tr>
+        ' . $bannerhtml . '
         <tr><td style="padding:32px 34px">
           <h1 style="margin:0 0 18px;font-size:21px;line-height:1.3;color:#131a27">' . $esc($titulo) . '</h1>
           ' . $cuerpo . $btn . $piehtml . '
