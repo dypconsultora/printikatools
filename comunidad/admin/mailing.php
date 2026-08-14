@@ -16,7 +16,8 @@ require_once __DIR__ . '/../inc/mailing.php';
 
 requerir_admin();
 taller_migrar();
-mailing_semilla();      // deja escrito el primer borrador, una sola vez
+mailing_semilla();          // deja escrito el primer borrador, una sola vez
+mailing_banner_semilla();   // y le pone el banner, si se creo antes de que existiera
 $yo = usuario_actual();
 $db = com_db();
 
@@ -83,10 +84,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $error = 'El correo está vacío.';
                     $editando = $id;
                 } else {
-                    $id = mailing_guardar($_POST, $id);
-                    $aviso = 'Borrador guardado. Miralo abajo y mandate una prueba antes de enviarlo.';
-                    header('Location: mailing.php?id=' . $id . '&ok=guardado');
-                    exit;
+                    // Si subio una imagen, esa gana sobre la que estuviera elegida
+                    $datos = $_POST;
+                    $subida = mailing_guardar_imagen($_FILES['banner_archivo'] ?? [], $falla);
+                    if ($falla) {
+                        $error = $falla;
+                        $editando = $id;
+                    } else {
+                        if ($subida !== '') $datos['banner_url'] = $subida;
+                        $id = mailing_guardar($datos, $id);
+                        header('Location: mailing.php?id=' . $id . '&ok=guardado');
+                        exit;
+                    }
                 }
 
             } elseif ($accion === 'prueba' && $id) {
@@ -213,6 +222,17 @@ ui_panel_inicio('Mailing', $yo, 'Mailing', '../');
       .chip.bor{background:var(--surface-2);color:var(--txt-3)}
       .aviso-smtp{font-size:12.5px;color:var(--txt-3);line-height:1.6;margin-top:12px;
                   border-top:1px solid var(--bd-suave);padding-top:12px}
+      /* Galeria de imagenes para el banner: se elige tocando la miniatura */
+      .ml-fotos{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+      .ml-fotos .foto{margin:0;width:132px;height:64px;border-radius:8px;overflow:hidden;
+                      border:2px solid var(--bd-suave);cursor:pointer;position:relative;
+                      display:flex;align-items:center;justify-content:center;background:var(--surface-2)}
+      .ml-fotos .foto:hover{border-color:var(--bd)}
+      .ml-fotos .foto.activa{border-color:var(--accent)}
+      .ml-fotos .foto img{width:100%;height:100%;object-fit:cover;display:block}
+      .ml-fotos .foto .sin{font-size:12px;color:var(--txt-3)}
+      /* El punto del radio no se ve: lo que marca la elegida es el borde celeste */
+      .ml-fotos .foto input{position:absolute;opacity:0;width:0;height:0;margin:0}
       .acc-hist{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:nowrap}
       .acc-hist .btn{white-space:nowrap}
       table.hist th:last-child,table.hist td:last-child{text-align:right;width:1%}
@@ -230,7 +250,7 @@ ui_panel_inicio('Mailing', $yo, 'Mailing', '../');
             El diseño (logo, colores, botón) lo pone el sistema: acá va solo el contenido.
           <?php endif; ?>
         </p>
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
           <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
           <input type="hidden" name="accion" value="guardar">
           <input type="hidden" name="id" value="<?php echo (int) ($f['id'] ?? 0); ?>">
@@ -262,12 +282,34 @@ ui_panel_inicio('Mailing', $yo, 'Mailing', '../');
           </div>
           <p class="ayuda">Si dejás los dos vacíos, el correo sale sin botón.</p>
 
-          <label for="ban">Imagen de arriba (opcional)</label>
-          <input id="ban" type="text" name="banner_url" maxlength="300"
-                 placeholder="/assets/img/mailing/banner-calculadora.jpg"
-                 value="<?php echo htmlspecialchars($f['banner_url'] ?? ''); ?>">
-          <p class="ayuda">Va ancha, justo debajo del logo. Puede ser una imagen del sitio
-            (empezando con <code>/</code>) o una dirección completa. Vacío = sin imagen.</p>
+          <label>Imagen de arriba (opcional)</label>
+          <p class="ayuda" style="margin-top:0">Va ancha, justo debajo del logo. Subí una nueva o
+            elegí una de las que ya cargaste; se achica sola para que el correo no pese.</p>
+
+          <input type="file" name="banner_archivo" accept="image/jpeg,image/png,image/webp">
+
+          <?php $elegida = $f['banner_url'] ?? ''; $galeria = mailing_imagenes(); ?>
+          <div class="ml-fotos">
+            <label class="foto <?php echo $elegida === '' ? 'activa' : ''; ?>">
+              <input type="radio" name="banner_url" value="" <?php echo $elegida === '' ? 'checked' : ''; ?>>
+              <span class="sin">Sin imagen</span>
+            </label>
+            <?php foreach ($galeria as $img): ?>
+              <label class="foto <?php echo $elegida === $img['url'] ? 'activa' : ''; ?>">
+                <input type="radio" name="banner_url" value="<?php echo htmlspecialchars($img['url'], ENT_QUOTES); ?>"
+                       <?php echo $elegida === $img['url'] ? 'checked' : ''; ?>>
+                <img src="<?php echo htmlspecialchars($img['url'], ENT_QUOTES); ?>"
+                     alt="<?php echo htmlspecialchars($img['nombre'], ENT_QUOTES); ?>" loading="lazy">
+              </label>
+            <?php endforeach; ?>
+          </div>
+          <?php if ($elegida !== '' && !array_filter($galeria, fn($i) => $i['url'] === $elegida)): ?>
+            <?php // Una direccion de afuera, cargada a mano alguna vez ?>
+            <p class="ayuda">Imagen actual: <code><?php echo htmlspecialchars($elegida); ?></code>
+              <label style="display:inline-flex;gap:6px;align-items:center;margin-left:8px">
+                <input type="radio" name="banner_url" value="<?php echo htmlspecialchars($elegida, ENT_QUOTES); ?>" checked
+                       style="width:auto;height:auto;margin:0">dejarla</label></p>
+          <?php endif; ?>
 
           <details style="margin-top:16px">
             <summary style="cursor:pointer;font-size:13.5px;color:var(--txt-2)">Pegar un HTML propio</summary>
@@ -299,6 +341,25 @@ ui_panel_inicio('Mailing', $yo, 'Mailing', '../');
 
           <div class="pie-form"><button class="btn" type="submit">Guardar borrador</button></div>
         </form>
+        <script>
+        (function () {
+          var fotos = [].slice.call(document.querySelectorAll('.ml-fotos .foto'));
+          var archivo = document.querySelector('input[name=banner_archivo]');
+          fotos.forEach(function (f) {
+            f.addEventListener('click', function () {
+              fotos.forEach(function (o) { o.classList.remove('activa'); });
+              f.classList.add('activa');
+              // Elegir una de la galería descarta el archivo que se haya elegido antes
+              if (archivo) archivo.value = '';
+            });
+          });
+          // Y al revés: si sube una, la que gana es esa
+          if (archivo) archivo.addEventListener('change', function () {
+            if (!archivo.value) return;
+            fotos.forEach(function (o) { o.classList.remove('activa'); });
+          });
+        })();
+        </script>
       </div>
 
       <div>

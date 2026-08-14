@@ -182,6 +182,89 @@ function mailing_html($m, $email, $idioma = 'es') {
     );
 }
 
+/** Donde van a parar las imagenes que se suben desde la pantalla de Mailing. */
+function mailing_img_dir() { return dirname(__DIR__) . '/uploads/mailing'; }
+
+/**
+ * Las imagenes que se pueden elegir como banner.
+ *
+ * Salen de dos lados: las que vienen con el sitio (assets/img/mailing, que van
+ * a git y se despliegan) y las que sube ella desde el panel (uploads/mailing,
+ * que viven solo en el servidor). Para la pantalla son lo mismo.
+ */
+function mailing_imagenes() {
+    $raiz  = dirname(__DIR__, 2);
+    $donde = [
+        '/assets/img/mailing'      => $raiz . '/assets/img/mailing',
+        '/comunidad/uploads/mailing' => mailing_img_dir(),
+    ];
+    $salida = [];
+    foreach ($donde as $url => $dir) {
+        if (!is_dir($dir)) continue;
+        foreach (glob($dir . '/*.{jpg,jpeg,png,webp}', GLOB_BRACE) ?: [] as $ruta) {
+            $salida[] = ['url' => $url . '/' . basename($ruta), 'nombre' => basename($ruta),
+                         'cuando' => filemtime($ruta)];
+        }
+    }
+    // Las ultimas subidas primero: es lo que se acaba de cargar
+    usort($salida, fn($a, $b) => $b['cuando'] <=> $a['cuando']);
+    return $salida;
+}
+
+/**
+ * Guarda una imagen subida y devuelve su direccion, o '' si no se pudo.
+ *
+ * La achica siempre a 1120 de ancho y la reescribe en JPEG. Es lo que hace la
+ * diferencia entre un correo que llega y uno que no: una foto sacada con el
+ * celular pesa varios MB, y un correo de ese tamano lo cortan los servidores
+ * antes de que lo abra nadie.
+ */
+function mailing_guardar_imagen($archivo, &$error = null) {
+    $error = '';
+    if (empty($archivo['tmp_name']) || !is_uploaded_file($archivo['tmp_name'])) return '';
+
+    if (($archivo['size'] ?? 0) > 8 * 1024 * 1024) {
+        $error = 'La imagen no puede superar los 8 MB.';
+        return '';
+    }
+    $info = @getimagesize($archivo['tmp_name']);
+    $abrir = [
+        'image/jpeg' => 'imagecreatefromjpeg',
+        'image/png'  => 'imagecreatefrompng',
+        'image/webp' => 'imagecreatefromwebp',
+    ];
+    if (!$info || !isset($abrir[$info['mime']]) || !function_exists($abrir[$info['mime']])) {
+        $error = 'La imagen tiene que ser JPG, PNG o WEBP.';
+        return '';
+    }
+
+    $origen = @$abrir[$info['mime']]($archivo['tmp_name']);
+    if (!$origen) { $error = 'No pudimos leer esa imagen.'; return ''; }
+
+    [$ancho, $alto] = $info;
+    $tope  = 1120;
+    $nuevo = $ancho > $tope ? $tope : $ancho;          // nunca se agranda
+    $altoN = (int) round($alto * ($nuevo / $ancho));
+
+    $lienzo = imagecreatetruecolor($nuevo, $altoN);
+    // Fondo blanco: los PNG con transparencia, en JPEG, salen con manchas negras
+    imagefill($lienzo, 0, 0, imagecolorallocate($lienzo, 255, 255, 255));
+    imagecopyresampled($lienzo, $origen, 0, 0, 0, 0, $nuevo, $altoN, $ancho, $alto);
+
+    if (!is_dir(mailing_img_dir()) && !@mkdir(mailing_img_dir(), 0755, true)) {
+        imagedestroy($origen); imagedestroy($lienzo);
+        $error = 'No pudimos guardar la imagen en el servidor.';
+        return '';
+    }
+    $nombre = 'ml-' . date('Ymd-His') . '-' . substr(bin2hex(random_bytes(3)), 0, 6) . '.jpg';
+    $ok = imagejpeg($lienzo, mailing_img_dir() . '/' . $nombre, 72);
+    imagedestroy($origen);
+    imagedestroy($lienzo);
+
+    if (!$ok) { $error = 'No pudimos guardar la imagen en el servidor.'; return ''; }
+    return '/comunidad/uploads/mailing/' . $nombre;
+}
+
 /**
  * La direccion completa del banner.
  *
@@ -438,6 +521,21 @@ function mailing_semilla() {
         'filtro'      => 'nunca_entro',
         'idioma'      => 'es',
     ]);
+}
+
+/**
+ * Arreglo de una vez: el borrador de la semilla se creo antes de que los
+ * mailings pudieran llevar imagen, asi que quedo sin banner. Si sigue ahi y
+ * sigue vacio, se le pone. Si ella ya eligio otra imagen o lo dejo a proposito
+ * sin ninguna, no se toca: solo corre una vez.
+ */
+function mailing_banner_semilla() {
+    if (cfg_get('mailing_banner_semilla')) return;
+    cfg_set('mailing_banner_semilla', date('Y-m-d H:i:s'));
+    com_db()->prepare("UPDATE mailings SET banner_url = ?
+                        WHERE estado = 'borrador' AND banner_url = ?
+                          AND asunto = 'Creaste tu cuenta y todavía no la usaste'")
+        ->execute(['/assets/img/mailing/banner-calculadora.jpg', '']);
 }
 
 /** Manda una sola copia de prueba a una direccion, sin tocar la cola. */
