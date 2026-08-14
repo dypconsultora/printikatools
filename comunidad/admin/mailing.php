@@ -16,6 +16,7 @@ require_once __DIR__ . '/../inc/mailing.php';
 
 requerir_admin();
 taller_migrar();
+mailing_semilla();      // deja escrito el primer borrador, una sola vez
 $yo = usuario_actual();
 $db = com_db();
 
@@ -145,9 +146,16 @@ $id_actual = (int) ($_GET['id'] ?? $editando);
 $actual    = $id_actual ? mailing_get($id_actual) : null;
 $arrancar  = $actual && $actual['estado'] === 'enviando';
 
-// El formulario muestra lo que se estaba editando si hubo un error, y si no,
-// el borrador abierto
-$f = $error && $editando ? $_POST : ($actual && $actual['estado'] === 'borrador' ? $actual : []);
+// Que se ve en el formulario:
+//   - lo que se estaba editando, si hubo un error (para no perder lo escrito)
+//   - el borrador abierto
+//   - o cualquier mailing al que se le haya tocado "Editar", incluso uno ya
+//     enviado: al guardarlo se crea una copia nueva y el original no se toca
+$editar_pedido = !empty($_GET['editar']);
+$f = $error && $editando
+    ? $_POST
+    : (($actual && ($actual['estado'] === 'borrador' || $editar_pedido)) ? $actual : []);
+$copiando = $actual && $editar_pedido && $actual['estado'] !== 'borrador';
 
 $historial = $db->query('SELECT * FROM mailings ORDER BY id DESC LIMIT 25')->fetchAll();
 $total_lista = (int) $db->query('SELECT COUNT(*) FROM novedades_emails')->fetchColumn();
@@ -203,13 +211,23 @@ ui_panel_inicio('Mailing', $yo, 'Mailing', '../');
       .chip.bor{background:var(--surface-2);color:var(--txt-3)}
       .aviso-smtp{font-size:12.5px;color:var(--txt-3);line-height:1.6;margin-top:12px;
                   border-top:1px solid var(--bd-suave);padding-top:12px}
+      .acc-hist{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:nowrap}
+      .acc-hist .btn{white-space:nowrap}
+      table.hist th:last-child,table.hist td:last-child{text-align:right;width:1%}
       @media (max-width:1100px){ .ml-grilla{grid-template-columns:1fr} }
     </style>
 
     <div class="ml-grilla">
       <div class="caja">
-        <h2><?php echo $f && !empty($f['id']) ? 'Editar el borrador' : 'Escribir un mailing'; ?></h2>
-        <p class="nota">El diseño (logo, colores, botón) lo pone el sistema: acá va solo el contenido.</p>
+        <h2><?php echo $copiando ? 'Copia de un mailing ya enviado'
+                    : ($f && !empty($f['id']) ? 'Editar el borrador' : 'Escribir un mailing'); ?></h2>
+        <p class="nota">
+          <?php if ($copiando): ?>
+            Al guardar se crea un <strong>borrador nuevo</strong>: el que ya mandaste queda como está.
+          <?php else: ?>
+            El diseño (logo, colores, botón) lo pone el sistema: acá va solo el contenido.
+          <?php endif; ?>
+        </p>
         <form method="post">
           <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
           <input type="hidden" name="accion" value="guardar">
@@ -349,16 +367,23 @@ ui_panel_inicio('Mailing', $yo, 'Mailing', '../');
                   : (int) $h['enviados'] . ' de ' . (int) $h['total']
                     . ((int) $h['fallados'] ? ' · ' . (int) $h['fallados'] . ' fallaron' : ''); ?></td>
             <td style="color:var(--txt-2);white-space:nowrap"><?php echo date('d/m/y H:i', strtotime($h['creado_en'])); ?></td>
-            <td style="text-align:right">
-              <?php if ($h['estado'] !== 'enviando'): ?>
-              <form method="post" style="margin:0;display:inline"
-                    onsubmit="return confirm('¿Borrar «<?php echo htmlspecialchars($h['asunto'], ENT_QUOTES); ?>» del historial?')">
-                <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
-                <input type="hidden" name="accion" value="borrar">
-                <input type="hidden" name="id" value="<?php echo (int) $h['id']; ?>">
-                <button class="btn chico peligro" type="submit"><?php echo ui_icono('basura', 14); ?></button>
-              </form>
-              <?php endif; ?>
+            <td>
+              <div class="acc-hist">
+                <a class="btn chico sec" target="_blank" rel="noopener"
+                   href="mailing.php?vista=<?php echo (int) $h['id']; ?>">Vista previa</a>
+                <a class="btn chico sec" href="mailing.php?id=<?php echo (int) $h['id']; ?>&amp;editar=1">
+                  <?php echo $h['estado'] === 'borrador' ? 'Editar' : 'Editar una copia'; ?></a>
+                <?php if ($h['estado'] !== 'enviando'): ?>
+                <form method="post" style="margin:0"
+                      onsubmit="return confirm('¿Borrar «<?php echo htmlspecialchars($h['asunto'], ENT_QUOTES); ?>» del historial?')">
+                  <input type="hidden" name="csrf" value="<?php echo com_csrf(); ?>">
+                  <input type="hidden" name="accion" value="borrar">
+                  <input type="hidden" name="id" value="<?php echo (int) $h['id']; ?>">
+                  <button class="btn chico peligro" type="submit"
+                          title="Borrar del historial"><?php echo ui_icono('basura', 14); ?></button>
+                </form>
+                <?php endif; ?>
+              </div>
             </td>
           </tr>
         <?php endforeach; ?>

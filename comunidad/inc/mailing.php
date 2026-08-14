@@ -40,18 +40,34 @@ const MAILING_POR_TANDA = 15;
 /** Los grupos de destinatarios que se pueden elegir, y como se llaman en pantalla. */
 function mailing_filtros() {
     return [
-        'todos'     => 'Toda la lista',
-        'registro'  => 'Solo los que se registraron',
-        'cotizador' => 'Solo los del popup de la calculadora',
-        'banner'    => 'Solo los del banner de la portada',
+        'todos'       => 'Toda la lista',
+        'registro'    => 'Solo los que se registraron',
+        'nunca_entro' => 'Se registraron y nunca entraron',
+        'cotizador'   => 'Solo los del popup de la calculadora',
+        'banner'      => 'Solo los del banner de la portada',
     ];
 }
 
-/** Condicion SQL del grupo elegido. Devuelve [where, argumentos]. */
+/**
+ * Condicion SQL del grupo elegido. Devuelve [where, argumentos].
+ *
+ * Casi todos los grupos son un valor de la columna "origen". La excepcion es
+ * "nunca_entro", que hay que ir a buscar a la tabla de usuarios: son los que
+ * crearon la cuenta, no la usaron nunca y no estan pagando. A esos tiene
+ * sentido invitarlos a entrar; a alguien que ya paga, no.
+ */
 function mailing_donde($filtro, $idioma) {
     $donde = [];
     $args  = [];
-    if (isset(mailing_filtros()[$filtro]) && $filtro !== 'todos') {
+
+    if ($filtro === 'nunca_entro') {
+        $donde[] = "email IN (
+            SELECT u.email FROM usuarios u
+             WHERE u.ultimo_login IS NULL AND u.rol <> 'admin'
+               AND NOT EXISTS (SELECT 1 FROM suscripciones s
+                                WHERE s.usuario_id = u.id AND s.estado = 'activa'
+                                  AND (s.hasta IS NULL OR s.hasta >= CURDATE())))";
+    } elseif (isset(mailing_filtros()[$filtro]) && $filtro !== 'todos') {
         $donde[] = 'origen = ?';
         $args[]  = $filtro;
     }
@@ -172,8 +188,18 @@ function mailing_get($id) {
     return $stmt->fetch() ?: null;
 }
 
-/** Guarda un borrador nuevo (todavia sin cola ni destinatarios). */
+/**
+ * Guarda un borrador.
+ *
+ * Si el id que llega es de un mailing YA ENVIADO, no se lo pisa: se guarda una
+ * copia nueva como borrador. Asi "editar" uno viejo sirve para reusarlo sin
+ * que el historial pase a mentir sobre lo que se mando ese dia.
+ */
 function mailing_guardar($d, $id = 0) {
+    if ($id > 0) {
+        $m = mailing_get($id);
+        if (!$m || $m['estado'] !== 'borrador') $id = 0;
+    }
     $campos = [
         mb_substr(trim($d['asunto'] ?? ''), 0, 200),
         mb_substr(trim($d['titulo'] ?? ''), 0, 200),
@@ -187,7 +213,7 @@ function mailing_guardar($d, $id = 0) {
     if ($id > 0) {
         $campos[] = (int) $id;
         com_db()->prepare('UPDATE mailings SET asunto=?, titulo=?, cuerpo=?, boton_texto=?,
-                           boton_url=?, html_propio=?, filtro=?, idioma=? WHERE id=? AND estado=\'borrador\'')
+                           boton_url=?, html_propio=?, filtro=?, idioma=? WHERE id=?')
             ->execute($campos);
         return (int) $id;
     }
@@ -350,6 +376,51 @@ function mailing_pendientes($id) {
 function mailing_cerrar($id) {
     com_db()->prepare("UPDATE mailings SET estado='enviado', terminado_en=NOW() WHERE id=?")
         ->execute([(int) $id]);
+}
+
+/**
+ * Deja escrito, UNA sola vez, el borrador para los que se registraron y nunca
+ * entraron.
+ *
+ * Es el primer mailing que hacia falta y no tenia sentido que lo escribiera
+ * ella de cero. Queda como borrador: no se manda solo. Si lo borra, no vuelve
+ * a aparecer, porque la marca queda guardada en config.
+ *
+ * Los precios salen de las constantes y NO se escriben a mano. Ojo igual: acá
+ * quedan congelados adentro del texto, asi que si cambian hay que retocar el
+ * borrador antes de mandarlo.
+ */
+function mailing_semilla() {
+    if (cfg_get('mailing_semilla_nunca_entro')) return 0;
+    cfg_set('mailing_semilla_nunca_entro', date('Y-m-d H:i:s'));
+
+    $mes = '$' . number_format(COMUNIDAD_PRECIO_MENSUAL, 0, ',', '.');
+    $ano = '$' . number_format(COMUNIDAD_PRECIO_ANUAL, 0, ',', '.');
+    $precios = COMUNIDAD_MENSUAL_VISIBLE
+        ? "Sale $mes por mes, o $ano por año con dos meses de regalo."
+        : "Sale $ano por año, con dos meses de regalo.";
+
+    $cuerpo = <<<TXT
+    Hace un tiempo creaste tu cuenta gratis en Printika Tools y todavía no entraste. Te escribimos por si se te traspapeló: **la calculadora de costos ya está adentro esperándote**, y con el plan gratuito la usás sin límite.
+
+    Es la que te dice cuánto te cuesta **de verdad** una impresión. Suma las seis cosas que casi nadie cuenta: el material, la luz que consume la máquina, su desgaste, tu tiempo, las impresiones que salen mal y tu ganancia. Cobrar solo el filamento es el error más caro que se puede cometer en un taller.
+
+    La tenés completa en pesos, dólares o euros, con 22 impresoras ya cargadas, y te podés bajar el presupuesto en PDF para mandárselo al cliente.
+
+    Si además querés dejar de llevar las cuentas en un cuaderno, el **plan completo** suma presupuestos con tu logo, clientes, productos, stock de filamento, ventas y estadísticas mes a mes. $precios Podés verlos en [la página de planes](https://printikatools.com/#planes).
+
+    Cualquier duda, respondé este correo y te contestamos.
+    TXT;
+
+    return mailing_guardar([
+        'asunto'      => 'Creaste tu cuenta y todavía no la usaste',
+        'titulo'      => 'Tu calculadora de costos ya está lista',
+        'cuerpo'      => preg_replace('/^    /m', '', $cuerpo),
+        'boton_texto' => 'Entrar a mi cuenta',
+        'boton_url'   => 'https://printikatools.com/comunidad/login.php',
+        'filtro'      => 'nunca_entro',
+        'idioma'      => 'es',
+    ]);
 }
 
 /** Manda una sola copia de prueba a una direccion, sin tocar la cola. */
