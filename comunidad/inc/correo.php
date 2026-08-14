@@ -63,9 +63,9 @@ function correo_plantilla($titulo, $parrafos, $boton = null, $pie = '', $extra =
      * Esos correos no llevan foto a proposito — son avisos, no publicidad.
      *
      * Con imagen van tres filas, y no una, porque la imagen tiene que salirse
-     * del margen de 34px del texto para quedar casi al ancho de la tarjeta. En
-     * una tabla de correo eso no se puede hacer desde adentro de la celda.
-     * Orden: titulo, imagen, texto.
+     * del margen de 34px del texto para quedar casi al ancho de la tarjeta
+     * (10px de aire de cada lado). En una tabla de correo eso no se puede hacer
+     * desde adentro de la celda. Orden: titulo, imagen, texto.
      *
      * La imagen lleva alt: con las imagenes bloqueadas, que es como llega la
      * primera vez a mucha gente, el correo se tiene que entender igual.
@@ -74,9 +74,9 @@ function correo_plantilla($titulo, $parrafos, $boton = null, $pie = '', $extra =
         $centro = '<tr><td style="padding:30px 34px 0">
           <h1 style="margin:0;font-size:21px;line-height:1.3;color:#131a27">' . $esc($titulo) . '</h1>
         </td></tr>
-        <tr><td style="padding:18px 3px 0;font-size:0;line-height:0">
-          <img src="' . $esc($banner) . '" alt="Printika Tools" width="554"
-               style="display:block;width:100%;max-width:554px;height:auto;border:0;border-radius:8px">
+        <tr><td style="padding:18px 10px 0;font-size:0;line-height:0">
+          <img src="' . $esc($banner) . '" alt="Printika Tools" width="540"
+               style="display:block;width:100%;max-width:540px;height:auto;border:0;border-radius:8px">
         </td></tr>
         <tr><td style="padding:22px 34px 32px">
           ' . $cuerpo . $btn . $piehtml . '
