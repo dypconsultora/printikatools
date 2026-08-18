@@ -14,3 +14,6 @@ comunidad/uploads/backups/*
 comunidad/uploads/mp_log.txt
 comunidad/uploads/recursos/*
 comunidad/uploads/guias/*
+
+# Mapa del proyecto generado con graphify: se rearma cuando haga falta
+graphify-out/

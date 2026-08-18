@@ -85,7 +85,7 @@ guia_inicio([
       la calidad, y ese es solo el primero de los seis costos. Cobrar solo el material es el error
       más caro que se puede cometer.</p>
       <p>Si querés el número sin leer toda la nota,
-      <a href="/comunidad/cotizador/">calculalo acá</a> — es gratis y no hace falta registrarse.</p>
+      <a href="/comunidad/cotizador/" target="_blank" rel="noopener">calculalo acá</a> — es gratis y no hace falta registrarse.</p>
     </div>
 
     <h2 id="no-es-el-filamento">El precio no es el filamento</h2>
@@ -158,12 +158,12 @@ guia_inicio([
     </ul>
 
     <h2 id="calcularlo">Cómo calcularlo sin hacer la cuenta a mano</h2>
-    <p>Todo esto está resuelto en la <a href="/comunidad/cotizador/">calculadora de Printika
+    <p>Todo esto está resuelto en la <a href="/comunidad/cotizador/" target="_blank" rel="noopener">calculadora de Printika
     Tools</a>: cargás el precio del rollo, el peso, el tiempo, tu tarifa de luz y los datos de tu
     impresora, y te devuelve el precio final en pesos, dólares o euros. Es gratis y no necesitás
     registrarte.</p>
     <p>Si además querés guardar los presupuestos, llevar tus clientes y controlar el stock de rollos,
-    eso vive en <a href="/comunidad/registro.php?plan=gratis">la plataforma</a>.</p>
+    eso vive en <a href="/comunidad/registro.php?plan=gratis" target="_blank" rel="noopener">la plataforma</a>.</p>
 
     <h2 id="faq">Preguntas frecuentes</h2>
     <div class="faq-guia">

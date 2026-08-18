@@ -108,8 +108,19 @@ a{color:var(--accent)}
   margin:32px 0 10px}
 .guia p{font-size:16.5px;color:var(--txt-2);margin-bottom:17px}
 .guia p strong,.guia li strong{color:var(--txt);font-weight:600}
-.guia a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(45,183,250,.35)}
-.guia a:hover{border-bottom-color:var(--accent)}
+/* Los enlaces del texto: celestes y subrayados de verdad. El subrayado no es
+   decoracion — es lo que hace que se vea que es un enlace y no una palabra
+   resaltada, sobre todo para quien no distingue bien los colores. */
+.guia a{color:var(--accent);text-decoration:underline;text-underline-offset:3px;
+  text-decoration-thickness:1px;border-bottom:0}
+.guia a:hover{text-decoration-thickness:2px}
+/* Los botones NO son enlaces de texto, aunque por dentro sean un <a>. Sin esto
+   la regla de arriba les pintaba el texto del mismo celeste que el fondo del
+   boton y quedaban en blanco: el recuadro del final de cada guia tenia un boton
+   que no se leia. */
+.guia a.btn{color:var(--accent-ink);text-decoration:none;border-bottom:0}
+.guia a.btn:hover{text-decoration:none}
+.guia a.btn.sec{color:var(--txt)}
 .guia ul{margin:0 0 20px 0;padding-left:0;list-style:none}
 .guia ul li{position:relative;padding-left:20px;margin-bottom:11px;font-size:16.5px;color:var(--txt-2)}
 .guia ul li::before{content:'';position:absolute;left:2px;top:.62em;width:6px;height:6px;

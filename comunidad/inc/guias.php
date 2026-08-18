@@ -68,11 +68,60 @@ function guia_bloques($guia) {
 }
 
 /**
+ * Convierte en enlaces las direcciones que aparezcan en el texto de una guia.
+ *
+ * Se le pasa texto YA ESCAPADO. La administradora escribe texto plano, no HTML,
+ * asi que sin esto una direccion pegada quedaba como letras muertas.
+ *
+ * Entiende dos formas:
+ *   https://printikatools.com/          la direccion sola
+ *   [lo que se lee](https://...)        con el texto que uno quiera
+ *
+ * Todos abren en una pestana nueva: quien esta leyendo una guia no tiene que
+ * perderla por tocar un enlace. Y todos llevan rel="noopener", que es lo que
+ * evita que la pagina de destino pueda tocar la nuestra.
+ *
+ * Solo http y https. Cualquier otra cosa (javascript:, data:) se deja como
+ * texto: el contenido lo carga ella, pero no hay razon para abrir esa puerta.
+ */
+function guia_enlaces($escapado) {
+    $guardado = [];
+    $guardar = function ($url, $texto) use (&$guardado) {
+        // El escapado dejo los "&" como "&amp;", que es lo correcto adentro de
+        // un href, asi que la direccion se usa tal cual vino
+        $guardado[] = '<a href="' . $url . '" target="_blank" rel="noopener">' . $texto . '</a>';
+        return "\x02" . (count($guardado) - 1) . "\x03";
+    };
+
+    // 1) [texto](direccion) — primero, para que su direccion no la agarre el paso 2
+    $salida = preg_replace_callback(
+        '~\[([^\]\n]+)\]\((https?://[^)\s]+)\)~i',
+        fn($m) => $guardar($m[2], $m[1]),
+        $escapado
+    );
+
+    // 2) La direccion sola. Los signos del final no son parte de la direccion:
+    //    "mira https://printikatools.com/." termina en punto, no en barra-punto.
+    $salida = preg_replace_callback(
+        '~(?<![\w@/])(https?://[^\s<]+)~i',
+        function ($m) use ($guardar) {
+            $url = rtrim($m[1], '.,;:!?)');
+            $cola = substr($m[1], strlen($url));
+            return $guardar($url, $url) . $cola;
+        },
+        $salida
+    );
+
+    return preg_replace_callback('~\x02(\d+)\x03~', fn($m) => $guardado[(int) $m[1]] ?? '', $salida);
+}
+
+/**
  * Dibuja el cuerpo de una guia.
  *
  * Todo el texto sale escapado: la administradora escribe texto plano, no HTML.
- * Lo unico que interpretamos son los renglones en blanco (parrafos nuevos) y
- * los renglones sueltos de las listas.
+ * Lo unico que interpretamos son los renglones en blanco (parrafos nuevos), los
+ * renglones sueltos de las listas y las direcciones, que se vuelven enlaces
+ * (ver guia_enlaces()).
  */
 function guia_render($guia) {
     foreach (guia_bloques($guia) as $b) {
@@ -85,14 +134,14 @@ function guia_render($guia) {
         } elseif ($tipo === 'texto' && $v !== '') {
             foreach (preg_split('/\n\s*\n/', $v) as $parrafo) {
                 $parrafo = trim($parrafo);
-                if ($parrafo !== '') echo '<p>' . nl2br(htmlspecialchars($parrafo)) . "</p>\n";
+                if ($parrafo !== '') echo '<p>' . nl2br(guia_enlaces(htmlspecialchars($parrafo))) . "</p>\n";
             }
 
         } elseif ($tipo === 'lista' && $v !== '') {
             echo "<ul>\n";
             foreach (preg_split('/\n/', $v) as $item) {
                 $item = trim($item, " \t-•");
-                if ($item !== '') echo '  <li>' . htmlspecialchars($item) . "</li>\n";
+                if ($item !== '') echo '  <li>' . guia_enlaces(htmlspecialchars($item)) . "</li>\n";
             }
             echo "</ul>\n";
 
@@ -100,7 +149,7 @@ function guia_render($guia) {
             echo '<div class="resumen">';
             foreach (preg_split('/\n\s*\n/', $v) as $parrafo) {
                 $parrafo = trim($parrafo);
-                if ($parrafo !== '') echo '<p>' . nl2br(htmlspecialchars($parrafo)) . '</p>';
+                if ($parrafo !== '') echo '<p>' . nl2br(guia_enlaces(htmlspecialchars($parrafo))) . '</p>';
             }
             echo "</div>\n";
 
