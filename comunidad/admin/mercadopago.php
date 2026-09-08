@@ -65,6 +65,14 @@ ui_panel_inicio('Mercado Pago', $yo, 'Mercado Pago', '../');
     <style>
       .mp-caja{background:var(--surface);border:1px solid var(--bd-suave);border-radius:var(--radio-g);
                padding:22px;max-width:720px;margin-bottom:16px}
+      /* El registro: monoespaciada y con las lineas mas nuevas arriba, para
+         poder barrerlo de un vistazo. Lo rechazado se pinta, que es lo unico
+         que hay que mirar. */
+      .mp-log{margin-top:12px;background:var(--surface-2);border:1px solid var(--bd-suave);
+              border-radius:var(--radio);padding:12px 14px;overflow-x:auto;
+              font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.9}
+      .mp-log div{white-space:nowrap;color:var(--txt-2)}
+      .mp-log div.mal{color:var(--bad);font-weight:600}
       .mp-caja h2{font-size:15px;font-weight:600;margin-bottom:4px}
       .mp-caja .nota{font-size:13px;color:var(--txt-2);margin-bottom:10px;line-height:1.55}
       .mp-estado{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;
@@ -124,10 +132,28 @@ ui_panel_inicio('Mercado Pago', $yo, 'Mercado Pago', '../');
       <p class="nota" style="margin-top:10px">Al crear el webhook, Mercado Pago te muestra una
         <strong>clave secreta</strong>: copiala en el campo de arriba. Sirve para comprobar que los
         avisos vienen de verdad de Mercado Pago y no de un tercero.
-        <?php if (!$sec): ?><br><span style="color:var(--warn)">Todavía no está cargada: los avisos se
-        aceptan sin verificar.</span><?php endif; ?></p>
+        <?php if (!$sec): ?><br><span style="color:var(--bad);font-weight:600">Todavía no está cargada:
+        los avisos se rechazan y las suscripciones NO se activan solas.</span><?php endif; ?></p>
       <p class="nota" style="margin-top:10px">Doble seguro: aunque un aviso no llegue, cada plan tiene su
         vencimiento guardado en nuestra base — al vencer sin renovación, la cuenta baja a gratis sola.</p>
+    </div>
+
+    <?php $ultimos = mp_log_ultimas(12); ?>
+    <div class="mp-caja">
+      <h2>Últimos avisos recibidos</h2>
+      <p class="nota">Cada vez que Mercado Pago avisa algo (un pago, una baja) queda anotado acá.
+        Si pasaron días sin una sola línea nueva y sabés que hubo movimiento, algo no está llegando.
+        Lo que diga <strong>RECHAZADO</strong> es un aviso que no se aceptó.</p>
+      <?php if (!$ultimos): ?>
+        <p class="nota" style="margin-top:10px;color:var(--txt-3)">Todavía no llegó ningún aviso.</p>
+      <?php else: ?>
+        <div class="mp-log">
+          <?php foreach ($ultimos as $l): ?>
+            <div class="<?php echo stripos($l, 'RECHAZADO') !== false || stripos($l, 'ERROR') !== false ? 'mal' : ''; ?>"><?php
+              echo htmlspecialchars($l); ?></div>
+          <?php endforeach; ?>
+        </div>
+      <?php endif; ?>
     </div>
 
     <div class="mp-caja">

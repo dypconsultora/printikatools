@@ -105,6 +105,30 @@ function mp_baja_plan($usuario_id) {
         ->execute([(int) $usuario_id]);
 }
 
+/**
+ * Las ultimas lineas del registro de avisos, la mas nueva primero.
+ *
+ * Sirve para que en el panel se vea que los avisos de Mercado Pago siguen
+ * entrando. Sin esto, si el webhook empezara a rechazar todo, el unico sintoma
+ * seria que las cuentas dejan de activarse solas — y eso se nota tarde.
+ *
+ * Lee solo el final del archivo: el registro crece con cada aviso y no tiene
+ * sentido levantarlo entero para mostrar diez renglones.
+ */
+function mp_log_ultimas($cuantas = 12) {
+    $ruta = dirname(__DIR__) . '/uploads/mp_log.txt';
+    if (!is_readable($ruta)) return [];
+    $f = @fopen($ruta, 'rb');
+    if (!$f) return [];
+    $tam = max(0, filesize($ruta) - 8192);
+    if ($tam > 0) fseek($f, $tam);
+    $texto = (string) stream_get_contents($f);
+    fclose($f);
+    $lineas = array_values(array_filter(array_map('trim', explode("\n", $texto))));
+    if ($tam > 0) array_shift($lineas);          // la primera puede venir cortada
+    return array_slice(array_reverse($lineas), 0, max(1, (int) $cuantas));
+}
+
 /** Secreto para validar la firma de los webhooks (Admin > Mercado Pago). */
 function mp_webhook_secret() { return (string) (cfg_get('mp_webhook_secret') ?? ''); }
 
@@ -112,14 +136,19 @@ function mp_webhook_secret() { return (string) (cfg_get('mp_webhook_secret') ?? 
  * Valida la cabecera x-signature que manda Mercado Pago.
  * El manifiesto es "id:<data.id>;request-id:<x-request-id>;ts:<ts>;" firmado
  * con HMAC-SHA256 y el secreto del panel de MP.
- * Si todavia no se cargo el secreto, se acepta (para no frenar la puesta en
- * marcha) pero queda registrado en el log como aviso.
+ * Sin secreto cargado NO se acepta ningun aviso, y queda anotado en el registro
+ * que se ve en Admin > Mercado Pago.
  */
 function mp_firma_valida($data_id) {
     $secreto = mp_webhook_secret();
     if ($secreto === '') {
-        mp_log('AVISO: webhook sin secreto configurado — cargalo en Admin > Mercado Pago');
-        return true;
+        // Sin secreto NO se acepta nada. Antes se aceptaba igual, para no frenar
+        // la puesta en marcha, pero eso dejaba entrar a cualquiera que supiera la
+        // direccion del webhook. Si esto aparece en el registro, la clave se borro
+        // o nunca se cargo: hay que ponerla en Admin > Mercado Pago, y mientras
+        // tanto las suscripciones no se activan solas.
+        mp_log('RECHAZADO: falta la clave secreta del webhook — cargala en Admin > Mercado Pago');
+        return false;
     }
     $firma = $_SERVER['HTTP_X_SIGNATURE'] ?? '';
     $req   = $_SERVER['HTTP_X_REQUEST_ID'] ?? '';
