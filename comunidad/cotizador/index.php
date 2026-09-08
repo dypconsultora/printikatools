@@ -72,15 +72,18 @@ $proHabilitado = $esPro || $enTrial;
   "operatingSystem": "Web",
   "inLanguage": ["es-AR", "en"],
   "browserRequirements": "Requiere JavaScript",
-  "description": "Calculadora gratuita para saber cuánto cuesta una impresión 3D: filamento, electricidad, depreciación de la impresora, mano de obra, tasa de fallos y margen de ganancia, con precio final en ARS, USD o EUR y comisiones de Mercado Libre.",
+  "description": "Calculadora de costos de impresión 3D. Gratis y sin registro: costo del material, tiempo de impresión y margen de ganancia, con precio final en ARS, USD o EUR. Con el plan Pro suma electricidad, depreciación de la máquina, mano de obra, costos adicionales, tasa de fallos y comisiones de Mercado Libre.",
   "featureList": [
     "Costo de material por gramo y por pieza",
-    "Consumo eléctrico según el modelo de impresora",
-    "Depreciación de la máquina y mantenimiento",
-    "Mano de obra, empaquetado y envío",
-    "Tasa de fallos y margen de ganancia",
-    "Comisiones de Mercado Libre",
-    "Exportación del presupuesto a PDF"
+    "Tiempo de impresión",
+    "Margen de ganancia con precio fijo inverso",
+    "Resultado en ARS, USD o EUR",
+    "Consumo eléctrico según el modelo de impresora (plan Pro)",
+    "Depreciación de la máquina y mantenimiento (plan Pro)",
+    "Mano de obra, empaquetado y envío (plan Pro)",
+    "Tasa de fallos (plan Pro)",
+    "Comisiones de Mercado Libre (plan Pro)",
+    "Guardar el presupuesto y exportarlo a PDF (plan Pro)"
   ],
   "offers": {"@type": "Offer", "price": "0", "priceCurrency": "ARS"},
   "publisher": {"@type": "Organization", "name": "Printika Tools", "url": "https://printikatools.com/"}
@@ -1522,6 +1525,7 @@ body.en-panel #newsModal { display: none !important; }
     <div class="card-title">
       <span class="icon">&#9889;</span>
       Costos de Electricidad
+      <span class="badge">PRO</span>
     </div>
     <div class="field">
       <label for="printerModel">Modelo de impresora</label>
@@ -2625,7 +2629,7 @@ PRECIO FINAL: ${price}${meliInfo}
   if (!IS_PRO) {
     // Secciones PRO: los controles no reciben eventos (pointer-events none),
     // el click cae en la seccion y abre el cartel. Tab/teclado tambien bloqueado.
-    ['sec-additional', 'sec-meli', 'sec-labor', 'sec-depreciation', 'supportProRow'].forEach((id) => {
+    ['sec-electric', 'sec-additional', 'sec-meli', 'sec-labor', 'sec-depreciation', 'supportProRow'].forEach((id) => {
       const sec = document.getElementById(id);
       if (!sec) return;
       sec.classList.add('pro-locked');

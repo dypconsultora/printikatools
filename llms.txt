@@ -10,13 +10,18 @@ es gratuita y no requiere registro.
 
 ## Qué incluye la calculadora de costos (gratis, sin registro)
 - Costo del material: precio del carrete, peso del carrete y gramos usados
+- Tiempo de impresión
+- Margen de ganancia (con precio fijo inverso)
+- Resultado en ARS, USD o EUR
+
+## Lo que la calculadora suma con el plan Pro
 - Consumo eléctrico según el modelo de impresora (22 modelos precargados) y la tarifa por kWh
 - Depreciación de la máquina: costo de la impresora, vida útil y mantenimiento anual
 - Mano de obra: tiempo de preparación y post-proceso por hora
 - Costos adicionales: empaquetado, envío y otros costos fijos
-- Tasa de fallos y margen de ganancia (con precio fijo inverso)
+- Tasa de fallos
 - Comisiones de Mercado Libre (Clásica y Premium)
-- Resultado en ARS, USD o EUR y exportación del presupuesto a PDF
+- Guardar el presupuesto en la cuenta y exportarlo a PDF
 
 ## Herramientas del taller (planes pagos)
 - Presupuestos profesionales con PDF y envío por WhatsApp

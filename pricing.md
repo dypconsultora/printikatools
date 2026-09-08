@@ -1,16 +1,19 @@
 # Precios — Printika Tools
 
-Última actualización: 2026-08-03
+Última actualización: 2026-09-08
 Monedas disponibles: ARS (Mercado Pago) y USD (PayPal).
 
 ## Printika Free
 - Precio: $0 ARS / US$0 — gratis para siempre
 - Requiere registro: sí (cuenta gratuita, sin tarjeta)
 - Incluye:
-  - Calculadora de costos de impresión 3D completa
+  - Calculadora de costos: material, tiempo de impresión y margen de ganancia
   - Cálculo en ARS, USD y EUR
   - Recursos en videos y PDF
-- No incluye: librería de modelos STL, presupuestos, productos, clientes, stock,
+- No incluye, de la calculadora: electricidad, depreciación de la máquina, mano de
+  obra, costos adicionales, tasa de fallos, comisiones de Mercado Libre, ni guardar
+  o exportar el presupuesto
+- Tampoco incluye: librería de modelos STL, presupuestos, productos, clientes, stock,
   ventas, estadísticas ni soporte por Telegram
 
 ## Printika Pro
