@@ -545,6 +545,85 @@ function taller_captar_email($email, $idioma = 'es', $origen = 'cotizador') {
     return true;
 }
 
+/** El canal de YouTube del que se lee el numero de seguidores. */
+const YT_CANAL = 'https://www.youtube.com/@Printika3d';
+
+/**
+ * Cuantos seguidores tiene el canal de YouTube.
+ *
+ * Devuelve ['n' => numero o null, 'cuando' => cuando se supo].
+ *
+ * COMO SE OBTIENE, Y POR QUE ASI: se lee de la pagina publica del canal, no de
+ * la API oficial de Google, que obligaria a crear una clave y a mantenerla. La
+ * contra es que depende de como YouTube arme su pagina: si un dia la cambian,
+ * esto deja de encontrar el numero.
+ *
+ * Por eso NUNCA se muestra un cero ni un error: si la lectura falla, se sigue
+ * mostrando el ultimo numero que se supo, junto con cuando fue. Un numero viejo
+ * y fechado es informacion; un cero es una mentira.
+ *
+ * Se consulta como mucho cada media hora y queda guardado. Pedirlo en cada
+ * carga del panel seria hacer esperar a la pantalla por un dato que casi nunca
+ * cambia de un minuto al otro.
+ */
+function taller_youtube_seguidores($cada = 1800) {
+    $cache  = json_decode((string) cfg_get('yt_seguidores'), true) ?: [];
+    $n      = isset($cache['n']) ? (int) $cache['n'] : null;
+    $cuando = (int) ($cache['cuando'] ?? 0);
+
+    if ($cuando > time() - $cada) return ['n' => $n, 'cuando' => $cuando];
+
+    $nuevo = taller_youtube_leer();
+    if ($nuevo !== null) {
+        cfg_set('yt_seguidores', json_encode(['n' => $nuevo, 'cuando' => time()]));
+        return ['n' => $nuevo, 'cuando' => time()];
+    }
+    // No se pudo leer: se conserva lo ultimo que se supo, con su fecha vieja
+    return ['n' => $n, 'cuando' => $cuando];
+}
+
+/** Baja la pagina del canal y saca el numero. null si no se pudo. */
+function taller_youtube_leer() {
+    if (!function_exists('curl_init')) return null;
+    $ch = curl_init(YT_CANAL);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_TIMEOUT        => 6,   // el panel no espera mas que esto
+        CURLOPT_CONNECTTIMEOUT => 3,
+        CURLOPT_USERAGENT      => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
+                                . 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36',
+        CURLOPT_HTTPHEADER     => ['Accept-Language: es-AR,es;q=0.9'],
+    ]);
+    $html = curl_exec($ch);
+    $code = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+    // Sin curl_close(): desde PHP 8.0 no hace nada y en 8.5 avisa que esta de mas
+    if ($code !== 200 || !is_string($html) || $html === '') return null;
+
+    // El numero viaja adentro del JSON que YouTube incrusta en la pagina
+    if (!preg_match('/"([\d.,]+(?:\s*(?:mil|M|K))?)\s*(?:de\s+)?(?:suscriptores|subscribers)"/iu', $html, $m)) {
+        return null;
+    }
+    return taller_youtube_numero($m[1]);
+}
+
+/**
+ * "655" -> 655 · "1,2 mil" -> 1200 · "1,2 M" -> 1200000
+ *
+ * YouTube muestra el numero exacto hasta los mil y despues lo redondea. Este
+ * canal todavia esta abajo de mil, pero el dia que lo pase el numero va a venir
+ * como "1,2 mil" y sin esto quedaria en 1.
+ */
+function taller_youtube_numero($texto) {
+    if (!preg_match('/([\d.,]+)\s*(mil|M|K)?/iu', trim($texto), $m)) return null;
+    $n = str_replace('.', '', $m[1]);          // el punto separa los miles
+    $n = (float) str_replace(',', '.', $n);    // la coma es el decimal
+    $suf = mb_strtolower($m[2] ?? '');
+    if ($suf === 'mil' || $suf === 'k') $n *= 1000;
+    elseif ($suf === 'm')               $n *= 1000000;
+    return (int) round($n);
+}
+
 /**
  * Idioma elegido, visto desde el servidor.
  *
