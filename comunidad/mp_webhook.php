@@ -39,6 +39,42 @@ $preapproval = null;
 if (stripos($tipo, 'preapproval') !== false || $tipo === 'subscription_preapproval') {
     [$code, $preapproval] = mp_api('GET', '/preapproval/' . rawurlencode($id));
     if ($code !== 200) { mp_log("no pude leer preapproval $id (http $code)"); exit; }
+} elseif ($tipo === 'subscription_authorized_payment') {
+    /*
+     * EL COBRO DE CADA MES. Este es el aviso que manda Mercado Pago cada vez
+     * que le cobra a alguien que ya esta suscripto.
+     *
+     * Se estaba tirando a la basura: no dice "preapproval" ni es "payment" a
+     * secas, asi que caia en el "else" de abajo y salia sin hacer nada. Eso
+     * significaba que la fecha de vencimiento nunca se estiraba: a los 33 dias
+     * la persona perdia el acceso AUNQUE le siguieran cobrando. Aparecio en el
+     * registro del 25/08 y por eso se corrigio.
+     *
+     * El id que llega es el del cobro, no el de la suscripcion, asi que primero
+     * hay que ir a buscar de que suscripcion es.
+     */
+    [$code, $cobro] = mp_api('GET', '/authorized_payments/' . rawurlencode($id));
+    if ($code !== 200) {
+        // Por si MP cambia de endpoint: se prueba el de pagos comunes
+        [$code, $cobro] = mp_api('GET', '/v1/payments/' . rawurlencode($id));
+    }
+    if ($code !== 200) { mp_log("no pude leer el cobro $id (http $code)"); exit; }
+
+    $preId = (string) ($cobro['preapproval_id']
+        ?? $cobro['metadata']['preapproval_id']
+        ?? $cobro['point_of_interaction']['transaction_data']['subscription_id']
+        ?? '');
+    // El estado puede venir en la raiz o adentro del pago, segun el endpoint
+    $estadoCobro = (string) ($cobro['payment']['status'] ?? $cobro['status'] ?? '');
+
+    if ($preId === '') { mp_log("cobro $id sin numero de suscripcion, no se pudo asociar"); exit; }
+    if (!in_array($estadoCobro, ['approved', 'processed'], true)) {
+        mp_log("cobro $id todavia no aprobado (estado: $estadoCobro)");
+        exit;
+    }
+    [$code, $preapproval] = mp_api('GET', '/preapproval/' . rawurlencode($preId));
+    if ($code !== 200) { mp_log("no pude leer preapproval $preId (http $code)"); exit; }
+
 } elseif ($tipo === 'payment') {
     // Un pago suelto: buscar la suscripción a la que pertenece
     [$code, $pago] = mp_api('GET', '/v1/payments/' . rawurlencode($id));
@@ -48,6 +84,9 @@ if (stripos($tipo, 'preapproval') !== false || $tipo === 'subscription_preapprov
     [$code, $preapproval] = mp_api('GET', '/preapproval/' . rawurlencode($preId));
     if ($code !== 200) exit;
 } else {
+    // Ya no se sale en silencio: un aviso que no sabemos manejar queda anotado.
+    // Asi fue como se encontro que los cobros mensuales se estaban perdiendo.
+    mp_log("aviso de tipo desconocido, no se hizo nada: tipo=$tipo id=$id");
     exit;
 }
 
