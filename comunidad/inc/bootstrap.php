@@ -88,6 +88,27 @@ define('COMUNIDAD_MENSUAL_VISIBLE', true);
 function com_mostrar_mensual($plan_actual = '') {
     return COMUNIDAD_MENSUAL_VISIBLE || $plan_actual === 'mensual';
 }
+/**
+ * Promo "primer mes gratis" del plan mensual (septiembre 2026, 10 dias).
+ *
+ * Mientras dure, el que se suscribe al mensual no paga hoy: el primer cobro
+ * le llega al mes y de ahi sigue mes a mes. Termina sola al pasar la fecha;
+ * no hace falta tocar nada para apagarla. Al que se suscribio durante la promo
+ * no le cambia nada cuando termina.
+ *
+ * Ojo: Mercado Pago documenta el mes gratis solo para suscripciones "con plan
+ * asociado", y aca se usan "sin plan". Por eso el checkout anota en el registro
+ * lo que MP devolvio: si la linea dice "trial NO", MP lo ignoro y cobro en el acto.
+ */
+define('COMUNIDAD_PROMO_DESDE', '2026-09-19');
+define('COMUNIDAD_PROMO_HASTA', '2026-09-28');   // inclusive
+
+/** true si la promo del primer mes gratis esta vigente hoy (hora de Argentina). */
+function com_promo_activa() {
+    $hoy = (new DateTime('now', new DateTimeZone('America/Argentina/Buenos_Aires')))->format('Y-m-d');
+    return COMUNIDAD_MENSUAL_VISIBLE && $hoy >= COMUNIDAD_PROMO_DESDE && $hoy <= COMUNIDAD_PROMO_HASTA;
+}
+
 define('COMUNIDAD_WHATSAPP', 'https://wa.me/5491131373425?text=' . rawurlencode('Hola! Quiero activar mi suscripción de Printika Tools.'));
 
 /** Conexion PDO compartida. Devuelve null si no hay config o no conecta. */

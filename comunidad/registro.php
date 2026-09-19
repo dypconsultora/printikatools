@@ -114,7 +114,8 @@ if ($creado) {
 // volver a desfasar del resto del sitio (decia $170.000 y son $180.000).
 $PLANES_TXT = [
     'gratis'  => 'Gratuito · $0',
-    'mensual' => 'Mensual · $' . number_format(COMUNIDAD_PRECIO_MENSUAL, 0, ',', '.') . '/mes',
+    'mensual' => 'Mensual · $' . number_format(COMUNIDAD_PRECIO_MENSUAL, 0, ',', '.') . '/mes'
+                 . (com_promo_activa() ? ' · 1er mes gratis' : ''),
     'anual'   => 'Anual · $' . number_format(COMUNIDAD_PRECIO_ANUAL, 0, ',', '.') . '/año',
 ];
 

@@ -58,6 +58,15 @@ aparece un `?plan=` y sobrevive al login, al 2FA y a la confirmación del correo
 cuando la persona queda adentro, `com_destino_ingreso()` la manda al checkout en vez
 de al panel. El webhook activa por `external_reference = usuario_id:plan`, así que el
 pago se le suma **al usuario que ya existía**.
+**Promo "primer mes gratis"** (19 al 28/09/2026, `COMUNIDAD_PROMO_DESDE/HASTA` en
+`bootstrap.php`): el mensual se contrata sin pagar y el primer cobro llega al mes.
+Solo para quien **nunca** tuvo un plan pago (`mp_puede_mes_gratis()`), para que nadie
+se dé de baja y vuelva a entrar gratis. Se apaga sola con la fecha. Mercado Pago
+documenta el mes gratis solo para suscripciones con plan asociado y acá se usan sin
+plan: el checkout anota `trial=SI/NO` en el registro de Admin > Mercado Pago, y eso es
+lo que confirma que funcionó. El filtro de mailing `no_pagan` deja afuera a los que
+pagan **o pagaron** por lo mismo.
+
 En inglés el cobro iba a ser por PayPal, **los links todavía son de mentira**
 (`paypal.com/CAMBIAR-mensual|anual` en `en/`).
 

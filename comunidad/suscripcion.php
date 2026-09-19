@@ -141,10 +141,17 @@ ui_panel_inicio('Tu plan', $u, 'Tu plan');
 
       <?php // Se oculta el mensual salvo que sea justo el plan que la persona tiene
             if (com_mostrar_mensual($plan)): ?>
-      <div class="plan-c<?php echo $elegido === 'mensual' ? ' destacado' : ''; ?>">
+      <?php // La promo se ofrece solo a quien la puede usar: el que ya pago alguna vez no la tiene
+            $mesGratis = $plan === 'gratis' && mp_puede_mes_gratis((int) $u['id']); ?>
+      <div class="plan-c<?php echo ($elegido === 'mensual' || $mesGratis) ? ' destacado' : ''; ?>">
+        <?php if ($mesGratis): ?><span class="cinta">1er mes gratis · hasta el <?php echo date('d/m', strtotime(COMUNIDAD_PROMO_HASTA)); ?></span><?php endif; ?>
         <h2>Printika Pro</h2>
         <p class="precio"><?php echo '$' . number_format(COMUNIDAD_PRECIO_MENSUAL, 0, ',', '.'); ?> <small>/mes</small></p>
-        <p class="detalle">Renovación mes a mes, sin permanencia</p>
+        <?php if ($mesGratis): ?>
+          <p class="detalle">Hoy no pagás nada: el primer cobro llega el <?php echo date('d/m', strtotime('+1 month')); ?>. Sin permanencia.</p>
+        <?php else: ?>
+          <p class="detalle">Renovación mes a mes, sin permanencia</p>
+        <?php endif; ?>
         <ul>
           <li><?php echo ui_icono('check', 15); ?>Todo Mi taller: presupuestos, productos, clientes</li>
           <li><?php echo ui_icono('check', 15); ?>Stock, ventas y estadísticas</li>
@@ -154,7 +161,7 @@ ui_panel_inicio('Tu plan', $u, 'Tu plan');
         </ul>
         <?php if ($plan === 'mensual'): ?><span class="actual">Tu plan actual</span>
         <?php elseif ($plan === 'gratis' && COMUNIDAD_MENSUAL_VISIBLE): ?>
-          <a class="btn" href="mp_checkout.php?plan=mensual">Suscribirme con Mercado Pago</a>
+          <a class="btn" href="mp_checkout.php?plan=mensual"><?php echo $mesGratis ? 'Empezar mi mes gratis' : 'Suscribirme con Mercado Pago'; ?></a>
         <?php else: ?><span class="actual">—</span><?php endif; ?>
       </div>
       <?php endif; ?>

@@ -30,21 +30,36 @@ if (!mp_conectado()) {
 }
 
 $base = (!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'];
+$recurrente = [
+    'frequency'          => $info['meses'],
+    'frequency_type'     => 'months',
+    'transaction_amount' => (float) $info['monto'],
+    'currency_id'        => 'ARS',
+];
+// Promo del primer mes gratis (ver COMUNIDAD_PROMO_HASTA). Solo para quien
+// nunca tuvo un plan pago: si no, cualquiera podria darse de baja y volver a
+// suscribirse para no pagar un mes mas.
+$conTrial = $plan === 'mensual' && mp_puede_mes_gratis((int) $u['id']);
+if ($conTrial) {
+    $recurrente['free_trial'] = ['frequency' => 1, 'frequency_type' => 'months'];
+}
 [$code, $resp] = mp_api('POST', '/preapproval', [
-    'reason'             => 'Printika Tools · ' . $info['titulo'],
+    'reason'             => 'Printika Tools · ' . $info['titulo'] . ($conTrial ? ' (1er mes gratis)' : ''),
     'external_reference' => (int) $u['id'] . ':' . $plan,
     'payer_email'        => $u['email'],
     'back_url'           => $base . '/comunidad/suscripcion.php?aviso=volviste',
-    'auto_recurring'     => [
-        'frequency'          => $info['meses'],
-        'frequency_type'     => 'months',
-        'transaction_amount' => (float) $info['monto'],
-        'currency_id'        => 'ARS',
-    ],
+    'auto_recurring'     => $recurrente,
 ]);
 
 if ($code >= 200 && $code < 300 && !empty($resp['init_point'])) {
-    mp_log("checkout creado uid={$u['id']} plan=$plan preapproval={$resp['id']}");
+    // Con la promo se anota si MP acepto el mes gratis: esta funcion no esta
+    // documentada para suscripciones sin plan, asi que esta linea es la prueba.
+    $trial = '';
+    if ($conTrial) {
+        $trial = ' trial=' . (!empty($resp['auto_recurring']['free_trial']) ? 'SI' : 'NO')
+               . ' primer_cobro=' . ($resp['next_payment_date'] ?? '?');
+    }
+    mp_log("checkout creado uid={$u['id']} plan=$plan preapproval={$resp['id']}$trial");
     header('Location: ' . $resp['init_point']);
     exit;
 }

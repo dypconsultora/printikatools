@@ -38,6 +38,18 @@ function mp_planes() {
     ];
 }
 
+/**
+ * true si a este usuario le corresponde el primer mes gratis: la promo esta
+ * vigente y nunca tuvo un plan pago (ni activo ni vencido).
+ */
+function mp_puede_mes_gratis($usuario_id) {
+    if (!com_promo_activa()) return false;
+    $stmt = com_db()->prepare("SELECT COUNT(*) FROM suscripciones
+                                WHERE usuario_id = ? AND plan IN ('mensual','anual')");
+    $stmt->execute([(int) $usuario_id]);
+    return (int) $stmt->fetchColumn() === 0;
+}
+
 /** Activa o renueva el plan pago de un usuario (cierra suscripciones previas). */
 function mp_activar_plan($usuario_id, $plan, $notas = '', $preapproval = '') {
     $meses = $plan === 'anual' ? 12 : 1;

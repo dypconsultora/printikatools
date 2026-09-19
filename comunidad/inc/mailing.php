@@ -45,6 +45,7 @@ function mailing_filtros() {
         'nunca_entro' => 'Se registraron y nunca entraron',
         'cotizador'   => 'Solo los del popup de la calculadora',
         'banner'      => 'Solo los del banner de la portada',
+        'no_pagan'    => 'Todos menos los que pagan o pagaron',
     ];
 }
 
@@ -67,6 +68,15 @@ function mailing_donde($filtro, $idioma) {
                AND NOT EXISTS (SELECT 1 FROM suscripciones s
                                 WHERE s.usuario_id = u.id AND s.estado = 'activa'
                                   AND (s.hasta IS NULL OR s.hasta >= CURDATE())))";
+    } elseif ($filtro === 'no_pagan') {
+        // Para ofertas como el primer mes gratis: afuera el que paga hoy y
+        // tambien el que pago alguna vez, porque a ese la promo no le aplica
+        // (mp_puede_mes_gratis) y el correo le prometeria algo que no le damos.
+        $donde[] = "email NOT IN (
+            SELECT u.email FROM usuarios u
+             WHERE u.rol = 'admin'
+                OR EXISTS (SELECT 1 FROM suscripciones s
+                            WHERE s.usuario_id = u.id AND s.plan IN ('mensual','anual')))";
     } elseif (isset(mailing_filtros()[$filtro]) && $filtro !== 'todos') {
         $donde[] = 'origen = ?';
         $args[]  = $filtro;
@@ -521,6 +531,52 @@ function mailing_semilla() {
         'filtro'      => 'nunca_entro',
         'idioma'      => 'es',
     ]);
+}
+
+/**
+ * Borrador de la promo del primer mes gratis (septiembre 2026). Queda en el
+ * historial para que ella lo revise y lo mande; no se envia solo. Los precios
+ * y la fecha de cierre salen de las constantes, asi no pueden quedar distintos
+ * de lo que despues cobra el checkout.
+ */
+function mailing_semilla_promo() {
+    if (cfg_get('mailing_semilla_promo_mes_gratis')) return 0;
+    cfg_set('mailing_semilla_promo_mes_gratis', date('Y-m-d H:i:s'));
+    if (!com_promo_activa()) return 0;
+
+    $mes   = '$' . number_format(COMUNIDAD_PRECIO_MENSUAL, 0, ',', '.');
+    $cierre = com_fecha_larga(COMUNIDAD_PROMO_HASTA);
+
+    $cuerpo = <<<TXT
+    Por diez días, el plan **Printika Pro** tiene **el primer mes gratis**.
+
+    Te suscribís hoy y no pagás nada: tenés un mes entero para usar todo el taller. Recién al mes te llega el primer cobro de $mes, y de ahí sigue mes a mes. Si no te convence, lo das de baja antes desde tu cuenta y no se te cobra nada.
+
+    Con el plan Pro tenés la calculadora completa (luz, desgaste de la máquina, mano de obra, fallos y comisiones de Mercado Libre), presupuestos con tu logo en PDF, clientes, productos, stock de filamento, ventas y estadísticas mes a mes, la librería de modelos STL y el soporte por Telegram.
+
+    Si ya tenés cuenta gratis, entrá con tu mismo correo: no hace falta registrarse de nuevo. **La promo vale hasta el $cierre.**
+
+    Cualquier duda, respondé este correo y te contestamos.
+    TXT;
+
+    return mailing_guardar([
+        'asunto'      => 'Tu primer mes de Printika Pro, gratis',
+        'titulo'      => 'Probá Printika Pro un mes gratis',
+        'cuerpo'      => preg_replace('/^    /m', '', $cuerpo),
+        'boton_texto' => 'Quiero mi mes gratis',
+        'boton_url'   => 'https://printikatools.com/comunidad/registro.php?plan=mensual',
+        'banner_url'  => '/assets/img/mailing/banner-mes-gratis.jpg',
+        'filtro'      => 'no_pagan',
+        'idioma'      => 'es',
+    ]);
+}
+
+/** "28 de septiembre", sin depender del idioma del servidor. */
+function com_fecha_larga($fecha) {
+    $meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto',
+              'septiembre','octubre','noviembre','diciembre'];
+    $t = strtotime($fecha);
+    return (int) date('j', $t) . ' de ' . $meses[(int) date('n', $t) - 1];
 }
 
 /**

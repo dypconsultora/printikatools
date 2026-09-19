@@ -18,6 +18,7 @@ requerir_admin();
 taller_migrar();
 mailing_semilla();          // deja escrito el primer borrador, una sola vez
 mailing_banner_semilla();   // y le pone el banner, si se creo antes de que existiera
+mailing_semilla_promo();    // borrador de la promo del primer mes gratis, una sola vez
 $yo = usuario_actual();
 $db = com_db();
 
