@@ -37,10 +37,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Primero guardá el Access Token.';
         } else {
             [$code, $resp] = mp_api('GET', '/users/me');
-            $prueba = $code === 200
-                ? 'Conexión OK: cuenta ' . ($resp['nickname'] ?? $resp['email'] ?? 'verificada')
-                  . (($resp['site_id'] ?? '') ? ' (' . $resp['site_id'] . ')' : '')
-                : 'Falló la conexión (HTTP ' . $code . '). Revisá el Access Token.';
+            if ($code === 200) {
+                // Se muestra a QUE cuenta apunta el token, con nombre y correo.
+                // El nombre que el cliente ve en el checkout de Mercado Pago sale
+                // de ahi, no del sitio: si aparece el de otro negocio, o la cuenta
+                // esta mal o hay que cambiarle el nombre en Mercado Pago.
+                $nombre = trim(($resp['first_name'] ?? '') . ' ' . ($resp['last_name'] ?? ''));
+                $prueba = 'Conexión OK. Los pagos van a la cuenta '
+                    . ($resp['nickname'] ?? 'verificada')
+                    . ($nombre !== '' ? ' — ' . $nombre : '')
+                    . (($resp['email'] ?? '') ? ' (' . $resp['email'] . ')' : '')
+                    . (($resp['site_id'] ?? '') ? ' · ' . $resp['site_id'] : '')
+                    . '. Ese es también el nombre que ve el cliente al pagar.';
+            } else {
+                $prueba = 'Falló la conexión (HTTP ' . $code . '). Revisá el Access Token.';
+            }
         }
     }
 }
