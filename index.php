@@ -523,6 +523,10 @@ $og_alt = $en
         border-radius:99px;padding:3px 10px;margin-top:6px}
     .plan{background:var(--surface);border:1px solid var(--bd);border-radius:var(--radio-g);
         padding:30px;display:flex;flex-direction:column}
+    /* La tarjeta con promo necesita ser el marco de su etiqueta, igual que la destacada */
+    .plan.con-promo{position:relative}
+    /* La promo es solo con Mercado Pago: al pasar a dolares se esconde sola */
+    #planes.en-usd .solo-ars{display:none}
     .plan.destacado{position:relative;border:1px solid transparent;
         background:linear-gradient(var(--surface),var(--surface)) padding-box,
                    linear-gradient(135deg,var(--accent),var(--violeta)) border-box;
@@ -1063,10 +1067,20 @@ $og_alt = $en
           </div>
           <?php // El mensual se puede sacar de la vidriera desde bootstrap.php
                 if (COMUNIDAD_MENSUAL_VISIBLE): ?>
-          <div class="plan">
+          <?php // Promo del primer mes gratis: se apaga sola con la fecha (bootstrap.php).
+                // Solo en la landing en castellano, porque se cobra por Mercado Pago.
+                $promo = !$en && com_promo_activa(); ?>
+          <div class="plan<?php echo $promo ? ' con-promo' : ''; ?>">
+            <?php if ($promo): ?><span class="etiqueta solo-ars">1er mes gratis</span><?php endif; ?>
             <h3>Printika Pro</h3>
             <p class="precio"><span class="monto" data-ars="$18.000" data-usd="US$15"><?php echo $en ? 'US$15' : '$18.000'; ?></span> <small>/mes</small></p>
-            <p class="nota">Renovación mes a mes, sin permanencia</p>
+            <?php if ($promo): ?>
+              <p class="nota swap-mon"
+                 data-ars="El primer mes es de prueba: hoy no pagás nada. El primer cobro te llega al mes y podés darte de baja antes."
+                 data-usd="Renovación mes a mes, sin permanencia">El primer mes es de prueba: hoy no pagás nada. El primer cobro te llega al mes y podés darte de baja antes.</p>
+            <?php else: ?>
+              <p class="nota">Renovación mes a mes, sin permanencia</p>
+            <?php endif; ?>
             <ul>
               <li><?php echo ui_icono('check', 15); ?>Calculadora completa (versión PRO)</li>
               <li><?php echo ui_icono('check', 15); ?>Mi Taller: presupuestos, clientes y stock</li>
@@ -1716,6 +1730,9 @@ document.addEventListener('DOMContentLoaded', function () {
     b.addEventListener('click', function () {
       botones.forEach(function (x) { x.classList.toggle('activo', x === b); });
       var usd = b.dataset.mon === 'usd';
+      // Lo que solo vale en pesos (la promo del mes gratis) se esconde en dolares
+      var sec = document.getElementById('planes');
+      if (sec) sec.classList.toggle('en-usd', usd);
       document.querySelectorAll('.btn-pago').forEach(function (a) {
         a.href = usd ? a.dataset.pp : a.dataset.mp;
       });
