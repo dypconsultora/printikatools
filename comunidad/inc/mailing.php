@@ -547,8 +547,9 @@ function mailing_semilla_promo() {
     $mes   = '$' . number_format(COMUNIDAD_PRECIO_MENSUAL, 0, ',', '.');
     $cierre = com_fecha_larga(COMUNIDAD_PROMO_HASTA);
 
+    $apertura = mailing_promo_apertura();
     $cuerpo = <<<TXT
-    Por diez días, el plan **Printika Pro** tiene **el primer mes gratis**.
+    $apertura
 
     Te suscribís hoy y no pagás nada: tenés un mes entero para usar todo el taller. Recién al mes te llega el primer cobro de $mes, y de ahí sigue mes a mes. Si no te convence, lo das de baja antes desde tu cuenta y no se te cobra nada.
 
@@ -571,12 +572,43 @@ function mailing_semilla_promo() {
     ]);
 }
 
-/** "28 de septiembre", sin depender del idioma del servidor. */
-function com_fecha_larga($fecha) {
+/**
+ * "28 de septiembre", o "lunes 28 de septiembre" con $con_dia.
+ * A mano porque el idioma del servidor no se puede dar por sentado.
+ */
+function com_fecha_larga($fecha, $con_dia = false) {
     $meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto',
               'septiembre','octubre','noviembre','diciembre'];
+    $dias  = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
     $t = strtotime($fecha);
-    return (int) date('j', $t) . ' de ' . $meses[(int) date('n', $t) - 1];
+    return ($con_dia ? $dias[(int) date('w', $t)] . ' ' : '')
+         . (int) date('j', $t) . ' de ' . $meses[(int) date('n', $t) - 1];
+}
+
+/** Arranque del correo de la promo: la fecha de cierre sale de la constante. */
+function mailing_promo_apertura() {
+    return 'Hasta el ' . com_fecha_larga(COMUNIDAD_PROMO_HASTA, true)
+         . ', el plan **Printika Pro** tiene **el primer mes gratis**.';
+}
+
+/**
+ * Arreglo de una vez: el borrador de la promo se escribio diciendo "Por diez
+ * dias", y entre la prueba con Mercado Pago y el envio quedaron ocho. Se
+ * reemplaza por la fecha de cierre, que es la que de verdad manda.
+ *
+ * Solo toca el borrador si sigue con el texto original: si ella ya lo reescribio
+ * a mano, no se le pisa nada.
+ */
+function mailing_arreglo_promo_fecha() {
+    if (cfg_get('mailing_promo_fecha_arreglada')) return;
+    cfg_set('mailing_promo_fecha_arreglada', date('Y-m-d H:i:s'));
+    com_db()->prepare("UPDATE mailings SET cuerpo = REPLACE(cuerpo, ?, ?)
+                        WHERE estado = 'borrador' AND cuerpo LIKE ?")
+        ->execute([
+            'Por diez días, el plan **Printika Pro** tiene **el primer mes gratis**.',
+            mailing_promo_apertura(),
+            '%Por diez días, el plan **Printika Pro** tiene **el primer mes gratis**.%',
+        ]);
 }
 
 /**
