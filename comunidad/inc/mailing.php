@@ -612,6 +612,61 @@ function mailing_arreglo_promo_fecha() {
 }
 
 /**
+ * La misma promo, en ingles. Queda de borrador para que ella lo mande cuando
+ * quiera: las cuentas en ingles son pocas y las maneja aparte.
+ *
+ * Dos cosas de las que no se puede escapar y por eso estan escritas en el
+ * correo: el cobro sale igual por Mercado Pago y en pesos (los enlaces de
+ * PayPal siguen siendo de mentira), y el precio en dolares es orientativo
+ * porque depende del cambio del dia.
+ */
+function mailing_semilla_promo_en() {
+    if (cfg_get('mailing_semilla_promo_mes_gratis_en')) return 0;
+    cfg_set('mailing_semilla_promo_mes_gratis_en', date('Y-m-d H:i:s'));
+    if (!com_promo_activa()) return 0;
+
+    $ars    = 'ARS ' . number_format(COMUNIDAD_PRECIO_MENSUAL, 0, '.', ',');
+    // El precio en dolares es el que ya figura en la landing en ingles y en
+    // pricing.md. Si alguna vez cambia, cambia en los tres lados.
+    $usd    = 'US$15';
+    $cierre = com_fecha_larga_en(COMUNIDAD_PROMO_HASTA);
+
+    $cuerpo = <<<TXT
+    Until $cierre, **Printika Pro** comes with **your first month free**.
+
+    You subscribe today and pay nothing: a full month to use the whole workshop. The first charge only arrives a month later, and then it renews monthly. If it is not for you, cancel from your account before then and you are charged nothing at all.
+
+    Printika Pro gives you the full cost calculator (electricity, machine wear, labour, failure rate and marketplace fees), professional quotes as PDF with your logo, clients, products, filament stock, sales and monthly statistics, the STL model library and support over Telegram.
+
+    Already have a free account? Just sign in with the same email, no need to register again. **The offer ends on $cierre.**
+
+    A heads-up on billing: payment goes through Mercado Pago and is charged in Argentine pesos, $ars per month, which is the $usd you see on the site. Any card works.
+
+    Any questions, just reply to this email.
+    TXT;
+
+    return mailing_guardar([
+        'asunto'      => 'Your first month of Printika Pro, free',
+        'titulo'      => 'Try Printika Pro free for a month',
+        'cuerpo'      => preg_replace('/^    /m', '', $cuerpo),
+        'boton_texto' => 'Start my free month',
+        'boton_url'   => 'https://printikatools.com/comunidad/registro.php?plan=mensual',
+        'banner_url'  => '/assets/img/mailing/banner-mes-gratis-en.jpg',
+        'filtro'      => 'no_pagan',
+        'idioma'      => 'en',
+    ]);
+}
+
+/** "Monday, September 28", para los correos en ingles. */
+function com_fecha_larga_en($fecha) {
+    $meses = ['January','February','March','April','May','June','July','August',
+              'September','October','November','December'];
+    $dias  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    $t = strtotime($fecha);
+    return $dias[(int) date('w', $t)] . ', ' . $meses[(int) date('n', $t) - 1] . ' ' . (int) date('j', $t);
+}
+
+/**
  * Arreglo de una vez: el borrador de la semilla se creo antes de que los
  * mailings pudieran llevar imagen, asi que quedo sin banner. Si sigue ahi y
  * sigue vacio, se le pone. Si ella ya eligio otra imagen o lo dejo a proposito
