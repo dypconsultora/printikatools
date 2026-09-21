@@ -48,7 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     . ($nombre !== '' ? ' — ' . $nombre : '')
                     . (($resp['email'] ?? '') ? ' (' . $resp['email'] . ')' : '')
                     . (($resp['site_id'] ?? '') ? ' · ' . $resp['site_id'] : '')
-                    . '. Ese es también el nombre que ve el cliente al pagar.';
+                    . '.';
+                $prueba .= ' Ojo: el nombre que ve el cliente al pagar no es este,'
+                    . ' es el nombre del negocio guardado dentro de esa cuenta de Mercado Pago.';
             } else {
                 $prueba = 'Falló la conexión (HTTP ' . $code . '). Revisá el Access Token.';
             }
