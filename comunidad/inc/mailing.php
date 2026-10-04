@@ -514,7 +514,7 @@ function mailing_semilla() {
 
     Es la que te dice cuánto te cuesta **de verdad** una impresión. Suma las seis cosas que casi nadie cuenta: el material, la luz que consume la máquina, su desgaste, tu tiempo, las impresiones que salen mal y tu ganancia. Cobrar solo el filamento es el error más caro que se puede cometer en un taller.
 
-    La tenés completa en pesos, dólares o euros, con 22 impresoras ya cargadas, y te podés bajar el presupuesto en PDF para mandárselo al cliente.
+    La tenés completa en pesos, dólares o euros, con más de veinte impresoras ya cargadas, y te podés bajar el presupuesto en PDF para mandárselo al cliente.
 
     Si además querés dejar de llevar las cuentas en un cuaderno, el **plan completo** suma presupuestos con tu logo, clientes, productos, stock de filamento, ventas y estadísticas mes a mes. $precios Podés verlos en [la página de planes](https://printikatools.com/#planes).
 

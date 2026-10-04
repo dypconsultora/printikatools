@@ -33,6 +33,7 @@ function cot_impresoras() {
     return [
         ['Bambu Lab A1 Mini',         45,  613890,  4000,  35000, '3 a 4 años'],
         ['Bambu Lab A1',              95,  883348,  5000,  45000, '4 a 5 años'],
+        ['Bambu Lab A2L',            120, 1570000,  8000,  65000, '5 a 6 años'],
         ['Bambu Lab P1P',             80, 1290500, 10000,  60000, '5 años'    ],
         ['Bambu Lab P1S',            100, 1407474, 10000,  65000, '5 años'    ],
         ['Bambu Lab P2S',            130, 2419980,  7500,  80000, '5 a 6 años'],
