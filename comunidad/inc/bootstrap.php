@@ -109,7 +109,7 @@ function com_promo_activa() {
     return COMUNIDAD_MENSUAL_VISIBLE && $hoy >= COMUNIDAD_PROMO_DESDE && $hoy <= COMUNIDAD_PROMO_HASTA;
 }
 
-define('COMUNIDAD_WHATSAPP', 'https://wa.me/5491131373425?text=' . rawurlencode('Hola! Quiero activar mi suscripción de Printika Tools.'));
+define('COMUNIDAD_WHATSAPP', 'https://wa.me/5491171924444?text=' . rawurlencode('Hola! Quiero activar mi suscripción de Printika Tools.'));
 
 /** Conexion PDO compartida. Devuelve null si no hay config o no conecta. */
 function com_db() {
