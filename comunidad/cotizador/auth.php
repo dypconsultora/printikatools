@@ -57,6 +57,34 @@ function trial_pro_activo() {
     return time() < PRO_TRIAL_HASTA;
 }
 
+/**
+ * "Incluir material de soporte" liberado por 60 dias (del 2026-11-19 al
+ * 2027-01-18). Al vencer vuelve el candado solo: no hay que tocar nada.
+ * Para estirarlo o cortarlo, se cambia esta fecha y listo.
+ */
+define('SOPORTE_TRIAL_HASTA', '2027-01-18');   // ultimo dia incluido
+
+/** Hoy en Argentina, que es contra lo que se compara la fecha de arriba. */
+function soporte_hoy() {
+    return (new DateTime('now', new DateTimeZone('America/Argentina/Buenos_Aires')))
+        ->format('Y-m-d');
+}
+
+function trial_soporte_activo() {
+    return soporte_hoy() <= SOPORTE_TRIAL_HASTA;
+}
+
+/**
+ * Cuantos dias quedan, contando el ultimo. Se cuenta por fecha y no por horas
+ * para que el numero cambie a la medianoche y no a media tarde.
+ */
+function trial_soporte_dias() {
+    if (!trial_soporte_activo()) return 0;
+    $hoy  = new DateTime(soporte_hoy());
+    $fin  = new DateTime(SOPORTE_TRIAL_HASTA);
+    return (int) $hoy->diff($fin)->days;
+}
+
 function token_csrf() {
     iniciar_sesion();
     if (empty($_SESSION['csrf'])) {

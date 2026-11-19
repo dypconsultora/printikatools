@@ -41,6 +41,10 @@ $csrf  = token_csrf();
 $esPro = esta_logueado() || $enPanel;
 $enTrial = !$esPro && trial_pro_activo();
 $proHabilitado = $esPro || $enTrial;
+// El material de soporte esta liberado por 60 dias para todos; al vencer
+// (SOPORTE_TRIAL_HASTA) el candado vuelve solo.
+$soporteTrial = !$proHabilitado && trial_soporte_activo();
+$soporteLibre = $proHabilitado || $soporteTrial;
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -416,6 +420,13 @@ body {
   border-radius: 4px;
 }
 .card-title .badge { margin-left: auto; }
+/* La chapita de "gratis por tiempo limitado": verde y en minusculas, porque
+   dice una frase y no una palabra suelta como PRO. */
+.badge.gratis {
+  background: linear-gradient(135deg, #3ecf8e, var(--accent));
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
 
 /* Form elements */
 .field-grid {
@@ -1468,7 +1479,11 @@ body.en-panel #newsModal { display: none !important; }
       </div>
     </div>
     <div class="toggle-row" id="supportProRow">
-      <span>Incluir material de soporte <span class="badge">PRO</span></span>
+      <span>Incluir material de soporte<?php
+        if ($soporteTrial): ?> <span class="badge gratis">Gratis &middot; quedan <?php
+          echo trial_soporte_dias(); ?> días</span><?php
+        elseif (!$soporteLibre): ?> <span class="badge">PRO</span><?php
+        endif; ?></span>
       <label class="toggle">
         <input type="checkbox" id="supportToggle">
         <span class="toggle-slider"></span>
@@ -2631,7 +2646,7 @@ PRECIO FINAL: ${price}${meliInfo}
     // Electricidad, Depreciacion, Mano de obra y Costos adicionales se
     // liberaron para todos el 2026-11-19: son las cuentas que hacen que el
     // precio sea real, y dejarlas afuera daba un resultado que no sirve.
-    ['sec-meli', 'supportProRow'].forEach((id) => {
+    <?php echo $soporteLibre ? "['sec-meli']" : "['sec-meli', 'supportProRow']"; ?>.forEach((id) => {
       const sec = document.getElementById(id);
       if (!sec) return;
       sec.classList.add('pro-locked');
