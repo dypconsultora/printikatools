@@ -1,6 +1,9 @@
 <?php
 // === Calculadora 3D · publica y gratuita ===
-//  - Visitante suelto: version FREE (lo PRO muestra el cartel de suscripcion).
+//  - Visitante suelto: usa las cuentas que arman el precio real (material,
+//    electricidad, depreciacion, mano de obra, costos adicionales, fallos y
+//    margen). Siguen siendo PRO las comisiones de Mercado Libre, el material
+//    de soporte y las Acciones (guardar, exportar y compartir).
 //  - Prueba por tiempo limitado (PRO_TRIAL_HASTA en auth.php): todo lo PRO
 //    habilitado para cualquiera, con contador regresivo. Al vencer, vuelven
 //    los candados automaticamente.
@@ -1525,7 +1528,6 @@ body.en-panel #newsModal { display: none !important; }
     <div class="card-title">
       <span class="icon">&#9889;</span>
       Costos de Electricidad
-      <span class="badge">PRO</span>
     </div>
     <div class="field">
       <label for="printerModel">Modelo de impresora</label>
@@ -1561,7 +1563,6 @@ body.en-panel #newsModal { display: none !important; }
     <div class="card-title">
       <span class="icon">&#128736;</span>
       Costos de Mano de Obra
-      <span class="badge">PRO</span>
     </div>
     <div class="field-grid">
       <div class="field">
@@ -1588,7 +1589,6 @@ body.en-panel #newsModal { display: none !important; }
     <div class="card-title">
       <span class="icon">&#128424;</span>
       Depreciacion de la Maquina
-      <span class="badge">PRO</span>
     </div>
     <?php // Aprobado el 2026-07-31: ya sale tambien en el cotizador publico.
           // Para quien no es PRO la seccion entera queda bloqueada sola (mas
@@ -1635,7 +1635,6 @@ body.en-panel #newsModal { display: none !important; }
     <div class="card-title">
       <span class="icon">&#128230;</span>
       Costos Adicionales
-      <span class="badge">PRO</span>
     </div>
     <div class="field-grid">
       <div class="field">
@@ -2629,7 +2628,10 @@ PRECIO FINAL: ${price}${meliInfo}
   if (!IS_PRO) {
     // Secciones PRO: los controles no reciben eventos (pointer-events none),
     // el click cae en la seccion y abre el cartel. Tab/teclado tambien bloqueado.
-    ['sec-electric', 'sec-additional', 'sec-meli', 'sec-labor', 'sec-depreciation', 'supportProRow'].forEach((id) => {
+    // Electricidad, Depreciacion, Mano de obra y Costos adicionales se
+    // liberaron para todos el 2026-11-19: son las cuentas que hacen que el
+    // precio sea real, y dejarlas afuera daba un resultado que no sirve.
+    ['sec-meli', 'supportProRow'].forEach((id) => {
       const sec = document.getElementById(id);
       if (!sec) return;
       sec.classList.add('pro-locked');
