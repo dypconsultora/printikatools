@@ -1,9 +1,10 @@
 <?php
 // === Calculadora 3D · publica y gratuita ===
-//  - Visitante suelto: usa las cuentas que arman el precio real (material,
-//    electricidad, depreciacion, mano de obra, costos adicionales, fallos y
-//    margen). Siguen siendo PRO las comisiones de Mercado Libre, el material
-//    de soporte y las Acciones (guardar, exportar y compartir).
+//  - Visitante suelto: material, tiempo, tasa de fallos y margen siempre; y
+//    durante la promo de 60 dias (PROMO_LIBRE_HASTA) tambien electricidad,
+//    depreciacion, mano de obra, adicionales y material de soporte. Siempre
+//    PRO: comisiones de Mercado Libre y las Acciones (guardar, exportar,
+//    compartir).
 //  - Prueba por tiempo limitado (PRO_TRIAL_HASTA en auth.php): todo lo PRO
 //    habilitado para cualquiera, con contador regresivo. Al vencer, vuelven
 //    los candados automaticamente.
@@ -41,10 +42,27 @@ $csrf  = token_csrf();
 $esPro = esta_logueado() || $enPanel;
 $enTrial = !$esPro && trial_pro_activo();
 $proHabilitado = $esPro || $enTrial;
-// El material de soporte esta liberado por 60 dias para todos; al vencer
-// (SOPORTE_TRIAL_HASTA) el candado vuelve solo.
-$soporteTrial = !$proHabilitado && trial_soporte_activo();
-$soporteLibre = $proHabilitado || $soporteTrial;
+/*
+ * Promo de 60 dias (PROMO_LIBRE_HASTA en auth.php): electricidad,
+ * depreciacion, mano de obra, costos adicionales y el material de soporte
+ * quedan abiertos para cualquiera. Al vencer, los candados vuelven solos.
+ */
+$enPromo = !$proHabilitado && trial_libre_activo();
+$promoLibre = $proHabilitado || $enPromo;
+
+/*
+ * La chapita del titulo de esas secciones: durante la promo dice cuanto
+ * falta — si algo es gratis por tiempo limitado, hasta cuando es parte de
+ * la oferta — y despues vuelve a decir PRO. Con sesion no se muestra nada,
+ * porque esa persona ya lo tiene todo.
+ */
+$chapita = function () use ($enPromo, $proHabilitado) {
+    if ($enPromo) {
+        return ' <span class="badge gratis">Gratis &middot; quedan '
+             . trial_libre_dias() . ' días</span>';
+    }
+    return $proHabilitado ? '' : ' <span class="badge">PRO</span>';
+};
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -1479,11 +1497,7 @@ body.en-panel #newsModal { display: none !important; }
       </div>
     </div>
     <div class="toggle-row" id="supportProRow">
-      <span>Incluir material de soporte<?php
-        if ($soporteTrial): ?> <span class="badge gratis">Gratis &middot; quedan <?php
-          echo trial_soporte_dias(); ?> días</span><?php
-        elseif (!$soporteLibre): ?> <span class="badge">PRO</span><?php
-        endif; ?></span>
+      <span>Incluir material de soporte<?php echo $chapita(); ?></span>
       <label class="toggle">
         <input type="checkbox" id="supportToggle">
         <span class="toggle-slider"></span>
@@ -1542,7 +1556,7 @@ body.en-panel #newsModal { display: none !important; }
   <section class="card" id="sec-electric">
     <div class="card-title">
       <span class="icon">&#9889;</span>
-      Costos de Electricidad
+      Costos de Electricidad<?php echo $chapita(); ?>
     </div>
     <div class="field">
       <label for="printerModel">Modelo de impresora</label>
@@ -1577,7 +1591,7 @@ body.en-panel #newsModal { display: none !important; }
   <section class="card" id="sec-labor">
     <div class="card-title">
       <span class="icon">&#128736;</span>
-      Costos de Mano de Obra
+      Costos de Mano de Obra<?php echo $chapita(); ?>
     </div>
     <div class="field-grid">
       <div class="field">
@@ -1603,7 +1617,7 @@ body.en-panel #newsModal { display: none !important; }
   <section class="card" id="sec-depreciation">
     <div class="card-title">
       <span class="icon">&#128424;</span>
-      Depreciacion de la Maquina
+      Depreciacion de la Maquina<?php echo $chapita(); ?>
     </div>
     <?php // Aprobado el 2026-07-31: ya sale tambien en el cotizador publico.
           // Para quien no es PRO la seccion entera queda bloqueada sola (mas
@@ -1649,7 +1663,7 @@ body.en-panel #newsModal { display: none !important; }
   <section class="card" id="sec-additional">
     <div class="card-title">
       <span class="icon">&#128230;</span>
-      Costos Adicionales
+      Costos Adicionales<?php echo $chapita(); ?>
     </div>
     <div class="field-grid">
       <div class="field">
@@ -2643,10 +2657,11 @@ PRECIO FINAL: ${price}${meliInfo}
   if (!IS_PRO) {
     // Secciones PRO: los controles no reciben eventos (pointer-events none),
     // el click cae en la seccion y abre el cartel. Tab/teclado tambien bloqueado.
-    // Electricidad, Depreciacion, Mano de obra y Costos adicionales se
-    // liberaron para todos el 2026-11-19: son las cuentas que hacen que el
-    // precio sea real, y dejarlas afuera daba un resultado que no sirve.
-    <?php echo $soporteLibre ? "['sec-meli']" : "['sec-meli', 'supportProRow']"; ?>.forEach((id) => {
+    // Durante la promo de 60 dias solo queda bajo llave Mercado Libre; al
+    // vencer vuelve la lista completa. La arma PHP, que es quien sabe la fecha.
+    <?php echo $promoLibre
+        ? "['sec-meli']"
+        : "['sec-meli', 'sec-electric', 'sec-labor', 'sec-depreciation', 'sec-additional', 'supportProRow']"; ?>.forEach((id) => {
       const sec = document.getElementById(id);
       if (!sec) return;
       sec.classList.add('pro-locked');

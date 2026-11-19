@@ -58,30 +58,36 @@ function trial_pro_activo() {
 }
 
 /**
- * "Incluir material de soporte" liberado por 60 dias (del 2026-11-19 al
- * 2027-01-18). Al vencer vuelve el candado solo: no hay que tocar nada.
- * Para estirarlo o cortarlo, se cambia esta fecha y listo.
+ * PROMO DE 60 DIAS (del 2026-11-19 al 2027-01-18).
+ *
+ * Mientras dure, estas cinco secciones de la calculadora estan abiertas para
+ * cualquiera, sin cuenta: Costos de Electricidad, Depreciacion de la Maquina,
+ * Costos de Mano de Obra, Costos Adicionales e "Incluir material de soporte".
+ * Al vencer vuelven los candados solos: no hay que tocar nada.
+ *
+ * Para estirarla, cortarla antes o dejarla fija, se cambia esta fecha y listo.
+ * Es el unico lugar donde esta escrita.
  */
-define('SOPORTE_TRIAL_HASTA', '2027-01-18');   // ultimo dia incluido
+define('PROMO_LIBRE_HASTA', '2027-01-18');   // ultimo dia incluido
 
 /** Hoy en Argentina, que es contra lo que se compara la fecha de arriba. */
-function soporte_hoy() {
+function promo_hoy() {
     return (new DateTime('now', new DateTimeZone('America/Argentina/Buenos_Aires')))
         ->format('Y-m-d');
 }
 
-function trial_soporte_activo() {
-    return soporte_hoy() <= SOPORTE_TRIAL_HASTA;
+function trial_libre_activo() {
+    return promo_hoy() <= PROMO_LIBRE_HASTA;
 }
 
 /**
  * Cuantos dias quedan, contando el ultimo. Se cuenta por fecha y no por horas
  * para que el numero cambie a la medianoche y no a media tarde.
  */
-function trial_soporte_dias() {
-    if (!trial_soporte_activo()) return 0;
-    $hoy  = new DateTime(soporte_hoy());
-    $fin  = new DateTime(SOPORTE_TRIAL_HASTA);
+function trial_libre_dias() {
+    if (!trial_libre_activo()) return 0;
+    $hoy = new DateTime(promo_hoy());
+    $fin = new DateTime(PROMO_LIBRE_HASTA);
     return (int) $hoy->diff($fin)->days;
 }
 
